@@ -19,15 +19,11 @@ const color = tone === 'dark' ? 'text-charcoal' : 'text-stone';
 const Tag = href ? 'a' : 'div';
 ---
 
-<Tag
-  href={href}
-  class:list={['group inline-flex items-stretch gap-3 no-underline', color]}
-  aria-label={href ? 'St. Joseph the Worker Guild, home' : undefined}
->
+<Tag href={href} class:list={['group inline-flex items-stretch gap-3 no-underline', color]}>
   <span class="w-[3px] shrink-0 bg-brass" aria-hidden="true"></span>
   <span class="flex flex-col justify-center">
     <span class:list={['font-serif', sizes[size]]}>
-      <span class="block whitespace-nowrap">St. Joseph</span>
+      <span class="block whitespace-nowrap">St. Joseph</span>{' '}
       <span class="block whitespace-nowrap">the Worker Guild</span>
     </span>
     {withParish && (

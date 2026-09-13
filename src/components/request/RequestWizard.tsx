@@ -218,8 +218,6 @@ export default function RequestWizard({ trades, responseTk, serviceAreaTk }: Pro
     update({ photoName: file.name });
   }
 
-  if (!restored) return <p className="text-ash font-sans">Loading the form.</p>;
-
   if (done) {
     return (
       <section aria-labelledby="done-title" className="max-w-[64ch]">

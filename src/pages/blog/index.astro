@@ -20,7 +20,7 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
   <div class="wrap py-10 md:py-14">
     <div class="max-w-[64ch] border-b border-mortar">
       {posts.map((p) => (
-        <PostCard id={p.id} {...p.data} />
+        <PostCard id={p.id} {...p.data} headingLevel={2} />
       ))}
     </div>
     <p class="mt-8 max-w-[60ch] font-sans text-[0.95rem] text-ash">

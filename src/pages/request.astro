@@ -21,20 +21,16 @@ const trades = getTrades(members);
   />
   <div class="wrap py-10 md:py-14">
     <RequestWizard
-      client:only="react"
+      client:load
       trades={trades}
       responseTk={TK.responseCommitment}
       serviceAreaTk={TK.serviceArea}
-    >
-      <div slot="fallback" class="max-w-[64ch]" aria-busy="true">
-        <p class="font-sans text-ash">Loading the form.</p>
-        <noscript>
-          <p class="mt-4 leading-relaxed">
-            This form needs JavaScript. If it will not load,{' '}
-            <a href="/contact">contact the Guild</a> instead.
-          </p>
-        </noscript>
-      </div>
-    </RequestWizard>
+    />
+    <noscript>
+      <p class="mt-6 max-w-[64ch] leading-relaxed">
+        This form needs JavaScript to move between steps. If it will not load,{' '}
+        <a href="/contact">contact the Guild</a> instead.
+      </p>
+    </noscript>
   </div>
 </BaseLayout>

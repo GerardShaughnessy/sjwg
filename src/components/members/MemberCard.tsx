@@ -15,10 +15,13 @@ const AVAILABILITY: Record<Member['availability'], { label: string; dot: string 
 export default function MemberCard({
   member,
   compact = false,
+  headingLevel = 3,
 }: {
   member: Member;
   compact?: boolean;
+  headingLevel?: 2 | 3;
 }) {
+  const Heading = headingLevel === 2 ? 'h2' : 'h3';
   const a = AVAILABILITY[member.availability];
   const requestHref = `/request?trade=${slugify(member.trade)}`;
   return (
@@ -53,9 +56,9 @@ export default function MemberCard({
 
       <div className="min-w-0">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <h3 id={`member-${member.id}-name`} className="text-h3 font-serif">
+          <Heading id={`member-${member.id}-name`} className="text-h3 font-serif">
             {member.name}
-          </h3>
+          </Heading>
           <p className="text-brick font-sans text-[0.95rem] font-semibold">{member.trade}</p>
         </div>
         <p className="text-ash mt-1 font-sans text-[0.95rem]">

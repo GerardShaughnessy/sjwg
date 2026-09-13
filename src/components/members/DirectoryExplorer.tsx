@@ -157,7 +157,7 @@ export default function DirectoryExplorer({ members, trades, areas }: Props) {
       {results.length > 0 ? (
         <div className="border-mortar mt-4 border-b">
           {results.map((m) => (
-            <MemberCard key={m.id} member={m} />
+            <MemberCard key={m.id} member={m} headingLevel={2} />
           ))}
         </div>
       ) : (

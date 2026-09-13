@@ -6,18 +6,20 @@ interface Props {
   title: string;
   description: string;
   pubDate: Date;
+  headingLevel?: 2 | 3;
 }
-const { id, title, description, pubDate } = Astro.props;
+const { id, title, description, pubDate, headingLevel = 3 } = Astro.props;
+const Heading = headingLevel === 2 ? 'h2' : 'h3';
 ---
 
 <article class="border-t border-mortar py-5">
   <p class="font-sans text-[0.9rem] text-ash">
     <time datetime={pubDate.toISOString()}>{formatShortDate(pubDate.toISOString())}</time>
   </p>
-  <h3 class="mt-1 text-h3">
+  <Heading class="mt-1 text-h3">
     <a href={`/blog/${id}`} class="no-underline hover:underline">
       {title}
     </a>
-  </h3>
+  </Heading>
   <p class="mt-2 max-w-[60ch] leading-relaxed">{description}</p>
 </article>
