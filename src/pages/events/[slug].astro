@@ -1,0 +1,65 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/ui/PageHeader.astro';
+import Button from '@/components/ui/Button.astro';
+import { formatEventDate, formatEventTime } from '@/lib/events';
+
+export async function getStaticPaths() {
+  const events = await getCollection('events');
+  return events.map((e) => ({ params: { slug: e.data.slug }, props: { event: e.data } }));
+}
+const { event } = Astro.props;
+const paragraphs = event.body.split(/\n\n+/);
+const tkRe = /\[\[TK:[^\]]*\]\]/g;
+/** Render [[TK]] markers inside event text as visible chips. */
+function chips(text: string) {
+  const parts: { tk: boolean; text: string }[] = [];
+  let last = 0;
+  for (const m of text.matchAll(tkRe)) {
+    const i = m.index ?? 0;
+    if (i > last) parts.push({ tk: false, text: text.slice(last, i) });
+    parts.push({ tk: true, text: m[0] });
+    last = i + m[0].length;
+  }
+  if (last < text.length) parts.push({ tk: false, text: text.slice(last) });
+  return parts;
+}
+---
+
+<BaseLayout title={event.title} description={event.summary.replace(tkRe, '').trim() || event.title}>
+  <PageHeader title={event.title}>
+    <p class="mt-6 font-sans text-[1.125rem] text-stone/90">
+      <time datetime={event.start}>
+        {formatEventDate(event.start)}, {formatEventTime(event.start)}
+      </time>
+      {event.end && (
+        <span>
+          {' '}
+          to <time datetime={event.end}>{formatEventDate(event.end)}</time>
+        </span>
+      )}
+    </p>
+    <p class="mt-1 font-sans text-stone/80">
+      {chips(event.location).map((p) => (p.tk ? <span class="tk">{p.text}</span> : p.text))}
+      {event.membersOnly ? '. Members and their families.' : '. Open to all.'}
+    </p>
+  </PageHeader>
+  <div class="wrap py-12 md:py-16">
+    <div class="measure flex flex-col gap-5 text-[1.125rem] leading-relaxed">
+      {paragraphs.map((para) => (
+        <p>{chips(para).map((p) => (p.tk ? <span class="tk">{p.text}</span> : p.text))}</p>
+      ))}
+    </div>
+    <div class="mt-10 flex flex-wrap gap-4">
+      <Button href="/events" variant="secondary">
+        All events
+      </Button>
+      {!event.membersOnly && (
+        <Button href="/contact" variant="quiet">
+          Ask a question about this event
+        </Button>
+      )}
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,23 @@
+---
+/**
+ * A fact that has not been supplied. With `sample`, renders fake stand-in copy
+ * (dotted brass underline, tooltip naming the real fact needed, data-tk for the
+ * audit). Without it, renders a visible [[TK: ...]] chip. Every use is listed
+ * in CONTENT-TODO.md.
+ */
+interface Props {
+  text: string;
+  sample?: string;
+}
+const { text, sample } = Astro.props;
+---
+
+{sample ? (
+  <span class="sample" data-tk={text} title={`Sample copy. Needed: ${text}`}>
+    {sample}
+  </span>
+) : (
+  <span class="tk" data-tk={text}>
+    [[TK: {text}]]
+  </span>
+)}

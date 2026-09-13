@@ -1,0 +1,23 @@
+---
+import { formatShortDate } from '@/lib/events';
+
+interface Props {
+  id: string;
+  title: string;
+  description: string;
+  pubDate: Date;
+}
+const { id, title, description, pubDate } = Astro.props;
+---
+
+<article class="border-t border-mortar py-5">
+  <p class="font-sans text-[0.9rem] text-ash">
+    <time datetime={pubDate.toISOString()}>{formatShortDate(pubDate.toISOString())}</time>
+  </p>
+  <h3 class="mt-1 text-h3">
+    <a href={`/blog/${id}`} class="no-underline hover:underline">
+      {title}
+    </a>
+  </h3>
+  <p class="mt-2 max-w-[60ch] leading-relaxed">{description}</p>
+</article>

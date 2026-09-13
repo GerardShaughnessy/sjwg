@@ -1,0 +1,39 @@
+---
+/**
+ * Type-only wordmark. The ONLY place the Guild's name is set as a mark.
+ * When a vector logo exists, replace the inner markup here and nothing else moves.
+ */
+interface Props {
+  size?: 'sm' | 'md' | 'lg';
+  tone?: 'dark' | 'light';
+  href?: string;
+  withParish?: boolean;
+}
+const { size = 'md', tone = 'dark', href, withParish = false } = Astro.props;
+const sizes = {
+  sm: 'text-[1.05rem] leading-[1.05]',
+  md: 'text-[1.3rem] leading-[1.05]',
+  lg: 'text-[1.9rem] leading-[1.02]',
+};
+const color = tone === 'dark' ? 'text-charcoal' : 'text-stone';
+const Tag = href ? 'a' : 'div';
+---
+
+<Tag
+  href={href}
+  class:list={['group inline-flex items-stretch gap-3 no-underline', color]}
+  aria-label={href ? 'St. Joseph the Worker Guild, home' : undefined}
+>
+  <span class="w-[3px] shrink-0 bg-brass" aria-hidden="true"></span>
+  <span class="flex flex-col justify-center">
+    <span class:list={['font-serif', sizes[size]]}>
+      <span class="block whitespace-nowrap">St. Joseph</span>
+      <span class="block whitespace-nowrap">the Worker Guild</span>
+    </span>
+    {withParish && (
+      <span class="mt-1.5 block font-sans text-[0.8rem] leading-snug text-current/75">
+        Saint Mary of Victories, St. Louis
+      </span>
+    )}
+  </span>
+</Tag>

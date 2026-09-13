@@ -1,0 +1,52 @@
+---
+/**
+ * The emotional center of the page. Written straight, from the Guild's own
+ * Case for Support, cut for length. No detail here is invented.
+ */
+import Section from '@/components/ui/Section.astro';
+import Picture from '@/components/ui/Picture.astro';
+---
+
+<Section tone="stone" labelledby="story-title">
+  <div class="grid gap-10 lg:grid-cols-[2fr_3fr] lg:gap-16">
+    <div class="lg:sticky lg:top-8 lg:self-start">
+      <Picture slot="foundingStory" sizes="(min-width: 64rem) 35vw, 100vw" aspect="4 / 5" />
+      <blockquote class="mt-6 max-w-[40ch] font-serif italic leading-relaxed text-ash">
+        <p>
+          “All these are skilled with their hands, each one an expert at his own work. Without them
+          no city could be lived in. Yet they maintain the fabric of the world.”
+        </p>
+        <footer class="mt-2 font-sans text-[0.9rem] not-italic">Sirach 38:31, 34</footer>
+      </blockquote>
+    </div>
+
+    <div class="measure flex flex-col gap-5 font-serif text-[1.125rem] leading-[1.7] md:text-[1.2rem]">
+      <h2 id="story-title" class="text-h2 font-sans">
+        One man, one van
+      </h2>
+      <p>
+        It began with one man, one plumbing business, and the Lord as his only companion. With
+        little more than a budget for small-print classified ads, he spent years alone in his van,
+        working in the musty basements of nearly invisible people. There he met the working poor,
+        not as customers, but as children of God sitting across from him in their own homes. When it
+        came time to settle the bill, he often saw anxiety and embarrassment in their faces. They
+        simply could not afford much. So he did what he could: a discount here, a free service
+        there. Not because it made business sense, but because it was right.
+      </p>
+      <p>
+        There was one client he never forgot. An elderly woman in a wheelchair, living alone on a
+        fixed income in a small, weathered house on the backroads of Missouri. As he replaced her
+        toilet, she spoke of her loneliness. No family nearby, no friends to call, no one to turn
+        to. When the work was done, she asked him to come back. She could not afford other
+        companies. She had no one else to ask. The question stayed with him. If not him, then who?
+      </p>
+      <p>
+        Then a friend from church, newly established in his own blue-collar business, began working
+        alongside him. Then another Catholic tradesman joined. Then another. They prayed before and
+        after each job. They traded labor, mentored one another, and showed up when a brother or his
+        family was in need. What began as one man's quiet attempt to serve became a brotherhood
+        bound by faith, work, and a shared calling to serve.
+      </p>
+    </div>
+  </div>
+</Section>

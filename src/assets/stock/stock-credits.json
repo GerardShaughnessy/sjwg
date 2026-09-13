@@ -1,0 +1,58 @@
+[
+  {
+    "file": "stock/stock-pixabay-840835-pipe-wrenches.jpg",
+    "provider": "pixabay",
+    "id": "840835",
+    "query": "pipe wrench hands work",
+    "alt": "plumbing, pipe, wrenches, plumber, repair, maintenance, fix, renovation, spanner, job, repairman, handyman, tools, diy, home repairs, leak, leaking",
+    "photographer": "stevepb",
+    "photographer_url": "https://pixabay.com/users/stevepb-282134/",
+    "source_page": "https://pixabay.com/photos/plumbing-pipe-wrenches-plumber-840835/",
+    "license": "Pixabay Content License \u2014 free for commercial use, no attribution required.",
+    "width": 5472,
+    "height": 3648,
+    "bytes": 294745
+  },
+  {
+    "file": "stock/stock-pixabay-3273340-electrician-wiring.jpg",
+    "provider": "pixabay",
+    "id": "3273340",
+    "query": "electrician wiring panel hands",
+    "alt": "electrician, wiring, mounting, tool, tools, manual, repair, work, building, wire, screwdriver",
+    "photographer": "Sid74",
+    "photographer_url": "https://pixabay.com/users/Sid74-4893366/",
+    "source_page": "https://pixabay.com/photos/electrician-wiring-mounting-tool-3273340/",
+    "license": "Pixabay Content License \u2014 free for commercial use, no attribution required.",
+    "width": 6000,
+    "height": 4000,
+    "bytes": 412130
+  },
+  {
+    "file": "stock/stock-pixabay-2385634-carpenter-plane.jpg",
+    "provider": "pixabay",
+    "id": "2385634",
+    "query": "carpenter workshop hands wood",
+    "alt": "wood working, plane, carpentry, wood, carpenter, work, equipment, tool, plank, craft, woodwork, planing, craftsman, handmade, woodworking, blade, shaving, brown work, brown wood, brown plane, brown tools, brown airplane",
+    "photographer": "Graham-H",
+    "photographer_url": "https://pixabay.com/users/Graham-H-5475750/",
+    "source_page": "https://pixabay.com/photos/wood-working-plane-carpentry-wood-2385634/",
+    "license": "Pixabay Content License \u2014 free for commercial use, no attribution required.",
+    "width": 3872,
+    "height": 2592,
+    "bytes": 439742
+  },
+  {
+    "file": "stock/stock-pixabay-2598802-man-kneeling-chapel.jpg",
+    "provider": "pixabay",
+    "id": "2598802",
+    "query": "man praying church pew",
+    "alt": "people, man, alone, praying, kneel, down, wooden, bench, church, chapel, religion, faith",
+    "photographer": "StockSnap",
+    "photographer_url": "https://pixabay.com/users/StockSnap-894430/",
+    "source_page": "https://pixabay.com/photos/people-man-alone-praying-kneel-2598802/",
+    "license": "Pixabay Content License \u2014 free for commercial use, no attribution required.",
+    "width": 4790,
+    "height": 3198,
+    "bytes": 227490
+  }
+]

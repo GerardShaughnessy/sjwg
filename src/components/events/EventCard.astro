@@ -1,0 +1,39 @@
+---
+import type { GuildEvent } from '@/lib/types';
+import { formatEventDate, formatEventTime } from '@/lib/events';
+
+interface Props {
+  event: GuildEvent;
+  compact?: boolean;
+}
+const { event, compact = false } = Astro.props;
+const KIND_LABEL: Record<GuildEvent['kind'], string> = {
+  mass: 'Mass',
+  meeting: 'Meeting',
+  retreat: 'Retreat',
+  procession: 'Procession',
+  workday: 'Work day',
+  party: 'Gathering',
+  other: 'Event',
+};
+---
+
+<article class="grid gap-2 border-t border-mortar py-5 sm:grid-cols-[9rem_1fr] sm:gap-6">
+  <p class="font-sans text-[0.95rem] leading-snug text-ash">
+    <time datetime={event.start}>{formatEventDate(event.start)}</time>
+    <br />
+    {formatEventTime(event.start)}
+  </p>
+  <div class="min-w-0">
+    <h3 class="text-h3">
+      <a href={`/events/${event.slug}`} class="no-underline hover:underline">
+        {event.title}
+      </a>
+    </h3>
+    <p class="mt-1 font-sans text-[0.95rem] text-ash">
+      {KIND_LABEL[event.kind]}
+      {event.membersOnly ? ', members and their families' : ', open to all'}. {event.location}
+    </p>
+    {!compact && <p class="mt-2 max-w-[60ch] leading-relaxed">{event.summary}</p>}
+  </div>
+</article>

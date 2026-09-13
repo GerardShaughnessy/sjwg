@@ -1,0 +1,27 @@
+---
+/**
+ * Vertical rhythm for page sections. Background bands do the separating;
+ * there are no cards or shadows.
+ */
+interface Props {
+  tone?: 'stone' | 'paper' | 'charcoal' | 'brick';
+  id?: string;
+  class?: string;
+  labelledby?: string;
+  pad?: 'normal' | 'tight';
+}
+const { tone = 'stone', id, class: className = '', labelledby, pad = 'normal' } = Astro.props;
+const tones = {
+  stone: 'bg-stone text-charcoal',
+  paper: 'bg-paper text-charcoal',
+  charcoal: 'bg-charcoal text-stone',
+  brick: 'bg-brick text-paper',
+};
+const pads = { normal: 'py-16 md:py-24', tight: 'py-10 md:py-14' };
+---
+
+<section id={id} class:list={[tones[tone], pads[pad], className]} aria-labelledby={labelledby}>
+  <div class="wrap">
+    <slot />
+  </div>
+</section>

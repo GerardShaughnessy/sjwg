@@ -1,0 +1,34 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/ui/PageHeader.astro';
+import Button from '@/components/ui/Button.astro';
+import { formatEventDate } from '@/lib/events';
+
+interface Props {
+  title: string;
+  description: string;
+  pubDate: Date;
+  author: string;
+}
+const { title, description, pubDate, author } = Astro.props;
+const authorIsTk = author.startsWith('[[TK');
+---
+
+<BaseLayout title={title} description={description}>
+  <PageHeader title={title}>
+    <p class="mt-6 font-sans text-stone/85">
+      <time datetime={pubDate.toISOString()}>{formatEventDate(pubDate.toISOString())}</time>. By{' '}
+      {authorIsTk ? <span class="tk">{author}</span> : author}
+    </p>
+  </PageHeader>
+  <article class="wrap py-12 md:py-16">
+    <div class="prose prose-lg max-w-[64ch] prose-headings:font-serif prose-headings:font-normal prose-p:font-serif prose-p:leading-[1.7] prose-a:decoration-brass prose-a:decoration-2 prose-a:underline-offset-4 prose-blockquote:border-brass prose-blockquote:font-serif">
+      <slot />
+    </div>
+    <div class="mt-10">
+      <Button href="/blog" variant="secondary">
+        All posts
+      </Button>
+    </div>
+  </article>
+</BaseLayout>

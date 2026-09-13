@@ -1,0 +1,156 @@
+[
+  {
+    "id": "m-01",
+    "name": "John Sampleton",
+    "trade": "Plumbing",
+    "areas": ["St. Louis city", "South County"],
+    "yearsInTrade": 18,
+    "bio": "Service plumbing, water heaters, and the jobs nobody else wants to crawl under a house for.",
+    "availability": "available",
+    "featured": true,
+    "photo": null
+  },
+  {
+    "id": "m-02",
+    "name": "Pat Exampleworth",
+    "trade": "Electrical",
+    "areas": ["St. Louis city", "North County"],
+    "yearsInTrade": 11,
+    "bio": "Panels, rewires, and troubleshooting old knob-and-tube. I will tell you straight if it is safe.",
+    "availability": "limited",
+    "featured": true,
+    "photo": null
+  },
+  {
+    "id": "m-03",
+    "name": "Sam Placeholder",
+    "trade": "Carpentry",
+    "areas": ["South County", "Jefferson County"],
+    "yearsInTrade": 22,
+    "bio": "Framing, decks, porches, and repairs to houses older than my grandfather.",
+    "availability": "available",
+    "featured": true,
+    "photo": null
+  },
+  {
+    "id": "m-04",
+    "name": "Dan Mockwell",
+    "trade": "HVAC",
+    "areas": ["West County", "St. Charles County"],
+    "yearsInTrade": 9,
+    "bio": "Furnaces and air conditioning. If you have no heat in January, call before you call anyone else.",
+    "availability": "available",
+    "featured": true,
+    "photo": null
+  },
+  {
+    "id": "m-05",
+    "name": "Ray Fixture",
+    "trade": "Roofing",
+    "areas": ["St. Louis city", "South County", "Jefferson County"],
+    "yearsInTrade": 15,
+    "bio": "Shingle and flat roofs, storm tarping, gutters. I show up when it is raining.",
+    "availability": "limited",
+    "featured": true,
+    "photo": null
+  },
+  {
+    "id": "m-06",
+    "name": "Ed Stubbs-Lorem",
+    "trade": "General repair",
+    "areas": ["St. Louis city"],
+    "yearsInTrade": 30,
+    "bio": "Doors, windows, drywall, small jobs. Thirty years of fixing what the last guy left.",
+    "availability": "available",
+    "featured": false,
+    "photo": null
+  },
+  {
+    "id": "m-07",
+    "name": "Bill Ipsum",
+    "trade": "Masonry",
+    "areas": ["St. Louis city", "North County"],
+    "yearsInTrade": 25,
+    "bio": "Tuckpointing, brick repair, chimneys. This city is built of brick and most of it needs me eventually.",
+    "availability": "available",
+    "featured": false,
+    "photo": null
+  },
+  {
+    "id": "m-08",
+    "name": "Tom Testerman",
+    "trade": "Painting",
+    "areas": ["West County", "South County"],
+    "yearsInTrade": 7,
+    "bio": "Interior and exterior painting. Clean lines, clean job site, no surprises on the invoice.",
+    "availability": "unavailable",
+    "featured": false,
+    "photo": null
+  },
+  {
+    "id": "m-09",
+    "name": "Mike Dummyfield",
+    "trade": "Plumbing",
+    "areas": ["North County", "St. Charles County"],
+    "yearsInTrade": 6,
+    "bio": "Drain cleaning, sewer lines, and bathroom remodels. Learned the trade from a Guild brother.",
+    "availability": "available",
+    "featured": false,
+    "photo": null
+  },
+  {
+    "id": "m-10",
+    "name": "Joe Specimen",
+    "trade": "Electrical",
+    "areas": ["South County", "Jefferson County"],
+    "yearsInTrade": 14,
+    "bio": "Residential service work and generator hookups. Licensed, insured, and I answer the phone.",
+    "availability": "limited",
+    "featured": false,
+    "photo": null
+  },
+  {
+    "id": "m-11",
+    "name": "Frank Mockingham",
+    "trade": "Carpentry",
+    "areas": ["St. Louis city", "Metro East"],
+    "yearsInTrade": 20,
+    "bio": "Finish carpentry, cabinets, and custom woodwork. Slow, careful, and worth the wait.",
+    "availability": "available",
+    "featured": false,
+    "photo": null
+  },
+  {
+    "id": "m-12",
+    "name": "Steve Placekeeper",
+    "trade": "HVAC",
+    "areas": ["St. Louis city", "South County"],
+    "yearsInTrade": 12,
+    "bio": "Heating, cooling, and ductwork. I will not sell you a new system you do not need.",
+    "availability": "available",
+    "featured": false,
+    "photo": null
+  },
+  {
+    "id": "m-13",
+    "name": "Pete Boilerplate",
+    "trade": "General repair",
+    "areas": ["West County", "St. Charles County"],
+    "yearsInTrade": 4,
+    "bio": "Handyman work of all kinds. Newest member of the Guild, and grateful for it.",
+    "availability": "available",
+    "featured": false,
+    "photo": null
+  },
+  {
+    "id": "m-14",
+    "name": "Al Stand-In",
+    "trade": "Roofing",
+    "areas": ["North County", "Metro East"],
+    "yearsInTrade": 19,
+    "bio": "Roof replacement and repair, siding, and soffit. Storm damage is most of what I do.",
+    "availability": "limited",
+    "featured": false,
+    "photo": null
+  }
+]

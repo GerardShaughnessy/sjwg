@@ -1,0 +1,26 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/ui/PageHeader.astro';
+import LoginForm from '@/components/portal/LoginForm';
+---
+
+<BaseLayout
+  title="Log in"
+  description="Member and customer log in for the St. Joseph the Worker Guild portal."
+  noindex
+>
+  <PageHeader
+    title="Log in"
+    lede="For Guild members, and for anyone who has sent a request and wants to check on it."
+  />
+  <div class="wrap py-12 md:py-16">
+    <LoginForm client:only="react">
+      <div slot="fallback" aria-busy="true">
+        <p class="font-sans text-ash">Loading.</p>
+        <noscript>
+          <p>Logging in needs JavaScript.</p>
+        </noscript>
+      </div>
+    </LoginForm>
+  </div>
+</BaseLayout>

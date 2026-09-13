@@ -1,0 +1,36 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/ui/PageHeader.astro';
+import Banner from '@/components/ui/Banner.astro';
+import DirectoryExplorer from '@/components/members/DirectoryExplorer';
+import { getTrades, getAreas } from '@/lib/trades';
+
+const members = (await getCollection('members')).map((m) => m.data);
+const trades = getTrades(members);
+const areas = getAreas(members);
+---
+
+<BaseLayout
+  title="Member directory"
+  description="Catholic tradesmen of the St. Joseph the Worker Guild, by trade and area served. Every member runs his own shop."
+>
+  <PageHeader
+    title="Member directory"
+    lede="Every man listed here is a Guild member with his own shop. If one of them handed you a card, this is the rest of the crew. Hire them at their ordinary rates, or ask the Guild for help if you are not sure who to call."
+  />
+  <div class="wrap py-10 md:py-14">
+    <Banner class="mb-8">
+      <strong>Sample directory.</strong> These names are placeholders. Real members will be listed
+      once each has agreed to what appears publicly.
+    </Banner>
+    <DirectoryExplorer client:load members={members} trades={trades} areas={areas} />
+    <p class="mt-10 max-w-[60ch] font-sans text-[0.95rem] leading-relaxed text-ash">
+      Not sure which trade you need?{' '}
+      <a href="/request?trade=not-sure" class="font-semibold text-charcoal">
+        Describe the problem
+      </a>{' '}
+      and the Guild will figure out who should call you.
+    </p>
+  </div>
+</BaseLayout>

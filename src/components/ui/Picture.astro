@@ -1,0 +1,53 @@
+---
+/**
+ * Every photo on the site goes through here. Reads the slot from images.ts,
+ * emits width/height/alt, lazy-loads unless `priority`, and renders a
+ * blocked-out region with the alt text visible when no file exists yet.
+ */
+import { Image } from 'astro:assets';
+import { images, type ImageKey } from '@/data/images';
+
+interface Props {
+  slot: ImageKey;
+  priority?: boolean;
+  sizes?: string;
+  widths?: number[];
+  class?: string;
+  aspect?: string;
+}
+const {
+  slot,
+  priority = false,
+  sizes = '(min-width: 64rem) 50vw, 100vw',
+  widths = [480, 800, 1280],
+  class: className = '',
+  aspect = '3 / 2',
+} = Astro.props;
+const img = images[slot];
+---
+
+{img.src ? (
+  <Image
+    src={img.src}
+    alt={img.alt}
+    widths={widths}
+    sizes={sizes}
+    loading={priority ? 'eager' : 'lazy'}
+    decoding={priority ? 'sync' : 'async'}
+    fetchpriority={priority ? 'high' : 'auto'}
+    class:list={['stock w-full object-cover', className]}
+    style={`aspect-ratio: ${aspect}`}
+  />
+) : (
+  <div
+    role="img"
+    aria-label={img.alt}
+    data-image-slot={slot}
+    class:list={['placeholder-region w-full', className]}
+    style={`aspect-ratio: ${aspect}`}
+  >
+    <p class="max-w-[28ch] px-4 text-center font-sans text-sm leading-snug" aria-hidden="true">
+      Photo pending: {img.alt}
+    </p>
+  </div>
+)}

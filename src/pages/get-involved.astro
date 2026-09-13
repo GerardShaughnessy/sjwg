@@ -1,0 +1,151 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/ui/PageHeader.astro';
+import Section from '@/components/ui/Section.astro';
+import Button from '@/components/ui/Button.astro';
+import Picture from '@/components/ui/Picture.astro';
+import Tk from '@/components/ui/Tk.astro';
+import InquiryForm from '@/components/forms/InquiryForm';
+import { TK } from '@/config/site';
+---
+
+<BaseLayout
+  title="Get involved"
+  description="Join the St. Joseph the Worker Guild as a tradesman, volunteer at a parish work day, partner with the Guild, or hire a member."
+>
+  <PageHeader
+    title="Get involved"
+    lede="For tradesmen who want brothers, for neighbors who want to help, and for organizations that want to work with the Guild."
+  />
+
+  <Section tone="stone" labelledby="join-title">
+    <div class="grid gap-10 lg:grid-cols-[1fr_1fr] lg:gap-16">
+      <div>
+        <h2 id="join-title" class="text-h2">
+          Join as a tradesman
+        </h2>
+        <div class="mt-5 flex max-w-[52ch] flex-col gap-4 leading-relaxed">
+          <p>
+            Membership is for self-employed and small-shop Catholic tradesmen. Plumbers,
+            electricians, carpenters, roofers, masons, painters, HVAC, and the trades between.
+          </p>
+          <p>What it involves:</p>
+          <ul class="flex flex-col gap-2">
+            <li class="border-l-2 border-brass pl-4">
+              Monthly tradesmen's Mass, and monthly formation meetings in Catholic business ethics.
+            </li>
+            <li class="border-l-2 border-brass pl-4">
+              At least two days of designated pro bono work a year.
+            </li>
+            <li class="border-l-2 border-brass pl-4">
+              A listing in the member directory once you agree to what appears publicly, and
+              referrals from the men who know your work.
+            </li>
+            <li class="border-l-2 border-brass pl-4">
+              Dues: <Tk {...TK.dues} />
+            </li>
+          </ul>
+          <p>
+            Not a tradesman yet but drawn to the work? The Guild runs come-and-see visits for men
+            and families discerning the trades. Say so in the note below.
+          </p>
+        </div>
+        <div class="mt-8">
+          <Picture slot="carpenter" sizes="(min-width: 64rem) 45vw, 100vw" aspect="3 / 2" />
+        </div>
+      </div>
+      <div class="border-t-4 border-brass bg-paper p-6 md:p-10">
+        <h3 class="text-h3">Ask about membership</h3>
+        <p class="mt-2 max-w-[48ch] font-sans text-[0.95rem] text-ash">
+          <Tk {...TK.whoReplies} />
+        </p>
+        <div class="mt-6">
+          <InquiryForm
+            client:visible
+            kind="membership"
+            submitLabel="Send"
+            phoneOrEmail
+            successTitle="Got it. A member will be in touch."
+            fields={[
+              { id: 'name', label: 'Your name', required: true, autoComplete: 'name' },
+              {
+                id: 'trade',
+                label: 'Your trade',
+                required: true,
+                hint: 'Or "discerning" if you are looking at the trades.',
+              },
+              {
+                id: 'business',
+                label: 'Shop or business name',
+                optional: true,
+                autoComplete: 'organization',
+              },
+              {
+                id: 'phone',
+                label: 'Phone',
+                type: 'tel',
+                autoComplete: 'tel',
+                hint: 'Phone or email, whichever you check.',
+              },
+              { id: 'email', label: 'Email', type: 'email', autoComplete: 'email' },
+              { id: 'parish', label: 'Your parish', optional: true },
+              {
+                id: 'note',
+                label: 'Anything you want us to know',
+                type: 'textarea',
+                optional: true,
+              },
+            ]}
+          >
+            <p slot="successBody">
+              <Tk {...TK.whoReplies} />
+            </p>
+          </InquiryForm>
+        </div>
+      </div>
+    </div>
+  </Section>
+
+  <Section tone="paper" labelledby="other-title">
+    <h2 id="other-title" class="text-h2">
+      Other ways in
+    </h2>
+    <div class="mt-8 grid gap-8 border-t border-mortar pt-8 md:grid-cols-3">
+      <div>
+        <h3 class="text-h3">Volunteer</h3>
+        <p class="mt-3 leading-relaxed">
+          Parish work days need hands that are not tradesmen: hauling, cleanup, food, and setup for
+          the procession and the Christmas party. <Tk {...TK.volunteerRoles} />
+        </p>
+        <div class="mt-4">
+          <Button href="/contact" variant="quiet">
+            Ask about volunteering
+          </Button>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-h3">Partner</h3>
+        <p class="mt-3 leading-relaxed">
+          Parishes, schools, and shrines that need work. Suppliers who can discount materials.
+          Sponsors for programs and events.
+        </p>
+        <div class="mt-4">
+          <Button href="/contact#partner" variant="quiet">
+            Partner with the Guild
+          </Button>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-h3">Hire a member</h3>
+        <p class="mt-3 leading-relaxed">
+          The simplest way to support a Guild tradesman is to hire him at his ordinary rate.
+        </p>
+        <div class="mt-4">
+          <Button href="/directory" variant="quiet">
+            Browse the directory
+          </Button>
+        </div>
+      </div>
+    </div>
+  </Section>
+</BaseLayout>

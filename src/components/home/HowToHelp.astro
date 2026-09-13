@@ -1,0 +1,57 @@
+---
+/**
+ * Three distinct paths with three distinct treatments. Give is a brick block,
+ * Join is an outlined panel, Hire is a plain list link into the directory.
+ */
+import Section from '@/components/ui/Section.astro';
+import Button from '@/components/ui/Button.astro';
+---
+
+<Section tone="charcoal" labelledby="help-title">
+  <h2 id="help-title" class="text-h2">
+    How to help
+  </h2>
+  <div class="mt-8 grid gap-6 lg:grid-cols-[1.2fr_1fr_1fr] lg:gap-8">
+    <div class="flex flex-col justify-between gap-8 bg-brick p-7 md:p-9">
+      <div>
+        <h3 class="text-h3 md:text-[1.75rem]">Give</h3>
+        <p class="mt-3 max-w-[38ch] font-sans leading-relaxed text-stone/90">
+          Gifts fund parish repair days, urgent medical costs for underinsured tradesmen, emergency
+          home maintenance for clients in need, and training for men entering the trades.
+        </p>
+      </div>
+      <Button href="/donate" variant="inverse">
+        See ways to give
+      </Button>
+    </div>
+
+    <div class="flex flex-col justify-between gap-8 border-2 border-stone/40 p-7 md:p-9">
+      <div>
+        <h3 class="text-h3 md:text-[1.75rem]">Join</h3>
+        <p class="mt-3 max-w-[38ch] font-sans leading-relaxed text-stone/85">
+          For self-employed and small-shop Catholic tradesmen. Monthly Mass and formation, a
+          referral network, and men who will stand behind you.
+        </p>
+      </div>
+      <Button href="/get-involved" variant="inverse">
+        Ask about membership
+      </Button>
+    </div>
+
+    <div class="flex flex-col justify-between gap-8 border-t-2 border-brass pt-6 lg:border-t-0 lg:border-l-2 lg:pt-0 lg:pl-8">
+      <div>
+        <h3 class="text-h3 md:text-[1.75rem]">Hire a Guild tradesman</h3>
+        <p class="mt-3 max-w-[38ch] font-sans leading-relaxed text-stone/85">
+          Every member is a working tradesman with his own shop. Find one by trade and area, and
+          hire him at his ordinary rate. That work keeps the Guild going.
+        </p>
+      </div>
+      <a
+        href="/directory"
+        class="font-sans font-semibold underline decoration-brass decoration-2 underline-offset-4 hover:decoration-stone"
+      >
+        Browse the directory
+      </a>
+    </div>
+  </div>
+</Section>

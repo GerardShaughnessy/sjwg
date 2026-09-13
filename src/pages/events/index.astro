@@ -1,0 +1,53 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/ui/PageHeader.astro';
+import EventCard from '@/components/events/EventCard.astro';
+import { splitEvents } from '@/lib/events';
+
+const all = (await getCollection('events')).map((e) => e.data);
+const { upcoming, past } = splitEvents(all);
+---
+
+<BaseLayout
+  title="Events"
+  description="Monthly tradesmen's Mass, formation meetings, the annual retreat, the St. Joseph the Worker procession, parish work days, and the Guild Christmas party."
+>
+  <PageHeader
+    title="Events"
+    lede="Mass and adoration every month, formation meetings for members, a work day at the parish, a retreat each winter, and a procession every May. Most are open to anyone."
+  />
+  <div class="wrap grid gap-14 py-10 md:py-14 lg:grid-cols-[2fr_1fr] lg:gap-20">
+    <section aria-labelledby="upcoming-title">
+      <h2 id="upcoming-title" class="text-h2">
+        Coming up
+      </h2>
+      <div class="mt-6 border-b border-mortar">
+        {upcoming.length ? (
+          upcoming.map((e) => <EventCard event={e} />)
+        ) : (
+          <p class="py-5">Nothing scheduled yet.</p>
+        )}
+      </div>
+    </section>
+    <aside aria-labelledby="past-title">
+      <h2 id="past-title" class="text-h3">
+        Past events
+      </h2>
+      <div class="mt-4 border-b border-mortar">
+        {past.length ? (
+          past.map((e) => <EventCard event={e} compact />)
+        ) : (
+          <p class="py-5 text-ash">None listed yet.</p>
+        )}
+      </div>
+      <p class="mt-6 font-sans text-[0.95rem] leading-relaxed text-ash">
+        Members get reminders by email or text from the{' '}
+        <a href="/portal" class="text-charcoal">
+          member portal
+        </a>
+        .
+      </p>
+    </aside>
+  </div>
+</BaseLayout>

@@ -1,0 +1,40 @@
+---
+/**
+ * Four aspects, not a sequence: a ledger with hairline rules, no numbers, no icons.
+ * Spiritual formation is first because the Guild's own material lists it first.
+ */
+import Section from '@/components/ui/Section.astro';
+
+const pillars = [
+  {
+    term: 'Spiritual formation',
+    text: 'Monthly tradesmen’s Mass, adoration, and spiritual direction, an annual retreat, and the St. Joseph the Worker procession each May.',
+  },
+  {
+    term: 'Mutual assistance',
+    text: 'When a brother or his family is in need, the Guild shows up: labor traded, funds raised within the community, and men at the door.',
+  },
+  {
+    term: 'Networking',
+    text: 'A member directory for referrals, a public directory of vetted Catholic tradesmen, and monthly formation meetings in Catholic business ethics.',
+  },
+  {
+    term: 'Practical resources',
+    text: 'A shared workshop and tool library, discounted materials for work that serves disadvantaged clients, and healthcare options and relief between jobs.',
+  },
+];
+---
+
+<Section tone="paper" labelledby="pillars-title">
+  <h2 id="pillars-title" class="text-h2">
+    How the Guild carries a man
+  </h2>
+  <dl class="mt-8 border-t border-mortar">
+    {pillars.map((p) => (
+      <div class="grid gap-2 border-b border-mortar py-6 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] md:gap-10">
+        <dt class="font-serif text-h3">{p.term}</dt>
+        <dd class="max-w-[64ch] leading-relaxed">{p.text}</dd>
+      </div>
+    ))}
+  </dl>
+</Section>

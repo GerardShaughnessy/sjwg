@@ -1,0 +1,121 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/ui/PageHeader.astro';
+import Tk from '@/components/ui/Tk.astro';
+import InquiryForm from '@/components/forms/InquiryForm';
+import { PARISH_NAME, PARISH_CITY, TK } from '@/config/site';
+---
+
+<BaseLayout
+  title="Contact"
+  description="Reach the St. Joseph the Worker Guild with a question, or talk to us about partnering with the Guild as a parish, school, supplier, or sponsor."
+>
+  <PageHeader
+    title="Contact the Guild"
+    lede="Questions, event details, press, or something that does not fit a form. If you need a repair, the request form is faster."
+  />
+  <div class="wrap grid gap-16 py-12 md:py-16 lg:grid-cols-[1fr_1fr] lg:gap-20">
+    <section aria-labelledby="general-title">
+      <h2 id="general-title" class="text-h2">
+        Send a message
+      </h2>
+      <p class="mt-3 max-w-[52ch] leading-relaxed">
+        Need something fixed?{' '}
+        <a href="/request" class="font-semibold">
+          Request help from the Guild
+        </a>{' '}
+        instead. It reaches a tradesman directly.
+      </p>
+      <div class="mt-8">
+        <InquiryForm
+          client:visible
+          kind="contact"
+          submitLabel="Send message"
+          successTitle="Your message is in."
+          fields={[
+            { id: 'name', label: 'Your name', required: true, autoComplete: 'name' },
+            { id: 'email', label: 'Email', type: 'email', required: true, autoComplete: 'email' },
+            { id: 'phone', label: 'Phone', type: 'tel', optional: true, autoComplete: 'tel' },
+            { id: 'message', label: 'What can we help with?', type: 'textarea', required: true },
+          ]}
+        >
+          <p slot="successBody">
+            <Tk {...TK.whoReplies} />
+          </p>
+        </InquiryForm>
+      </div>
+      <dl class="mt-12 grid grid-cols-[minmax(6rem,auto)_1fr] gap-x-6 gap-y-3 border-t border-mortar pt-6 font-sans">
+        <dt class="text-ash">Phone</dt>
+        <dd>
+          <Tk {...TK.phone} />
+        </dd>
+        <dt class="text-ash">Email</dt>
+        <dd>
+          <Tk {...TK.email} />
+        </dd>
+        <dt class="text-ash">Parish</dt>
+        <dd>
+          {PARISH_NAME}, <Tk {...TK.streetAddress} />, {PARISH_CITY} <Tk {...TK.zip} />
+        </dd>
+      </dl>
+    </section>
+
+    <section
+      id="partner"
+      aria-labelledby="partner-title"
+      class="border-t-4 border-brass bg-paper p-6 md:p-10 lg:border-t-0 lg:border-l-4"
+    >
+      <h2 id="partner-title" class="text-h2">
+        Partner with the Guild
+      </h2>
+      <div class="mt-4 flex max-w-[52ch] flex-col gap-4 leading-relaxed">
+        <p>
+          The Guild works alongside parishes, schools, and shrines that need repairs, suppliers who
+          can discount materials for work that serves families in need, and businesses and
+          foundations that want to sponsor a program or an event.
+        </p>
+        <p>
+          Tell us who you are and what you have in mind. <Tk {...TK.partnershipContact} />
+        </p>
+      </div>
+      <div class="mt-8">
+        <InquiryForm
+          client:visible
+          kind="partner"
+          submitLabel="Start the conversation"
+          successTitle="Thank you. We will be in touch."
+          fields={[
+            {
+              id: 'organization',
+              label: 'Organization',
+              required: true,
+              autoComplete: 'organization',
+            },
+            { id: 'name', label: 'Your name', required: true, autoComplete: 'name' },
+            { id: 'role', label: 'Your role', optional: true, autoComplete: 'organization-title' },
+            { id: 'email', label: 'Email', type: 'email', required: true, autoComplete: 'email' },
+            { id: 'phone', label: 'Phone', type: 'tel', optional: true, autoComplete: 'tel' },
+            {
+              id: 'type',
+              label: 'What kind of partnership',
+              type: 'select',
+              required: true,
+              options: [
+                'Parish, school, or shrine that needs work',
+                'Supplier or materials discount',
+                'Sponsor a program or event',
+                'Another organization',
+                'Something else',
+              ],
+            },
+            { id: 'message', label: 'What do you have in mind?', type: 'textarea', required: true },
+          ]}
+        >
+          <p slot="successBody">
+            <Tk {...TK.partnershipContact} />
+          </p>
+        </InquiryForm>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

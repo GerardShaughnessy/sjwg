@@ -1,0 +1,19 @@
+---
+/** Flat notice strip. Used for "sample data" and demo hints. */
+interface Props {
+  tone?: 'brass' | 'charcoal';
+  class?: string;
+}
+const { tone = 'brass', class: className = '' } = Astro.props;
+const tones = {
+  brass: 'bg-brass/25 text-charcoal border-brass',
+  charcoal: 'bg-charcoal text-stone border-brass',
+};
+---
+
+<div
+  class:list={['border-l-4 px-4 py-3 text-[0.95rem] leading-snug', tones[tone], className]}
+  role="note"
+>
+  <slot />
+</div>

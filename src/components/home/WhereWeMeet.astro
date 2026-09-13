@@ -1,0 +1,43 @@
+---
+import Section from '@/components/ui/Section.astro';
+import Picture from '@/components/ui/Picture.astro';
+import Tk from '@/components/ui/Tk.astro';
+import { PARISH_NAME, PARISH_CITY, TK } from '@/config/site';
+
+const mapsHref =
+  'https://www.google.com/maps/search/?api=1&query=' +
+  encodeURIComponent(`${PARISH_NAME} ${PARISH_CITY}`);
+---
+
+<Section tone="stone" labelledby="meet-title">
+  <div class="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-16">
+    <Picture slot="meetingPlace" sizes="(min-width: 64rem) 45vw, 100vw" aspect="4 / 3" />
+    <div>
+      <h2 id="meet-title" class="text-h2">
+        Where we meet
+      </h2>
+      <address class="mt-6 not-italic leading-relaxed">
+        <p class="font-serif text-[1.25rem]">{PARISH_NAME}</p>
+        <p class="mt-1">
+          <Tk {...TK.streetAddress} />
+        </p>
+        <p>
+          {PARISH_CITY} <Tk {...TK.zip} />
+        </p>
+      </address>
+      <p class="mt-6 max-w-[52ch] leading-relaxed">
+        <Tk {...TK.meetingSchedule} />
+      </p>
+      <p class="mt-6">
+        <a
+          href={mapsHref}
+          rel="noopener"
+          target="_blank"
+          class="font-sans font-semibold underline decoration-brass decoration-2 underline-offset-4 hover:decoration-charcoal"
+        >
+          Directions to the church (opens in a new tab)
+        </a>
+      </p>
+    </div>
+  </div>
+</Section>

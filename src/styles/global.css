@@ -1,0 +1,163 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+
+/*
+  Design tokens. Palette is taken verbatim from the Guild's donor decks
+  (brick #8C3A2E, brass #B08D57, charcoal #2B2624, off-white #EFEAE4) so the
+  site matches what donors have already seen. See README for contrast table.
+*/
+@theme {
+  --color-brick: #8c3a2e;
+  --color-kiln: #5f2419;
+  --color-brass: #b08d57;
+  --color-charcoal: #2b2624;
+  --color-ash: #6e6560;
+  --color-stone: #efeae4;
+  --color-mortar: #b9afa8;
+  --color-paper: #ffffff;
+
+  --font-serif: 'Libre Caslon Text', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Archivo Variable', 'Helvetica Neue', Arial, sans-serif;
+
+  --text-display: clamp(2.125rem, 0.9rem + 4.6vw, 4.25rem);
+  --text-display--line-height: 1.02;
+  --text-display--letter-spacing: -0.015em;
+  --text-h2: clamp(1.9rem, 1.2rem + 2vw, 2.75rem);
+  --text-h2--line-height: 1.1;
+  --text-h3: 1.375rem;
+  --text-h3--line-height: 1.25;
+
+  --breakpoint-xs: 22.5rem;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    background-color: var(--color-stone);
+    scroll-behavior: smooth;
+  }
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    color: var(--color-charcoal);
+    background-color: var(--color-stone);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  @media (min-width: 48rem) {
+    body {
+      font-size: 1.125rem;
+    }
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    line-height: 1.1;
+    text-wrap: balance;
+    margin: 0;
+  }
+  p {
+    margin: 0;
+  }
+  a {
+    color: inherit;
+    text-underline-offset: 0.18em;
+    text-decoration-thickness: 1px;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-brass);
+    outline-offset: 3px;
+  }
+  ::selection {
+    background: var(--color-brick);
+    color: var(--color-paper);
+  }
+  img,
+  video {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* Page gutter and measure. One wrapper, side padding never zeroed. */
+@utility wrap {
+  width: 100%;
+  max-width: 76rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+  @media (min-width: 48rem) {
+    padding-inline: 2.5rem;
+  }
+}
+
+/* All stock photography gets one treatment so it reads as a series. */
+@utility stock {
+  filter: saturate(0.62) contrast(1.04);
+}
+
+/* Visible placeholder for a fact that has not been supplied. */
+@utility tk {
+  /* Opaque so it passes contrast on stone, paper, and charcoal alike. */
+  background: #e9d9bd;
+  outline: 1px dashed var(--color-brass);
+  outline-offset: 1px;
+  padding-inline: 0.2em;
+  font-family: var(--font-sans);
+  font-size: 0.9em;
+  font-weight: 500;
+  color: var(--color-charcoal);
+}
+
+/* Fake stand-in copy for a fact not yet supplied. Traceable via data-tk. */
+@utility sample {
+  text-decoration: underline dotted;
+  text-decoration-color: var(--color-brass);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.2em;
+}
+
+/* Blocked-out image region for a photo that does not exist yet. */
+@utility placeholder-region {
+  position: relative;
+  display: grid;
+  place-items: center;
+  background-color: var(--color-mortar);
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 14px,
+    color-mix(in srgb, var(--color-charcoal) 8%, transparent) 14px 15px
+  );
+  color: var(--color-charcoal);
+  outline: 1px solid color-mix(in srgb, var(--color-charcoal) 25%, transparent);
+  outline-offset: -1px;
+}
+
+/* Long-form serif measure (founding story, blog). */
+@utility measure {
+  max-width: 64ch;
+}

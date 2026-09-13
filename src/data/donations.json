@@ -1,0 +1,122 @@
+[
+  {
+    "id": "d-01",
+    "date": "2026-03-04",
+    "donorName": "Sample Donor A",
+    "amount": 500,
+    "method": "check",
+    "fund": "general",
+    "tier": "Apprentice",
+    "recurring": false
+  },
+  {
+    "id": "d-02",
+    "date": "2026-03-19",
+    "donorName": "Sample Donor B",
+    "amount": 25,
+    "method": "card",
+    "fund": "general",
+    "tier": "Pre-Apprentice",
+    "recurring": true
+  },
+  {
+    "id": "d-03",
+    "date": "2026-04-02",
+    "donorName": "Sample Donor C",
+    "amount": 1000,
+    "method": "card",
+    "fund": "hardship",
+    "tier": "Journeyman",
+    "recurring": false
+  },
+  {
+    "id": "d-04",
+    "date": "2026-04-22",
+    "donorName": "Sample Donor B",
+    "amount": 25,
+    "method": "card",
+    "fund": "general",
+    "tier": "Pre-Apprentice",
+    "recurring": true
+  },
+  {
+    "id": "d-05",
+    "date": "2026-05-01",
+    "donorName": "Sample Parish Family",
+    "amount": 200,
+    "method": "cash",
+    "fund": "parish-repairs",
+    "tier": "",
+    "recurring": false
+  },
+  {
+    "id": "d-06",
+    "date": "2026-05-20",
+    "donorName": "Sample Donor B",
+    "amount": 25,
+    "method": "card",
+    "fund": "general",
+    "tier": "Pre-Apprentice",
+    "recurring": true
+  },
+  {
+    "id": "d-07",
+    "date": "2026-06-11",
+    "donorName": "Sample Donor D",
+    "amount": 5000,
+    "method": "check",
+    "fund": "hardship",
+    "tier": "Foreman",
+    "recurring": false
+  },
+  {
+    "id": "d-08",
+    "date": "2026-06-30",
+    "donorName": "Sample Donor E",
+    "amount": 150,
+    "method": "card",
+    "fund": "education",
+    "tier": "",
+    "recurring": false
+  },
+  {
+    "id": "d-09",
+    "date": "2026-07-15",
+    "donorName": "Sample Donor B",
+    "amount": 25,
+    "method": "card",
+    "fund": "general",
+    "tier": "Pre-Apprentice",
+    "recurring": true
+  },
+  {
+    "id": "d-10",
+    "date": "2026-08-03",
+    "donorName": "Sample Donor F",
+    "amount": 500,
+    "method": "check",
+    "fund": "parish-repairs",
+    "tier": "Apprentice",
+    "recurring": false
+  },
+  {
+    "id": "d-11",
+    "date": "2026-08-28",
+    "donorName": "Sample Donor G",
+    "amount": 1000,
+    "method": "card",
+    "fund": "general",
+    "tier": "Journeyman",
+    "recurring": false
+  },
+  {
+    "id": "d-12",
+    "date": "2026-09-09",
+    "donorName": "Sample Donor B",
+    "amount": 25,
+    "method": "card",
+    "fund": "general",
+    "tier": "Pre-Apprentice",
+    "recurring": true
+  }
+]

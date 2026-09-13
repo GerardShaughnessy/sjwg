@@ -1,0 +1,80 @@
+[
+  {
+    "id": "req-seed-1",
+    "ref": "SJWG-4K7P2M",
+    "createdAt": "2026-09-08T14:12:00-05:00",
+    "status": "open",
+    "trade": "Plumbing",
+    "tradeSlug": "plumbing",
+    "description": "Water heater leaking from the bottom. Turned off the supply. Two kids in the house and no hot water since Sunday.",
+    "urgency": "getting-worse",
+    "zip": "63118",
+    "neighborhood": "",
+    "contact": {
+      "name": "Sample Requester One",
+      "phone": "(314) 555-0101",
+      "email": "",
+      "bestTime": "Evenings after 6"
+    },
+    "owner": "seed"
+  },
+  {
+    "id": "req-seed-2",
+    "ref": "SJWG-9QX3RB",
+    "createdAt": "2026-09-10T09:40:00-05:00",
+    "status": "claimed",
+    "claimedBy": "m-02",
+    "trade": "Electrical",
+    "tradeSlug": "electrical",
+    "description": "Half the outlets in the kitchen stopped working. Breaker will not reset. Renting, landlord is not responding.",
+    "urgency": "can-wait",
+    "zip": "63107",
+    "neighborhood": "",
+    "contact": {
+      "name": "Sample Requester Two",
+      "phone": "",
+      "email": "requester.two@example.com",
+      "bestTime": "Mornings"
+    },
+    "owner": "seed"
+  },
+  {
+    "id": "req-seed-3",
+    "ref": "SJWG-2TW8HN",
+    "createdAt": "2026-09-11T17:05:00-05:00",
+    "status": "open",
+    "trade": "Not sure",
+    "tradeSlug": "not-sure",
+    "description": "Elderly mother's back porch steps are rotten and she almost fell. Not sure if this is a carpenter or a handyman job.",
+    "urgency": "getting-worse",
+    "zip": "63123",
+    "neighborhood": "",
+    "contact": {
+      "name": "Sample Requester Three",
+      "phone": "(314) 555-0103",
+      "email": "requester.three@example.com",
+      "bestTime": "Any time"
+    },
+    "owner": "seed"
+  },
+  {
+    "id": "req-seed-4",
+    "ref": "SJWG-7MZ5LC",
+    "createdAt": "2026-09-12T07:30:00-05:00",
+    "status": "referred",
+    "trade": "HVAC",
+    "tradeSlug": "hvac",
+    "description": "Furnace short-cycles and the house will not get above 60. Widow on a fixed income, referred by the parish office.",
+    "urgency": "no-heat-or-water",
+    "zip": "63111",
+    "neighborhood": "",
+    "contact": {
+      "name": "Sample Requester Four",
+      "phone": "(314) 555-0104",
+      "email": "",
+      "bestTime": "Afternoons"
+    },
+    "owner": "seed",
+    "notes": "Referred to Dan Mockwell. Parts on order."
+  }
+]

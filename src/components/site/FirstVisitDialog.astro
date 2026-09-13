@@ -1,0 +1,125 @@
+---
+/**
+ * First-visit notice. Native <dialog> opened non-modally once the page has
+ * painted, remembered in localStorage, never shown on the request-help route.
+ * Anchored to the bottom edge so the page stays usable behind it.
+ */
+import Tk from '@/components/ui/Tk.astro';
+import { TK } from '@/config/site';
+---
+
+<dialog
+  id="welcome"
+  class="welcome fixed z-50 m-0 max-h-none w-full max-w-none border-0 bg-charcoal p-0 text-stone shadow-none"
+  aria-labelledby="welcome-title"
+  aria-describedby="welcome-body"
+>
+  <div class="border-t-4 border-brass px-5 py-5 md:px-8 md:py-7">
+    <h2
+      id="welcome-title"
+      tabindex="-1"
+      class="text-[1.3rem] leading-tight outline-none md:text-[1.7rem]"
+    >
+      The Guild is a nonprofit.
+    </h2>
+    <p
+      id="welcome-body"
+      class="mt-2 max-w-[46ch] font-sans text-[0.95rem] leading-relaxed text-stone/85 md:mt-3 md:text-[1rem]"
+    >
+      We are Catholic tradesmen at Saint Mary of Victories in St. Louis. Members give their own time
+      and labor to families, parishes, and each other. <Tk {...TK.taxStatus} />
+    </p>
+    <div class="mt-4 flex flex-wrap items-center gap-x-6 gap-y-3 md:mt-6">
+      <a
+        href="/about"
+        class="inline-flex items-center border-2 border-stone px-4 py-2.5 font-sans font-semibold leading-none no-underline hover:bg-stone hover:text-charcoal md:px-5 md:py-3"
+        data-close
+      >
+        Read about the Guild
+      </a>
+      <button
+        type="button"
+        class="font-sans font-medium underline decoration-brass decoration-2 underline-offset-4"
+        data-close
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</dialog>
+
+<style>
+  .welcome {
+    /* Bottom sheet on small screens, corner panel on larger ones. */
+    inset: auto 0 0 0;
+  }
+  @media (min-width: 48rem) {
+    .welcome {
+      inset: auto 1.5rem 1.5rem auto;
+      width: min(28rem, calc(100% - 3rem));
+    }
+  }
+  .welcome[open] {
+    animation: welcome-in 220ms ease-out;
+  }
+  @keyframes welcome-in {
+    from {
+      transform: translateY(12px);
+      opacity: 0;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+    }
+  }
+</style>
+
+<script>
+  const KEY = 'sjwg:v1:welcome-dismissed';
+  const dialog = document.getElementById('welcome') as HTMLDialogElement | null;
+
+  function remember() {
+    try {
+      localStorage.setItem(KEY, JSON.stringify({ at: new Date().toISOString() }));
+    } catch {
+      /* storage unavailable: show again next time, which is fine */
+    }
+  }
+  function seen(): boolean {
+    try {
+      return localStorage.getItem(KEY) !== null;
+    } catch {
+      return false;
+    }
+  }
+
+  if (dialog && !location.pathname.startsWith('/request')) {
+    const open = () => {
+      if (dialog.open) return;
+      // Non-modal on purpose: the page stays usable and nothing is dimmed.
+      dialog.show();
+      dialog.querySelector<HTMLElement>('#welcome-title')?.focus({ preventScroll: true });
+    };
+    const dismiss = () => {
+      remember();
+      dialog.close();
+    };
+
+    if (!seen()) {
+      const schedule = () => setTimeout(open, 900);
+      if (document.readyState === 'complete') schedule();
+      else window.addEventListener('load', schedule, { once: true });
+    }
+
+    dialog.querySelectorAll('[data-close]').forEach((el) => {
+      el.addEventListener('click', (e) => {
+        if ((el as HTMLElement).tagName === 'BUTTON') e.preventDefault();
+        dismiss();
+      });
+    });
+    // Non-modal dialogs do not get the cancel event, so handle Escape here.
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && dialog.open) dismiss();
+    });
+  }
+</script>

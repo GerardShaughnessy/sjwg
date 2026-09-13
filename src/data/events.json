@@ -1,0 +1,87 @@
+[
+  {
+    "id": "procession-2026",
+    "slug": "st-joseph-the-worker-procession-2026",
+    "title": "St. Joseph the Worker Holy Day procession",
+    "kind": "procession",
+    "start": "2026-05-01T18:00:00-05:00",
+    "location": "Saint Mary of Victories, St. Louis",
+    "summary": "The Guild's annual procession on the feast of St. Joseph the Worker.",
+    "body": "Members and families processed from the church on the feast of our patron, walked the neighborhood with the statue of St. Joseph, and returned for Benediction.",
+    "membersOnly": false,
+    "tk": "confirm details of the 2026 procession for the archive"
+  },
+  {
+    "id": "mass-2026-10",
+    "slug": "tradesmens-mass-october-2026",
+    "title": "Monthly tradesmen's Mass and adoration",
+    "kind": "mass",
+    "start": "2026-10-03T08:00:00-05:00",
+    "location": "Saint Mary of Victories, St. Louis",
+    "summary": "Mass offered for the Guild and its members, followed by adoration. Open to all.",
+    "body": "A monthly Mass with tradesmen and their families in mind, followed by adoration. Fr. Michael Novak celebrates. Coffee in the parish hall after. Spiritual direction is available by arrangement.",
+    "membersOnly": false,
+    "tk": "confirm the monthly Mass day and time"
+  },
+  {
+    "id": "formation-2026-10",
+    "slug": "formation-meeting-october-2026",
+    "title": "Formation meeting: Catholic business ethics",
+    "kind": "meeting",
+    "start": "2026-10-15T19:00:00-05:00",
+    "location": "Saint Mary of Victories, St. Louis",
+    "summary": "Monthly formation meeting for members. Catholic business ethics and time to strengthen bonds between members.",
+    "body": "Members meet monthly for formation in Catholic business ethics and to look after each other's work. This month: pricing honestly when a customer cannot pay. Guests are welcome with a member.",
+    "membersOnly": true,
+    "tk": "confirm formation meeting schedule"
+  },
+  {
+    "id": "repair-day-2026-11",
+    "slug": "parish-repair-day-november-2026",
+    "title": "Parish repair day",
+    "kind": "workday",
+    "start": "2026-11-07T08:00:00-06:00",
+    "location": "Saint Mary of Victories, St. Louis",
+    "summary": "A Guild work day at the parish. Members bring tools; the church brings the punch list.",
+    "body": "Guild members give a day of labor to the parish. Past repair days have cleared the parking lot, repaired a leaking window, installed a new toilet, and set up the commercial coffee system. This year: tuckpointing the north wall, gutter cleaning, and painting the hall. Coffee at 7:30, work at 8.",
+    "membersOnly": false,
+    "tk": "confirm repair day date"
+  },
+  {
+    "id": "christmas-2026",
+    "slug": "christmas-party-2026",
+    "title": "Guild Christmas party",
+    "kind": "party",
+    "start": "2026-12-12T18:00:00-06:00",
+    "location": "Parish hall, Saint Mary of Victories",
+    "summary": "Dinner, carols, and a visit from St. Nicholas for the kids. Members, families, and friends of the Guild.",
+    "body": "Dinner, carols, and a visit from St. Nicholas for the kids. Families and friends of the Guild are welcome. $15 a person, children free. Bring a dish if you can.",
+    "membersOnly": false,
+    "tk": "confirm Christmas party date, venue, and details"
+  },
+  {
+    "id": "retreat-2027",
+    "slug": "annual-tradesmens-retreat-2027",
+    "title": "Annual tradesmen's retreat",
+    "kind": "retreat",
+    "start": "2027-02-19T17:00:00-06:00",
+    "end": "2027-02-21T13:00:00-06:00",
+    "location": "A retreat house outside St. Louis",
+    "summary": "A weekend retreat for Guild members. Donors at the Foreman level and above are invited.",
+    "body": "The Guild's annual retreat for members, Friday evening to Sunday noon. Conferences, confession, silence, and time with the men. $180 a man, and help is available for anyone who needs it. Foreman and Master level donors receive an invitation.",
+    "membersOnly": true,
+    "tk": "confirm retreat dates and location"
+  },
+  {
+    "id": "procession-2027",
+    "slug": "st-joseph-the-worker-procession-2027",
+    "title": "St. Joseph the Worker Holy Day procession",
+    "kind": "procession",
+    "start": "2027-05-01T18:00:00-05:00",
+    "location": "Saint Mary of Victories, St. Louis",
+    "summary": "The Guild's annual procession on the feast of St. Joseph the Worker. Open to all.",
+    "body": "Members and families process from the church on the feast of our patron, May 1. Gather at the church at 6:00 PM. We walk the neighborhood with the statue of St. Joseph and return for Benediction. Everyone is welcome to walk with us; strollers are fine.",
+    "membersOnly": false,
+    "tk": "confirm procession time and route"
+  }
+]

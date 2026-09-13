@@ -1,0 +1,233 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/ui/PageHeader.astro';
+import Section from '@/components/ui/Section.astro';
+import Button from '@/components/ui/Button.astro';
+import Tk from '@/components/ui/Tk.astro';
+import { DONATE_URL, TK } from '@/config/site';
+
+const uses = [
+  {
+    amount: '$20,000',
+    text: 'Funds materials, tools, and Guild repair days for Saint Mary of Victories Catholic Church.',
+  },
+  { amount: '$20,000', text: 'Aids urgent medical procedures for two underinsured tradesmen.' },
+  {
+    amount: '$15,000',
+    text: 'Provides emergency assistance for disadvantaged clients in need of necessary home maintenance.',
+  },
+  {
+    amount: '$5,000',
+    text: 'Fosters educational and career development for youth and adults called toward the skilled trades.',
+  },
+];
+
+const tiers = [
+  {
+    name: 'Master',
+    amount: '$20,000 and up',
+    benefits: [
+      'Personally named, with a special intention, during our Masses and Holy Hours.',
+      'A copy of Fr. Donald Calloway’s Consecration to St. Joseph.',
+      'A hand-crafted wooden crucifix and a customized rosary made by Guild members.',
+      'One pro bono small repair under $600 at your home, and up to five hours of pro bono plumbing inspection, diagnosis, or consultation.',
+      'A paid, all-inclusive invitation to the annual retreat, and invitations to all public Guild events.',
+    ],
+  },
+  {
+    name: 'Foreman',
+    amount: '$5,000 and up',
+    benefits: [
+      'Personally named, with a special intention, during our Masses and Holy Hours.',
+      'A copy of Consecration to St. Joseph.',
+      'A hand-crafted wooden key holder made by a Guild member.',
+      'One pro bono small repair under $200 at your home, and up to two hours of pro bono plumbing inspection, diagnosis, or consultation.',
+      'An invitation to the annual retreat, and to all public Guild events.',
+    ],
+  },
+  {
+    name: 'Journeyman',
+    amount: '$1,000 and up',
+    benefits: [
+      'Personally named, with a special intention, during our Masses and Holy Hours.',
+      'A copy of Consecration to St. Joseph.',
+      'A hand-crafted wooden key holder made by a Guild member.',
+      'Invitations to all public Guild events.',
+    ],
+  },
+  {
+    name: 'Apprentice',
+    amount: '$500 and up',
+    benefits: [
+      'Personally named, with a special intention, during our Masses and Holy Hours.',
+      'A copy of Consecration to St. Joseph.',
+    ],
+  },
+  {
+    name: 'Pre-apprentice',
+    amount: '$25 and up',
+    benefits: ['Personally named in the prayer intentions at our Masses and Holy Hours.'],
+  },
+];
+const giveHref = DONATE_URL;
+---
+
+<BaseLayout
+  title="Support the Guild"
+  description="Ways to give to the St. Joseph the Worker Guild: what a gift funds, giving levels from $25 to $20,000, and how to give directly to Saint Mary of Victories."
+>
+  <PageHeader
+    title="Support the Guild"
+    lede="Members carry an increasing share of the Guild's ordinary costs each year. Donors carry the work that cannot wait on membership growth: repairs for the parish, medical costs for underinsured tradesmen, and emergency work for families who have no one else to call."
+  >
+    <div class="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
+      <Button href={giveHref} variant="inverse" size="lg">
+        Give now
+      </Button>
+      <a
+        href="#ways"
+        class="font-sans font-semibold text-stone underline decoration-brass decoration-2 underline-offset-4"
+      >
+        See giving levels
+      </a>
+    </div>
+  </PageHeader>
+
+  <Section tone="stone" labelledby="uses-title">
+    <div class="grid gap-10 lg:grid-cols-[2fr_3fr] lg:gap-16">
+      <div>
+        <h2 id="uses-title" class="text-h2">
+          Where a gift goes
+        </h2>
+        <p class="mt-4 max-w-[44ch] leading-relaxed">
+          The Guild's <Tk {...TK.fundingGoalPeriod} /> funding goal is $60,000, allocated in full to
+          four lines. No overhead or unallocated line.
+        </p>
+      </div>
+      <dl class="border-t border-mortar">
+        {uses.map((u) => (
+          <div class="grid grid-cols-[6.5rem_1fr] gap-4 border-b border-mortar py-4 sm:grid-cols-[8rem_1fr] sm:gap-8">
+            <dt class="font-serif text-[1.35rem] leading-tight">{u.amount}</dt>
+            <dd class="leading-relaxed">{u.text}</dd>
+          </div>
+        ))}
+        <div class="grid grid-cols-[6.5rem_1fr] gap-4 py-4 sm:grid-cols-[8rem_1fr] sm:gap-8">
+          <dt class="font-serif text-[1.35rem] leading-tight">$60,000</dt>
+          <dd class="font-sans font-semibold leading-relaxed">
+            The full goal, fully funded by these four items.
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </Section>
+
+  <Section tone="paper" id="ways" labelledby="ways-title">
+    <h2 id="ways-title" class="text-h2">
+      Ways to give
+    </h2>
+    <p class="mt-3 max-w-[60ch] leading-relaxed">
+      Every donor at every level is remembered by name at the Guild's Masses and Holy Hours. Larger
+      gifts carry the thanks of working men: things made by hand, and work done at your home.
+    </p>
+    <div class="mt-8 border-t border-mortar">
+      {tiers.map((t) => (
+        <div class="grid gap-3 border-b border-mortar py-6 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] md:gap-10">
+          <div>
+            <h3 class="text-h3 md:text-[1.75rem]">{t.name}</h3>
+            <p class="mt-1 font-sans text-[1.05rem] font-semibold text-brick">{t.amount}</p>
+          </div>
+          <ul class="flex flex-col gap-2 leading-relaxed">
+            {t.benefits.map((b) => (
+              <li class="border-l-2 border-brass pl-4">{b}</li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </Section>
+
+  <Section tone="stone" labelledby="how-title" id="donate-placeholder">
+    <div class="grid gap-10 md:grid-cols-2 lg:gap-16">
+      <div>
+        <h2 id="how-title" class="text-h2">
+          How to give
+        </h2>
+        <div class="mt-5 flex flex-col gap-5 leading-relaxed">
+          <div class="border-t-4 border-brass bg-paper p-6">
+            <h3 class="text-h3">Online</h3>
+            <p class="mt-2">
+              <Tk {...TK.onlineGiving} />
+            </p>
+            <div class="mt-4">
+              <Button href={giveHref} aria-disabled="true">
+                Give online
+              </Button>
+            </div>
+          </div>
+          <div class="border-t border-mortar pt-5">
+            <h3 class="text-h3">By check</h3>
+            <p class="mt-2">
+              Payable to <Tk {...TK.legalName} />. Mail to <Tk {...TK.mailingAddress} />.
+            </p>
+          </div>
+          <div class="border-t border-mortar pt-5">
+            <h3 class="text-h3">In person</h3>
+            <p class="mt-2">
+              At any Guild Mass or event. <Tk {...TK.giftInPerson} />
+            </p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h2 class="text-h2">Prefer to give to the church itself?</h2>
+        <p class="mt-5 max-w-[48ch] leading-relaxed">
+          Some donors want to keep a historic parish standing and are not looking for a membership
+          organization. A dedicated page routes gifts directly to Saint Mary of Victories. No Guild
+          overhead is taken from them.
+        </p>
+        <p class="mt-4">
+          <a href="#donate-placeholder" class="font-semibold">
+            <Tk {...TK.parishGiving} />
+          </a>
+        </p>
+
+        <h2 class="mt-12 text-h2">By the numbers</h2>
+        <dl class="mt-5 border-t border-mortar font-sans">
+          <div class="flex items-baseline justify-between gap-4 border-b border-mortar py-3">
+            <dt>Members targeted by 2029</dt>
+            <dd class="font-serif text-[1.35rem]">350</dd>
+          </div>
+          <div class="flex items-baseline justify-between gap-4 border-b border-mortar py-3">
+            <dt>Projected annual revenue by year three</dt>
+            <dd class="font-serif text-[1.35rem]">$350,000</dd>
+          </div>
+          <div class="flex items-baseline justify-between gap-4 border-b border-mortar py-3">
+            <dt>First funding goal</dt>
+            <dd class="font-serif text-[1.35rem]">$60,000</dd>
+          </div>
+        </dl>
+        <p class="mt-3 font-sans text-[0.85rem] leading-snug text-ash">
+          Year three revenue is projected at $105,000 from member dues and $245,000 from
+          fundraising.
+        </p>
+      </div>
+    </div>
+  </Section>
+
+  <Section tone="charcoal" labelledby="partner-title" pad="tight">
+    <div class="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+      <div>
+        <h2 id="partner-title" class="text-h3 md:text-[1.75rem]">
+          Partner with the Guild
+        </h2>
+        <p class="mt-2 max-w-[52ch] font-sans text-stone/85">
+          Parishes and schools that need work, suppliers who can discount materials, and sponsors
+          for programs and events.
+        </p>
+      </div>
+      <Button href="/contact#partner" variant="inverse">
+        Talk to us about partnering
+      </Button>
+    </div>
+  </Section>
+</BaseLayout>

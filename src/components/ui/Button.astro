@@ -1,0 +1,47 @@
+---
+/**
+ * The site's one button. Renders an <a> when href is given, else a <button>.
+ * Hard edges, no shadow. Primary is the only place brick appears at small scale.
+ */
+interface Props {
+  href?: string;
+  variant?: 'primary' | 'secondary' | 'inverse' | 'quiet';
+  size?: 'md' | 'lg';
+  type?: 'button' | 'submit';
+  class?: string;
+  [key: string]: unknown;
+}
+const {
+  href,
+  variant = 'primary',
+  size = 'md',
+  type = 'button',
+  class: className = '',
+  ...rest
+} = Astro.props;
+
+const base =
+  'inline-flex items-center justify-center gap-2 font-sans font-semibold leading-none no-underline transition-colors duration-150 motion-reduce:transition-none';
+const sizes = {
+  md: 'px-5 py-3 text-[1rem]',
+  lg: 'px-7 py-4 text-[1.125rem]',
+};
+const variants = {
+  primary: 'bg-brick text-paper hover:bg-kiln',
+  secondary: 'border-2 border-charcoal text-charcoal hover:bg-charcoal hover:text-stone',
+  inverse: 'border-2 border-stone text-stone hover:bg-stone hover:text-charcoal',
+  quiet:
+    'px-0 py-0 underline decoration-brass decoration-2 underline-offset-4 hover:decoration-charcoal font-medium',
+};
+const cls = [base, variant === 'quiet' ? '' : sizes[size], variants[variant], className].join(' ');
+---
+
+{href ? (
+  <a href={href} class={cls} {...rest}>
+    <slot />
+  </a>
+) : (
+  <button type={type} class={cls} {...rest}>
+    <slot />
+  </button>
+)}

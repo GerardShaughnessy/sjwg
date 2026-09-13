@@ -1,0 +1,73 @@
+---
+import Wordmark from '@/components/brand/Wordmark.astro';
+import Tk from '@/components/ui/Tk.astro';
+import { PARISH_NAME, PARISH_CITY, TK } from '@/config/site';
+
+const year = new Date().getFullYear();
+const cols = [
+  {
+    heading: 'Visit',
+    links: [
+      { href: '/directory', label: 'Member directory' },
+      { href: '/events', label: 'Events' },
+      { href: '/about', label: 'About the Guild' },
+      { href: '/blog', label: 'Blog' },
+    ],
+  },
+  {
+    heading: 'Take part',
+    links: [
+      { href: '/request', label: 'Request help' },
+      { href: '/get-involved', label: 'Join as a tradesman' },
+      { href: '/donate', label: 'Give' },
+      { href: '/contact', label: 'Contact and partnerships' },
+    ],
+  },
+];
+---
+
+<footer class="bg-charcoal text-stone">
+  <div class="wrap grid gap-12 py-14 md:grid-cols-[1.4fr_1fr_1fr] md:py-20">
+    <div class="flex flex-col gap-6">
+      <Wordmark size="lg" tone="light" withParish />
+      <address class="max-w-[38ch] font-sans not-italic leading-relaxed text-stone/85">
+        {PARISH_NAME}
+        <br />
+        <Tk {...TK.streetAddress} />
+        <br />
+        {PARISH_CITY} <Tk {...TK.zip} />
+      </address>
+      <p class="max-w-[42ch] font-sans text-[0.95rem] leading-relaxed text-stone/75">
+        Mailing address: <Tk {...TK.mailingAddress} />
+      </p>
+    </div>
+
+    {cols.map((c) => (
+      <nav aria-label={c.heading}>
+        <h2 class="mb-4 font-sans text-[0.95rem] font-semibold text-brass">{c.heading}</h2>
+        <ul class="flex flex-col gap-2.5">
+          {c.links.map((l) => (
+            <li>
+              <a href={l.href} class="font-sans no-underline hover:underline">
+                {l.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    ))}
+  </div>
+
+  <div class="border-t border-stone/15">
+    <div class="wrap flex flex-col gap-3 py-6 font-sans text-[0.9rem] text-stone/70 md:flex-row md:items-center md:justify-between">
+      <p>
+        &copy; {year} St. Joseph the Worker Guild. <Tk {...TK.taxStatus} />
+      </p>
+      <p>
+        <a href="/login" class="no-underline hover:underline">
+          Member log in
+        </a>
+      </p>
+    </div>
+  </div>
+</footer>

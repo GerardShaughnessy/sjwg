@@ -1,0 +1,45 @@
+---
+/**
+ * Quotes from the Case for Support. Attributions are bracketed in the source,
+ * so each carries a consent check until confirmed.
+ */
+import Section from '@/components/ui/Section.astro';
+
+const quotes = [
+  {
+    text: 'There’s something fitting about St. Joseph coming to the aid of St. Mary. The Guild has provided countless hours of logistical support, advice, hands-on help, and pro bono work, all while offering fair and competitive bids when professional services were needed. They have never treated us like just another project.',
+    name: 'James Hooper',
+    role: 'Director, Saint Mary of Victories Catholic Church',
+  },
+  {
+    text: 'When I joined the guild I was starting my shop to support my family. The guild has helped me with finding the spiritual value in my work, mentoring me in business, and supporting my family in a time of need.',
+    name: 'Milton Weis',
+    role: 'Woodworker, sole proprietor',
+  },
+  {
+    text: 'Coming together with good and faithful Catholic business owners, tradesmen, fathers, mentors. It is what this society needs more of.',
+    name: 'Jake Benedick',
+    role: 'Electrician, business owner',
+  },
+];
+---
+
+<Section tone="stone" labelledby="voices-title">
+  <h2 id="voices-title" class="text-h2">
+    In their words
+  </h2>
+  <div class="mt-8 grid gap-10 border-t border-mortar pt-8 md:grid-cols-3 md:gap-8">
+    {quotes.map((q) => (
+      <figure class="flex flex-col gap-4">
+        <blockquote class="font-serif text-[1.125rem] leading-[1.65]">
+          <p>“{q.text}”</p>
+        </blockquote>
+        <figcaption class="font-sans text-[0.95rem] leading-snug">
+          <span class="font-semibold">{q.name}</span>
+          <br />
+          <span class="text-ash">{q.role}</span>
+        </figcaption>
+      </figure>
+    ))}
+  </div>
+</Section>

@@ -1,0 +1,33 @@
+---
+import Section from '@/components/ui/Section.astro';
+import Picture from '@/components/ui/Picture.astro';
+---
+
+<Section tone="stone" labelledby="what-title">
+  <div class="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-16">
+    <div>
+      <h2 id="what-title" class="text-h2">
+        What the Guild is
+      </h2>
+      <div class="mt-6 flex max-w-[60ch] flex-col gap-5 leading-relaxed">
+        <p>
+          The St. Joseph the Worker Guild is a Catholic fraternal organization for tradesmen, based
+          at Saint Mary of Victories in St. Louis. It serves self-employed and small-shop Catholic
+          tradesmen and their families: the plumbers, electricians, carpenters, roofers, and masons
+          who keep the water running, the lights on, and the roofs over our heads.
+        </p>
+        <p>
+          It exists because the men who care for other people's homes are often left to carry their
+          own burdens alone. For a small independent tradesman there is usually no employer plan, no
+          safety net, and no built-in community when work slows or crisis strikes. The Guild gives
+          that brotherhood a home. Members pray together, trade labor, mentor one another, and give
+          discounted and pro bono work to families, parishes, and schools in need.
+        </p>
+        <p class="font-sans text-[0.95rem] text-ash">
+          Consecrated to St. Joseph the Worker and St. Louis IX as patrons.
+        </p>
+      </div>
+    </div>
+    <Picture slot="guildAtWork" sizes="(min-width: 64rem) 45vw, 100vw" aspect="4 / 3" />
+  </div>
+</Section>

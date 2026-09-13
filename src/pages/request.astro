@@ -1,0 +1,40 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/ui/PageHeader.astro';
+import RequestWizard from '@/components/request/RequestWizard';
+import { getTrades } from '@/lib/trades';
+import { TK } from '@/config/site';
+
+const members = (await getCollection('members')).map((m) => m.data);
+const trades = getTrades(members);
+---
+
+<BaseLayout
+  title="Request help from the Guild"
+  description="Tell the St. Joseph the Worker Guild what you need fixed and how to reach you. No account, one question at a time."
+  suppressWelcome
+>
+  <PageHeader
+    title="Request help from the Guild"
+    lede="Five short questions. No account. Answer what you can, and a Guild tradesman will call you back."
+  />
+  <div class="wrap py-10 md:py-14">
+    <RequestWizard
+      client:only="react"
+      trades={trades}
+      responseTk={TK.responseCommitment}
+      serviceAreaTk={TK.serviceArea}
+    >
+      <div slot="fallback" class="max-w-[64ch]" aria-busy="true">
+        <p class="font-sans text-ash">Loading the form.</p>
+        <noscript>
+          <p class="mt-4 leading-relaxed">
+            This form needs JavaScript. If it will not load,{' '}
+            <a href="/contact">contact the Guild</a> instead.
+          </p>
+        </noscript>
+      </div>
+    </RequestWizard>
+  </div>
+</BaseLayout>

@@ -1,0 +1,21 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/ui/PageHeader.astro';
+import Button from '@/components/ui/Button.astro';
+---
+
+<BaseLayout title="Page not found" noindex>
+  <PageHeader
+    title="That page is not here."
+    lede="The link may be old, or the address may have a typo."
+  />
+  <div class="wrap flex flex-wrap gap-4 py-12">
+    <Button href="/">Home</Button>
+    <Button href="/request" variant="secondary">
+      Request help from the Guild
+    </Button>
+    <Button href="/directory" variant="quiet">
+      Member directory
+    </Button>
+  </div>
+</BaseLayout>

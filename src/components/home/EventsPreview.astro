@@ -1,0 +1,28 @@
+---
+import { getCollection } from 'astro:content';
+import Button from '@/components/ui/Button.astro';
+import EventCard from '@/components/events/EventCard.astro';
+import { splitEvents } from '@/lib/events';
+
+const all = (await getCollection('events')).map((e) => e.data);
+const { upcoming } = splitEvents(all);
+const next = upcoming.slice(0, 3);
+---
+
+<div>
+  <h2 id="events-title" class="text-h2">
+    Coming up
+  </h2>
+  <div class="mt-6 border-b border-mortar">
+    {next.length ? (
+      next.map((e) => <EventCard event={e} compact />)
+    ) : (
+      <p class="py-5">No events scheduled yet.</p>
+    )}
+  </div>
+  <div class="mt-6">
+    <Button href="/events" variant="quiet">
+      All events
+    </Button>
+  </div>
+</div>

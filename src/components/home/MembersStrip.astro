@@ -1,0 +1,30 @@
+---
+import { getCollection } from 'astro:content';
+import Section from '@/components/ui/Section.astro';
+import Button from '@/components/ui/Button.astro';
+import MemberCard from '@/components/members/MemberCard';
+
+const all = await getCollection('members');
+const featured = all.filter((m) => m.data.featured).slice(0, 5);
+---
+
+<Section tone="paper" labelledby="members-title">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <h2 id="members-title" class="text-h2">
+      Guild members
+    </h2>
+    <p class="font-sans text-[0.95rem] text-ash">
+      Sample entries. Real members are listed once each has agreed to what appears publicly.
+    </p>
+  </div>
+  <div class="mt-6 border-b border-mortar">
+    {featured.map((m) => (
+      <MemberCard member={m.data} compact />
+    ))}
+  </div>
+  <div class="mt-8">
+    <Button href="/directory" variant="secondary">
+      See the full directory
+    </Button>
+  </div>
+</Section>
