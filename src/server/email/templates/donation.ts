@@ -54,7 +54,7 @@ Thank you. ${org} received your ${o.recurring ? 'monthly ' : ''}gift of ${dollar
 
 ${gs}
 
-${org} is a 501(c)(3) nonprofit organization${ein() ? `, EIN ${ein()}` : ''}. Keep this letter for your records; it is your receipt for tax purposes.
+${taxStatusLine()}
 
 Your gift funds parish repair days, medical costs for underinsured tradesmen, emergency home maintenance for families with no one else to call, and training for men entering the trades. You will be remembered by name at the Guild's Masses and Holy Hours.`;
   const footer = `${org}. ${PARISH_NAME}, ${PARISH_CITY}. Mailing address: ${TK.mailingAddress.sample}.`;
