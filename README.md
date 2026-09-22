@@ -25,22 +25,22 @@ For Stripe locally: `stripe listen --events checkout.session.completed,checkout.
 
 ## What is on the site
 
-| Route                       | What it is                                                                                                                                                      |
-| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`                         | Hero with promo-video slot, what the Guild is, four pillars, founding story, member strip, how to help, testimonials, events and blog previews, where we meet   |
-| `/directory`                | Member directory. Filter by trade and area, sort, URL-synced. Sample data. The QR-code landing page for business cards; `/hire` redirects here                  |
-| `/request`                  | Five-question request-help wizard with a confirmation and reference number. Never mentions money                                                                |
-| `/events`, `/events/[slug]` | Upcoming and past events with detail pages                                                                                                                      |
-| `/about`                    | What a guild is, why one is needed, the five program areas, values, where the Guild is headed                                                                   |
-| `/get-involved`             | Join as a tradesman (interest form), volunteer, partner, hire                                                                                                   |
-| `/donate`                   | Where a gift goes, five giving levels, how to give, church-direct giving, partner with the Guild                                                                |
-| `/contact`                  | Contact form and a partnership form                                                                                                                             |
-| `/blog`, `/blog/[id]`       | Markdown posts from `src/content/blog`                                                                                                                          |
-| `/login`, `/portal`         | Member portal. Members: job board, calendar with email reminders, own directory entry, blog drafts. Officers also: events, sponsors, donor records, invitations |
-| `/request/track/[token]`    | A requester's private status page, linked from the confirmation email                                                                                           |
-| `/invite/[token]`           | Set a password from an officer's invitation. There is no public sign-up                                                                                         |
-| `/donate/thank-you`         | After Stripe Checkout                                                                                                                                           |
-| `/api/*`                    | JSON routes behind the portal and the public forms; `/api/webhooks/stripe` records gifts                                                                        |
+| Route                       | What it is                                                                                                                                                                                                                             |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                         | Hero with promo-video slot, what the Guild is, four pillars, founding story, member strip, how to help, testimonials, events and blog previews, where we meet                                                                          |
+| `/directory`                | Member directory. Filter by trade and area, sort, URL-synced. Sample data. The QR-code landing page for business cards; `/hire` redirects here                                                                                         |
+| `/request`                  | Five-question request-help wizard with a confirmation and reference number. Never mentions money                                                                                                                                       |
+| `/events`, `/events/[slug]` | Upcoming and past events with detail pages                                                                                                                                                                                             |
+| `/about`                    | What a guild is, why one is needed, the five program areas, values, where the Guild is headed                                                                                                                                          |
+| `/get-involved`             | Join as a tradesman (interest form), volunteer, partner, hire                                                                                                                                                                          |
+| `/donate`                   | Where a gift goes, five giving levels, how to give, church-direct giving, partner with the Guild                                                                                                                                       |
+| `/contact`                  | Contact form and a partnership form                                                                                                                                                                                                    |
+| `/blog`, `/blog/[id]`       | Markdown posts from `src/content/blog`                                                                                                                                                                                                 |
+| `/login`, `/portal`         | Member portal. Members: job board with referrals, calendar with email reminders, own directory entry and photo, blog drafts. Officers also: events, sponsors, donor records, invitations, every member entry, and email to all members |
+| `/request/track/[token]`    | A requester's private status page, linked from the confirmation email                                                                                                                                                                  |
+| `/invite/[token]`           | Set a password from an officer's invitation. There is no public sign-up                                                                                                                                                                |
+| `/donate/thank-you`         | After Stripe Checkout                                                                                                                                                                                                                  |
+| `/api/*`                    | JSON routes behind the portal and the public forms; `/api/webhooks/stripe` records gifts                                                                                                                                               |
 
 Logins are invite-only. On the Neon `dev` branch the seed creates `guildmember@test.com` (member) and `officer@test.com` (officer), password `guild2026-dev`. Production accounts come only from invitations.
 

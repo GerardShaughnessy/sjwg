@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Member } from '@/lib/types';
-import { me } from '@/lib/api';
+import { me, members as membersApi } from '@/lib/api';
 import MemberCard from '@/components/members/MemberCard';
 import { btnPrimary, ErrorStrip, inputCls, Loading, msg, rebuildNote, Status } from '../ui';
 
@@ -15,6 +15,7 @@ export default function ProfileEditor({ areas }: { areas: string[] }) {
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
   const [pending, setPending] = useState(false);
+  const [photoBusy, setPhotoBusy] = useState(false);
 
   useEffect(() => {
     me.get()
@@ -86,6 +87,35 @@ export default function ProfileEditor({ areas }: { areas: string[] }) {
     featured: member.featured,
     ...draft,
   };
+
+  async function changePhoto(file: File | null) {
+    if (!file || !member) return;
+    setPhotoBusy(true);
+    setError('');
+    try {
+      const { member: saved, rebuild } = await membersApi.uploadPhoto(member.id, file);
+      setMember({ ...member, photo: saved.photo });
+      setStatus(`Photo saved. ${draft?.public ? rebuildNote(rebuild) : ''}`);
+    } catch (err) {
+      setError(msg(err, 'Could not upload the photo.'));
+    } finally {
+      setPhotoBusy(false);
+    }
+  }
+
+  async function removePhoto() {
+    if (!member) return;
+    setPhotoBusy(true);
+    try {
+      const { member: saved } = await membersApi.removePhoto(member.id);
+      setMember({ ...member, photo: saved.photo });
+      setStatus('Photo removed.');
+    } catch (err) {
+      setError(msg(err, 'Could not remove the photo.'));
+    } finally {
+      setPhotoBusy(false);
+    }
+  }
 
   return (
     <div className="grid gap-12 lg:grid-cols-[1fr_1fr] lg:gap-16">
@@ -190,6 +220,31 @@ export default function ProfileEditor({ areas }: { areas: string[] }) {
         <h3 className="text-brass font-sans text-[0.95rem] font-semibold">Preview</h3>
         <div className="border-mortar mt-2 border-b">
           <MemberCard member={preview} />
+        </div>
+        <div className="mt-4 flex flex-wrap items-center gap-4 font-sans">
+          <label className="border-charcoal hover:bg-charcoal hover:text-stone cursor-pointer border-2 px-4 py-2 font-semibold">
+            {photoBusy ? 'Working' : member.photo ? 'Replace your photo' : 'Add your photo'}
+            <input
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={(e) => changePhoto(e.target.files?.[0] ?? null)}
+              disabled={photoBusy}
+            />
+          </label>
+          {member.photo && (
+            <button
+              type="button"
+              onClick={removePhoto}
+              disabled={photoBusy}
+              className="text-ash decoration-mortar font-medium underline decoration-2 underline-offset-4"
+            >
+              Remove photo
+            </button>
+          )}
+          <span className="text-ash text-[0.9rem]">
+            A square headshot works best. Photos are resized before upload.
+          </span>
         </div>
       </div>
     </div>

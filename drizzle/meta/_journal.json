@@ -15,6 +15,13 @@
       "when": 1790042098324,
       "tag": "0001_tracking_token_enc",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790104299412,
+      "tag": "0002_referred_to",
+      "breakpoints": true
     }
   ]
 }

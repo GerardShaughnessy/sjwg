@@ -82,7 +82,7 @@ const members = defineCollection({
           bio: m.bio,
           availability: m.availability,
           featured: m.featured,
-          photo: m.photoKey ? `/api/files/members/${m.photoKey}` : null,
+          photo: m.photoKey ? `/api/files/members/${m.photoKey.replace(/^members\//, '')}` : null,
           sample: Boolean(m.legacyId),
         }));
       },

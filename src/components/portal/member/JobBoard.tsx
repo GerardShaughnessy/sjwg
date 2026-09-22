@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import type { RequestStatus, Session, Urgency } from '@/lib/types';
 import {
   ApiError,
+  members as membersApi,
   requests,
+  type MemberBrief,
   type RequestEvent,
   type RequestNote,
   type RequestView,
@@ -59,6 +61,9 @@ export default function JobBoard({ session }: { session: Session }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [actionError, setActionError] = useState<Record<string, string>>({});
   const [referNote, setReferNote] = useState<Record<string, string>>({});
+  const [referTo, setReferTo] = useState<Record<string, string>>({});
+  const [referResult, setReferResult] = useState<Record<string, string>>({});
+  const roster = useResource(() => membersApi.list() as Promise<MemberBrief[]>, []);
   const [open, setOpen] = useState<string | null>(null);
 
   useEffect(() => {
@@ -222,14 +227,51 @@ export default function JobBoard({ session }: { session: Session }) {
                         className={`${inputCls} w-full`}
                       />
                     </label>
+                    <label className="text-[0.9rem]">
+                      <span className="sr-only">Refer to a member</span>
+                      <select
+                        value={referTo[r.id] ?? ''}
+                        onChange={(e) => setReferTo((p) => ({ ...p, [r.id]: e.target.value }))}
+                        className={`${inputCls} w-full`}
+                      >
+                        <option value="">Refer to a member</option>
+                        {(roster.data ?? []).map((m) => (
+                          <option key={m.id} value={m.id}>
+                            {m.name} ({m.trade})
+                          </option>
+                        ))}
+                      </select>
+                    </label>
                     <button
                       type="button"
-                      disabled={busy === r.id || !(referNote[r.id] ?? '').trim()}
-                      onClick={() => act(r.id, () => requests.refer(r.id, referNote[r.id]))}
+                      disabled={
+                        busy === r.id || (!(referNote[r.id] ?? '').trim() && !referTo[r.id])
+                      }
+                      onClick={() =>
+                        act(r.id, async () => {
+                          const res = await requests.refer(r.id, {
+                            memberId: referTo[r.id] || null,
+                            note: referNote[r.id] ?? '',
+                          });
+                          setReferResult((p) => ({
+                            ...p,
+                            [r.id]: referTo[r.id]
+                              ? res.emailed
+                                ? 'Referred and emailed.'
+                                : res.hasEmail
+                                  ? 'Referred. The email could not be sent just now.'
+                                  : 'Referred. He has no email on file, so call him.'
+                              : 'Referred.',
+                          }));
+                        })
+                      }
                       className={btnSecondary}
                     >
                       Refer
                     </button>
+                    {referResult[r.id] && (
+                      <p className="text-ash text-[0.85rem]">{referResult[r.id]}</p>
+                    )}
                   </div>
                 )}
                 {r.status !== 'closed' && (

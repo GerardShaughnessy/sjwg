@@ -139,3 +139,73 @@ Open it: ${link}${textFooter()}`;
   });
   return { subject: `New note on ${r.ref} from ${r.contactName}`, text, html };
 }
+
+/** To the member an officer referred a request to. */
+export function referralNotice(o: {
+  memberName: string;
+  referredBy: string;
+  note: string;
+  request: {
+    id: string;
+    ref: string;
+    trade: string;
+    urgency: string;
+    zip: string;
+    neighborhood: string;
+    description: string;
+    contactName: string;
+    contactPhone: string;
+    contactEmail: string;
+    bestTime: string;
+  };
+}): Email {
+  const r = o.request;
+  const link = `${siteUrl()}/portal?tab=jobs&request=${r.id}`;
+  const where = [r.zip, r.neighborhood].filter(Boolean).join(', ') || 'not given';
+  const contact = [
+    r.contactName,
+    r.contactPhone,
+    r.contactEmail,
+    r.bestTime && `best time: ${r.bestTime}`,
+  ]
+    .filter(Boolean)
+    .join(' / ');
+  const text = `${o.memberName},
+
+${o.referredBy} referred a help request to you${o.note ? `: ${o.note}` : '.'}
+
+Reference: ${r.ref}
+Help with: ${r.trade}
+How urgent: ${URGENCY_LABEL[r.urgency] ?? r.urgency}
+Where: ${where}
+Contact: ${contact}
+
+${r.description}
+
+Open it on the job board and claim it if you can take it: ${link}${textFooter()}`;
+  const html = shell({
+    title: `A request was referred to you: ${r.ref}`,
+    bodyHtml: `${paragraphs(`${o.memberName},\n\n${o.referredBy} referred a help request to you${o.note ? `: ${o.note}` : '.'}`)}
+      <table role="presentation" cellpadding="0" cellspacing="0" style="font-size:16px;line-height:1.5;color:#2b2624">
+        <tr><td style="padding:2px 16px 2px 0;color:#6e6560">Help with</td><td>${escapeHtml(r.trade)}</td></tr>
+        <tr><td style="padding:2px 16px 2px 0;color:#6e6560">How urgent</td><td>${escapeHtml(URGENCY_LABEL[r.urgency] ?? r.urgency)}</td></tr>
+        <tr><td style="padding:2px 16px 2px 0;color:#6e6560">Where</td><td>${escapeHtml(where)}</td></tr>
+        <tr><td style="padding:2px 16px 2px 0;color:#6e6560">Contact</td><td>${escapeHtml(contact)}</td></tr>
+      </table>
+      <div style="margin:16px 0;padding:12px 16px;border-left:4px solid #b08d57;background:#efeae4">${paragraphs(r.description)}</div>
+      ${button(link, 'Open on the job board')}`,
+  });
+  return { subject: `Referred to you: ${r.ref}, ${r.trade}`, text, html };
+}
+
+/** Officer announcement to every member with an account. */
+export function announcement(o: { subject: string; body: string; from: string }): Email {
+  const text = `${o.body}
+
+Sent by ${o.from} through the Guild portal.${textFooter()}`;
+  const html = shell({
+    title: o.subject,
+    bodyHtml: `${paragraphs(o.body)}<p style="margin:16px 0 0 0;font-size:13px;color:#6e6560">Sent by ${escapeHtml(o.from)} through the Guild portal.</p>`,
+  });
+  return { subject: o.subject, text, html };
+}

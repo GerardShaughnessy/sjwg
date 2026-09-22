@@ -153,6 +153,8 @@ export const requests = pgTable(
     claimedAt: timestamp('claimed_at', { withTimezone: true }),
     closedAt: timestamp('closed_at', { withTimezone: true }),
     referralNote: text('referral_note'),
+    /** When an officer refers the request to a specific member. */
+    referredTo: uuid('referred_to').references(() => members.id, { onDelete: 'set null' }),
     source: requestSource('source').notNull().default('web'),
     ipHash: text('ip_hash'),
     confirmationSentAt: timestamp('confirmation_sent_at', { withTimezone: true }),

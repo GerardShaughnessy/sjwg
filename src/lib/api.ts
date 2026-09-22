@@ -125,10 +125,10 @@ export const requests = {
     ).then((r) => r.requests),
   claim: (id: string) =>
     mutate<{ id: string; status: RequestStatus }>(`/api/requests/${id}/claim`, json('POST', {})),
-  refer: (id: string, note: string) =>
-    mutate<{ id: string; status: RequestStatus }>(
+  refer: (id: string, input: { memberId?: string | null; note?: string }) =>
+    mutate<{ id: string; status: RequestStatus; emailed: boolean; hasEmail: boolean | null }>(
       `/api/requests/${id}/refer`,
-      json('POST', { note }),
+      json('POST', input),
     ),
   close: (id: string) =>
     mutate<{ id: string; status: RequestStatus }>(`/api/requests/${id}/close`, json('POST', {})),
@@ -387,4 +387,53 @@ export const invitations = {
   revoke: (id: string) => mutate<{ ok: true }>(`/api/invitations/${id}`, { method: 'DELETE' }),
   complete: (token: string) =>
     call<{ ok: true; role: string }>('/api/invitations/complete', json('POST', { token })),
+};
+
+/* ---------------------------------------------------------------- members */
+export interface MemberAdmin extends Member {
+  public: boolean;
+  sortOrder: number;
+  privatePhone: string;
+  privateEmail: string;
+  sample: boolean;
+  accountEmail: string | null;
+}
+export type MemberInput = Omit<MemberAdmin, 'id' | 'photo' | 'sample' | 'accountEmail'>;
+export interface MemberBrief {
+  id: string;
+  name: string;
+  trade: string;
+  public: boolean;
+}
+
+export const members = {
+  /** Officers get MemberAdmin rows; members get MemberBrief rows. */
+  list: () =>
+    call<{ members: (MemberAdmin | MemberBrief)[] }>('/api/members').then((r) => r.members),
+  create: (input: MemberInput) =>
+    mutate<{ member: MemberAdmin; rebuild: Rebuild }>('/api/members', json('POST', input)),
+  update: (id: string, input: MemberInput) =>
+    mutate<{ member: MemberAdmin; rebuild: Rebuild }>(`/api/members/${id}`, json('PUT', input)),
+  remove: (id: string) =>
+    mutate<{ ok: true; rebuild: Rebuild }>(`/api/members/${id}`, { method: 'DELETE' }),
+  async uploadPhoto(id: string, file: File) {
+    const encoded = await encodePhoto(file);
+    return mutate<{ member: MemberAdmin; rebuild: Rebuild }>(
+      `/api/members/${id}/photo`,
+      json('POST', encoded),
+    );
+  },
+  removePhoto: (id: string) =>
+    mutate<{ member: MemberAdmin; rebuild: Rebuild }>(`/api/members/${id}/photo`, {
+      method: 'DELETE',
+    }),
+};
+
+/* ---------------------------------------------------------- announcements */
+export const announcements = {
+  send: (input: { subject: string; body: string }) =>
+    call<{ recipients: number; sent: number; failed: string[] }>(
+      '/api/announcements',
+      json('POST', input),
+    ),
 };

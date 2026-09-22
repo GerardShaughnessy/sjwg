@@ -10,6 +10,8 @@ import DonorRecords from './member/DonorRecords';
 import EventsEditor from './admin/EventsEditor';
 import SponsorsEditor from './admin/SponsorsEditor';
 import InvitationsPanel from './admin/InvitationsPanel';
+import MembersAdmin from './admin/MembersAdmin';
+import AnnouncementsPanel from './admin/AnnouncementsPanel';
 
 interface Props {
   session: Session;

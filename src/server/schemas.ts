@@ -68,9 +68,19 @@ export const noteSchema = z.object({
   visibleToRequester: z.boolean().default(true),
 });
 
-export const referSchema = z.object({
-  note: trimmed(500).min(1, 'Say who you referred this to.'),
-});
+export const referSchema = z
+  .object({
+    memberId: z.string().uuid().nullable().optional(),
+    note: trimmed(500).default(''),
+  })
+  .superRefine((v, ctx) => {
+    if (!v.memberId && !v.note)
+      ctx.addIssue({
+        code: 'custom',
+        path: ['note'],
+        message: 'Pick a member, or say who you referred this to.',
+      });
+  });
 
 const emailField = z
   .string()
@@ -245,4 +255,16 @@ export const donationPatchSchema = z.object({
   ackStatus: z.enum(['not_required', 'pending_review', 'sent', 'manual']).optional(),
   fmvCents: z.number().int().min(0).nullable().optional(),
   note: trimmed(500).optional(),
+});
+
+export const memberAdminSchema = profileSchema.extend({
+  featured: z.boolean().default(false),
+  sortOrder: z.number().int().min(0).max(9999).default(0),
+  privatePhone: trimmed(40).default(''),
+  privateEmail: z.union([z.literal(''), emailField]).default(''),
+});
+
+export const announcementSchema = z.object({
+  subject: trimmed(150).min(1, 'Give it a subject.'),
+  body: trimmed(10_000).min(1, 'Write the message.'),
 });

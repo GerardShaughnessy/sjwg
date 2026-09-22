@@ -96,6 +96,16 @@ export async function putSponsorLogo(sponsorId: string, v: Validated) {
   return key;
 }
 
+export async function putMemberPhoto(memberId: string, v: Validated) {
+  const { createHash } = await import('node:crypto');
+  const hash = createHash('sha256').update(v.bytes).digest('hex').slice(0, 8);
+  const key = `members/${memberId}/${hash}.${v.ext}`;
+  await uploadStore().set(key, new Blob([v.bytes as BlobPart]), {
+    metadata: { contentType: v.contentType, size: v.bytes.byteLength },
+  });
+  return key;
+}
+
 export async function readBlob(
   key: string,
 ): Promise<{ bytes: ArrayBuffer; contentType: string } | null> {
