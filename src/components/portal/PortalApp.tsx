@@ -56,6 +56,8 @@ export default function PortalApp({ session, members, events, areas }: Props) {
             label: 'Invitations',
             content: <InvitationsPanel members={members} />,
           },
+          { id: 'members', label: 'Members', content: <MembersAdmin areas={areas} /> },
+          { id: 'announce', label: 'Email members', content: <AnnouncementsPanel /> },
         ]
       : []),
   ];
