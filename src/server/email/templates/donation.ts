@@ -5,6 +5,16 @@ import { escapeHtml, paragraphs, shell, textFooter, type Email } from '../layout
 
 const legalName = () => env('ORG_LEGAL_NAME') ?? SITE_NAME;
 const ein = () => env('ORG_EIN') ?? '';
+/** 'determined' once the IRS letter is in hand; anything else means pending. */
+const taxDetermined = () => env('ORG_TAX_STATUS') === 'determined';
+
+function taxStatusLine(): string {
+  const org = legalName();
+  if (taxDetermined()) {
+    return `${org} is a 501(c)(3) nonprofit organization${ein() ? `, EIN ${ein()}` : ''}. Keep this letter for your records; it is your receipt for tax purposes.`;
+  }
+  return `${org} has applied to the IRS for recognition as a 501(c)(3) organization and that application is pending${ein() ? ` (EIN ${ein()})` : ''}. Keep this letter for your records and ask your tax advisor about deductibility; if recognition is granted retroactively, this receipt documents the gift.`;
+}
 
 function dateLine(d: Date) {
   return new Intl.DateTimeFormat('en-US', {
@@ -31,9 +41,12 @@ export function donationAcknowledgment(o: {
   tierName: string | null;
 }): Email {
   const org = legalName();
+  const excess = taxDetermined()
+    ? `Only the portion of your contribution above that value, ${dollars(o.deductibleCents)}, is deductible for federal income tax purposes.`
+    : `The portion of your contribution above that value is ${dollars(o.deductibleCents)}.`;
   const gs =
     o.fmvCents > 0
-      ? `In return for this gift you received the following, with a good-faith estimate of their fair market value of ${dollars(o.fmvCents)}: ${o.benefits.join('; ')}. Only the portion of your contribution above that value, ${dollars(o.deductibleCents)}, is deductible for federal income tax purposes.`
+      ? `In return for this gift you received the following, with a good-faith estimate of their fair market value of ${dollars(o.fmvCents)}: ${o.benefits.join('; ')}. ${excess}`
       : 'No goods or services were provided in exchange for this contribution.';
   const body = `${o.donorName},
 

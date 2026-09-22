@@ -104,8 +104,8 @@ export const TK = {
       'Tradesmen\u2019s Mass is the first Saturday of each month at 8:00 AM, with adoration and coffee after. Formation meetings are the third Thursday at 7:00 PM in the parish hall.',
   },
   taxStatus: {
-    text: '501(c)(3) status line and EIN',
-    sample: 'A 501(c)(3) nonprofit. EIN 00-0000000.',
+    text: 'tax status line: update when the EIN arrives and again when the 501(c)(3) determination letter arrives (expected 1 to 5 months from September 2026)',
+    sample: 'A nonprofit whose application for 501(c)(3) recognition is pending with the IRS.',
   },
   phone: { text: 'Guild phone number', sample: '(314) 555-0147' },
   email: { text: 'Guild email address', sample: 'hello@sjwguild.org' },

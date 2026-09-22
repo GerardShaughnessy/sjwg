@@ -60,6 +60,9 @@ Also wanted: before-and-after photos of the parish jobs (the decks ask for these
 
 ## 4. Turn the real services on
 
+**Tax status, as of September 2026:** the Guild has applied for an EIN and for 501(c)(3) recognition; the determination is expected to take one to five months. Until the letter arrives, the site says the application is pending, receipts carry the pending wording and no deductibility promise, and `ORG_TAX_STATUS` stays `pending`. When the EIN arrives, set `ORG_EIN` and activate the Stripe live account (nonprofit type). When the letter arrives, set `ORG_TAX_STATUS=determined`, update the `taxStatus` sample copy in `src/config/site.ts`, and apply for Stripe's nonprofit rate.
+
+
 Everything below is wired and tested; each needs one thing from Gerard.
 
 | Service               | What to do                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Where it lands                                                                                                        |

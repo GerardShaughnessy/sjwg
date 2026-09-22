@@ -47,3 +47,26 @@ describe('email templates', () => {
     expect(e.text).toContain('Message: hi');
   });
 });
+
+describe('donation receipt tax wording', async () => {
+  const { donationAcknowledgment } = await import('./templates/donation');
+  const gift = {
+    donorName: 'A',
+    amountCents: 10_000,
+    receivedAt: new Date('2026-09-22T12:00:00Z'),
+    recurring: false,
+    fmvCents: 0,
+    deductibleCents: 10_000,
+    benefits: [],
+    tierName: null,
+  };
+  it('says the application is pending unless ORG_TAX_STATUS is determined', () => {
+    delete process.env.ORG_TAX_STATUS;
+    const e = donationAcknowledgment(gift);
+    expect(e.text).toMatch(/application is pending/);
+    expect(e.text).not.toMatch(/is a 501\(c\)\(3\) nonprofit organization/);
+    process.env.ORG_TAX_STATUS = 'determined';
+    expect(donationAcknowledgment(gift).text).toMatch(/is a 501\(c\)\(3\) nonprofit organization/);
+    delete process.env.ORG_TAX_STATUS;
+  });
+});
