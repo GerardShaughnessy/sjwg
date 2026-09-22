@@ -123,7 +123,7 @@ Copy `.env.example`. Production values live in Netlify (Site settings, Environme
 
 ## Deploy
 
-Production deploys from a laptop with `npx netlify deploy --prod --build --context production` until the GitHub repo is connected in Netlify (Site configuration, Build and deploy, Link repository); after that a push to `main` builds. `netlify.toml` sets the build, the scheduled functions, headers, and the `/hire` redirect. Drafts: `npx netlify deploy --build --context deploy-preview`.
+The Netlify site is connected to this GitHub repo: a push to `main` builds and deploys production. Publishing from the portal calls the "publish" build hook. A manual deploy is `npx netlify deploy --prod --build --context production`. `netlify.toml` sets the build, the scheduled functions, headers, and the `/hire` redirect. Drafts: `npx netlify deploy --build --context deploy-preview`.
 
 Before a schema change reaches production: `DATABASE_URL=<main> npm run db:migrate` from a laptop, then push.
 
