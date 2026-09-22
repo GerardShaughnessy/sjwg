@@ -8,6 +8,11 @@ export const SITE_DESCRIPTION =
   'A Catholic fraternal organization for tradesmen, based at Saint Mary of Victories in St. Louis, Missouri.';
 export const PARISH_NAME = 'Saint Mary of Victories Catholic Church';
 export const PARISH_CITY = 'St. Louis, Missouri';
+/** Confirmed 2026-09-22 against the parish listing. */
+export const PARISH_STREET = '744 S Third St';
+export const PARISH_ZIP = '63102';
+export const PARISH_PHONE = '(314) 231-8101';
+export const PARISH_WEBSITE = 'https://smov.info';
 
 /**
  * The give form lives on the donate page. The button there creates a Stripe
@@ -89,19 +94,14 @@ export type GivingLevelKey = (typeof GIVING_LEVELS)[number]['key'];
  * All samples are fictional and listed in CONTENT-TODO.md.
  */
 export const TK = {
-  streetAddress: {
-    text: 'street address of Saint Mary of Victories (verify)',
-    sample: '744 South Third Street',
-  },
-  zip: { text: 'parish zip code (verify)', sample: '63102' },
   mailingAddress: {
     text: 'mailing address for the Guild',
     sample: 'P.O. Box 4200, St. Louis, MO 63102',
   },
   meetingSchedule: {
-    text: 'meeting schedule (day, time, where in the church)',
+    text: 'meeting time and room (the day is confirmed: first Thursday of every month), and the Mass schedule',
     sample:
-      'Tradesmen\u2019s Mass is the first Saturday of each month at 8:00 AM, with adoration and coffee after. Formation meetings are the third Thursday at 7:00 PM in the parish hall.',
+      'The Guild meets the first Thursday of every month at 7:00 PM in the parish hall. Tradesmen\u2019s Mass and adoration are announced on the events page.',
   },
   taxStatus: {
     text: 'tax status line: update when the EIN arrives and again when the 501(c)(3) determination letter arrives (expected 1 to 5 months from September 2026)',

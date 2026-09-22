@@ -2,7 +2,7 @@
 import Section from '@/components/ui/Section.astro';
 import Picture from '@/components/ui/Picture.astro';
 import Tk from '@/components/ui/Tk.astro';
-import { PARISH_NAME, PARISH_CITY, TK } from '@/config/site';
+import { PARISH_NAME, PARISH_CITY, TK, PARISH_STREET, PARISH_ZIP } from '@/config/site';
 
 const mapsHref =
   'https://www.google.com/maps/search/?api=1&query=' +
@@ -18,11 +18,9 @@ const mapsHref =
       </h2>
       <address class="mt-6 not-italic leading-relaxed">
         <p class="font-serif text-[1.25rem]">{PARISH_NAME}</p>
-        <p class="mt-1">
-          <Tk {...TK.streetAddress} />
-        </p>
+        <p class="mt-1">{PARISH_STREET}</p>
         <p>
-          {PARISH_CITY} <Tk {...TK.zip} />
+          {PARISH_CITY} {PARISH_ZIP}
         </p>
       </address>
       <p class="mt-6 max-w-[52ch] leading-relaxed">

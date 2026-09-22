@@ -3,7 +3,7 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import PageHeader from '@/components/ui/PageHeader.astro';
 import Tk from '@/components/ui/Tk.astro';
 import InquiryForm from '@/components/forms/InquiryForm';
-import { PARISH_NAME, PARISH_CITY, TK } from '@/config/site';
+import { PARISH_NAME, PARISH_CITY, TK, PARISH_STREET, PARISH_ZIP } from '@/config/site';
 ---
 
 <BaseLayout
@@ -55,7 +55,7 @@ import { PARISH_NAME, PARISH_CITY, TK } from '@/config/site';
         </dd>
         <dt class="text-ash">Parish</dt>
         <dd>
-          {PARISH_NAME}, <Tk {...TK.streetAddress} />, {PARISH_CITY} <Tk {...TK.zip} />
+          {PARISH_NAME}, {PARISH_STREET}, {PARISH_CITY} {PARISH_ZIP}
         </dd>
       </dl>
     </section>
