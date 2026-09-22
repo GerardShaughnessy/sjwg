@@ -17,6 +17,13 @@
 [functions."rebuild-if-pending"]
   schedule = "@hourly"
 
+# The old Netlify address sends everyone to the real domain.
+[[redirects]]
+  from = "https://sjwg.netlify.app/*"
+  to = "https://sjwguild.com/:splat"
+  status = 301
+  force = true
+
 # Short URL for business cards: the directory is the hire path.
 [[redirects]]
   from = "/hire"
