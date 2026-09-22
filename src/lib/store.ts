@@ -6,9 +6,8 @@
  *
  * Nothing here sends anything anywhere.
  */
-import { DEMO_ACCOUNTS, DEMO_PASSWORD } from '@/config/site';
-import seedRequests from '@/data/sample-requests.json';
-import seedDonations from '@/data/donations.json';
+import seedRequests from '@/data/seed/sample-requests.json';
+import seedDonations from '@/data/seed/donations.json';
 import { KEYS, getJSON, setJSON, removeKey } from './storage';
 import { simulateLatency } from './delay';
 import { makeId, makeRef } from './ids';
@@ -23,38 +22,9 @@ import type {
   PostDraft,
   ReminderPrefs,
   RequestAnswers,
-  Session,
 } from './types';
 
 export { subscribe, getVersion } from './storage';
-
-/* ---------------------------------------------------------------- auth */
-export const auth = {
-  current(): Session | null {
-    return getJSON<Session | null>(KEYS.session, null);
-  },
-  // BACKEND: replace with a real auth provider (Netlify Identity, Clerk, Supabase Auth).
-  // The demo accepts the two demo accounts with the demo password only.
-  async login(email: string, password: string): Promise<Session> {
-    await simulateLatency();
-    const account = DEMO_ACCOUNTS.find((a) => a.email === email.trim().toLowerCase());
-    if (!account || password !== DEMO_PASSWORD) {
-      throw new Error('That email and password do not match a demo account.');
-    }
-    const session: Session = {
-      email: account.email,
-      role: account.role,
-      name: account.name,
-      memberId: 'memberId' in account ? account.memberId : undefined,
-      at: new Date().toISOString(),
-    };
-    setJSON(KEYS.session, session);
-    return session;
-  },
-  logout(): void {
-    removeKey(KEYS.session);
-  },
-};
 
 /* ------------------------------------------------------------ requests */
 type RequestsBag = { seeded: number; items: HelpRequest[] };

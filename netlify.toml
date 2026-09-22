@@ -5,6 +5,18 @@
 [build.environment]
   NODE_VERSION = "22"
 
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# Daily at 14:00 UTC (9 AM Central in summer, 8 AM in winter). Emails reminders for tomorrow's events.
+[functions."event-reminders"]
+  schedule = "0 14 * * *"
+
+# Hourly. Fires the publish build hook if a content change was coalesced.
+[functions."rebuild-if-pending"]
+  schedule = "@hourly"
+
 # Short URL for business cards: the directory is the hire path.
 [[redirects]]
   from = "/hire"
@@ -18,6 +30,17 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Cache-Control = "no-store"
+
+[[headers]]
+  for = "/portal*"
+  [headers.values]
+    Cache-Control = "private, no-store"
+    X-Robots-Tag = "noindex"
 
 [[headers]]
   for = "/_astro/*"

@@ -1,0 +1,64 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/ui/PageHeader.astro';
+import TrackRequest from '@/components/request/TrackRequest';
+import { loadTracked } from '@/server/track';
+import { HttpError } from '@/server/http';
+
+export const prerender = false;
+
+const token = Astro.params.token ?? '';
+let initial = null;
+let missing = false;
+try {
+  initial = await loadTracked(token);
+} catch (err) {
+  if (err instanceof HttpError && err.status === 404) missing = true;
+  else throw err;
+}
+Astro.response.headers.set('cache-control', 'private, no-store');
+if (missing) Astro.response.status = 404;
+---
+
+<BaseLayout
+  title={initial ? `Request ${initial.ref}` : 'Request not found'}
+  description="Check on a request to the Guild."
+  noindex
+  suppressWelcome
+>
+  {missing || !initial ? (
+    <>
+      <PageHeader title="That link is not right" />
+      <div class="wrap py-12 md:py-16">
+        <p class="max-w-[48ch] font-sans text-[1.0625rem] leading-relaxed">
+          Check that you opened the whole link from your confirmation email. If you no longer have
+          it, send a new request or contact the Guild with your reference number.
+        </p>
+        <div class="mt-6 flex flex-wrap gap-4">
+          <a
+            href="/request"
+            class="bg-brick text-paper hover:bg-kiln inline-flex min-h-[3.25rem] items-center px-7 py-3 font-sans font-semibold no-underline"
+          >
+            Request help
+          </a>
+          <a
+            href="/contact"
+            class="inline-flex min-h-[3.25rem] items-center font-sans font-medium underline decoration-brass decoration-2 underline-offset-4"
+          >
+            Contact the Guild
+          </a>
+        </div>
+      </div>
+    </>
+  ) : (
+    <>
+      <PageHeader
+        title={`Request ${initial.ref}`}
+        lede={`${initial.firstName ? `${initial.firstName}, this` : 'This'} is your private page for the request. Nothing here asks for money.`}
+      />
+      <div class="wrap py-10 md:py-14">
+        <TrackRequest client:load token={token} initial={initial} />
+      </div>
+    </>
+  )}
+</BaseLayout>

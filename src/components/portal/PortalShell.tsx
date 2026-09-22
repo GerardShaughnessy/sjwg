@@ -50,7 +50,7 @@ export default function PortalShell({ session, tabs, active, onChange, onLogout 
         <p className="font-sans">
           <span className="font-semibold">{session.name}</span>
           <span className="text-ash">
-            , {session.role === 'member' ? 'Guild member' : 'customer'}. {session.email}
+            , {session.role === 'admin' ? 'Guild officer' : 'Guild member'}. {session.email}
           </span>
         </p>
         <button

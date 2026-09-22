@@ -22,25 +22,11 @@ vi.stubGlobal('window', {
 vi.stubGlobal('document', {});
 vi.mock('./delay', () => ({ simulateLatency: () => Promise.resolve() }));
 
-const { auth, requests, posts, forms, donations } = await import('./store');
+const { requests, posts, forms, donations } = await import('./store');
 
 beforeEach(() => {
   window.localStorage.clear();
   window.sessionStorage.clear();
-});
-
-describe('auth', () => {
-  it('logs in a demo account and persists the session', async () => {
-    const s = await auth.login('GuildMember@test.com', 'guild2026');
-    expect(s.role).toBe('member');
-    expect(auth.current()?.email).toBe('guildmember@test.com');
-    auth.logout();
-    expect(auth.current()).toBeNull();
-  });
-  it('rejects unknown accounts and wrong passwords', async () => {
-    await expect(auth.login('nobody@test.com', 'guild2026')).rejects.toThrow();
-    await expect(auth.login('customer@test.com', 'wrong')).rejects.toThrow();
-  });
 });
 
 describe('requests', () => {

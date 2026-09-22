@@ -63,14 +63,15 @@ export interface HelpRequest extends Omit<RequestAnswers, 'photoName' | 'urgency
   notes?: string;
 }
 
-export type Role = 'member' | 'customer';
+export type Role = 'admin' | 'member';
 
+/** Mirror of the server's AppSession, passed to the portal as a prop. */
 export interface Session {
+  userId: string;
   email: string;
   role: Role;
   name: string;
-  memberId?: string;
-  at: string;
+  memberId: string | null;
 }
 
 export interface PostDraft {

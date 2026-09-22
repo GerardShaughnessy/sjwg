@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { FormKind } from '@/lib/types';
-import { forms } from '@/lib/store';
+import { ApiError, forms } from '@/lib/api';
 import { hasPhoneOrEmail, isEmail, isPhone, required } from '@/lib/validate';
 import { FormStatus, PrimaryButton, Select, TextArea, TextInput } from './fields';
 
@@ -29,8 +29,8 @@ interface Props {
 
 /**
  * One form component for contact, partnership, and membership interest.
- * Validation says what to fix and never clears what was typed. Submission is
- * faked in the store with a delay so the pending and sent states are real.
+ * Validation says what to fix and never clears what was typed. Submissions go
+ * to /api/forms/[kind], which stores them and emails the Guild.
  */
 export default function InquiryForm({
   kind,
@@ -47,6 +47,8 @@ export default function InquiryForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pending, setPending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [honey, setHoney] = useState('');
   const formRef = useRef<HTMLFormElement>(null);
   const doneRef = useRef<HTMLHeadingElement>(null);
 
@@ -85,10 +87,18 @@ export default function InquiryForm({
       return;
     }
     setPending(true);
+    setSubmitError('');
     try {
-      await forms.submit(kind, values);
+      await forms.submit(kind, { ...values, website: honey });
       setSent(true);
       setTimeout(() => doneRef.current?.focus(), 0);
+    } catch (err) {
+      if (err instanceof ApiError && Object.keys(err.fields).length) {
+        setErrors(err.fields);
+        const firstField = Object.keys(err.fields)[0];
+        formRef.current?.querySelector<HTMLElement>(`#${fid(firstField)}`)?.focus();
+      }
+      setSubmitError(err instanceof Error ? err.message : 'Could not send. Try again.');
     } finally {
       setPending(false);
     }
@@ -143,6 +153,29 @@ export default function InquiryForm({
         );
       })}
       <div className="flex flex-wrap items-center gap-4">
+        <div
+          className="absolute top-auto -left-[9999px] h-px w-px overflow-hidden"
+          aria-hidden="true"
+        >
+          <label htmlFor={fid('website')}>Leave this empty</label>
+          <input
+            id={fid('website')}
+            name="website"
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+            value={honey}
+            onChange={(e) => setHoney(e.target.value)}
+          />
+        </div>
+        {submitError && !pending && (
+          <p
+            role="alert"
+            className="border-brick bg-paper text-brick border-l-4 px-4 py-3 font-sans font-semibold"
+          >
+            {submitError}
+          </p>
+        )}
         <PrimaryButton pending={pending}>{submitLabel}</PrimaryButton>
         {pending && <FormStatus>Sending.</FormStatus>}
       </div>

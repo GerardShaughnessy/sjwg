@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import type { HelpRequest, RequestAnswers, Urgency } from '@/lib/types';
+import type { RequestAnswers, Urgency } from '@/lib/types';
 import { NOT_SURE, slugify, tradeFromSlug } from '@/lib/trades';
 import { hasPhoneOrEmail, isEmail, isPhone, isZip, required } from '@/lib/validate';
-import { requests, requestDraft } from '@/lib/store';
+import { requestDraft } from '@/lib/store';
+import { ApiError, requests, type CreatedRequest } from '@/lib/api';
 import {
   Field,
   FormStatus,
@@ -84,8 +85,10 @@ export default function RequestWizard({ trades, responseTk, serviceAreaTk }: Pro
   const [a, setA] = useState<RequestAnswers>(EMPTY);
   const [errors, setErrors] = useState<Errors>({});
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [pending, setPending] = useState(false);
-  const [done, setDone] = useState<HelpRequest | null>(null);
+  const [done, setDone] = useState<(CreatedRequest & { answers: RequestAnswers }) | null>(null);
+  const [submitError, setSubmitError] = useState('');
   const [restored, setRestored] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -188,10 +191,17 @@ export default function RequestWizard({ trades, responseTk, serviceAreaTk }: Pro
       return;
     }
     setPending(true);
+    setSubmitError('');
     try {
-      const saved = await requests.create(a);
+      const saved = await requests.create(a, photoFile);
       requestDraft.clear();
-      setDone(saved);
+      setDone({ ...saved, answers: a });
+    } catch (err) {
+      if (err instanceof ApiError && Object.keys(err.fields).length) {
+        setErrors(err.fields);
+        focusFirstError(err.fields);
+      }
+      setSubmitError(err instanceof Error ? err.message : 'Could not send the request. Try again.');
     } finally {
       setPending(false);
     }
@@ -201,6 +211,8 @@ export default function RequestWizard({ trades, responseTk, serviceAreaTk }: Pro
     requestDraft.clear();
     if (photoUrl) URL.revokeObjectURL(photoUrl);
     setPhotoUrl(null);
+    setPhotoFile(null);
+    setSubmitError('');
     setA(EMPTY);
     setErrors({});
     setDone(null);
@@ -209,6 +221,7 @@ export default function RequestWizard({ trades, responseTk, serviceAreaTk }: Pro
 
   function onPhoto(file: File | null) {
     if (photoUrl) URL.revokeObjectURL(photoUrl);
+    setPhotoFile(file);
     if (!file) {
       setPhotoUrl(null);
       update({ photoName: '' });
@@ -236,6 +249,25 @@ export default function RequestWizard({ trades, responseTk, serviceAreaTk }: Pro
           <Sample tk={responseTk} />
         </p>
         <p className="mt-3 leading-relaxed">
+          You can check on this request, and add a note or a photo description, at your own private
+          page. Bookmark it: it is the only way to see the request.
+        </p>
+        <p className="mt-3">
+          <a
+            href={done.trackingUrl}
+            className="bg-charcoal text-stone hover:bg-kiln inline-flex min-h-[3.25rem] items-center px-6 py-3 font-sans font-semibold no-underline"
+          >
+            Open your request page
+          </a>
+        </p>
+        <p className="mt-3 leading-relaxed">
+          {done.confirmationSent
+            ? `We also emailed the reference number and that link to ${done.answers.contact.email}.`
+            : done.answers.contact.email
+              ? 'We could not send the confirmation email just now, so keep this page open or write the number down.'
+              : 'You did not give an email, so write the number down or take a screenshot of this page.'}
+        </p>
+        <p className="mt-3 leading-relaxed">
           If you need to reach the Guild about this request, give the reference number.{' '}
           <a href="/contact" className="font-semibold">
             Contact the Guild
@@ -246,25 +278,25 @@ export default function RequestWizard({ trades, responseTk, serviceAreaTk }: Pro
         <h3 className="text-h3 mt-10">What you told us</h3>
         <dl className="border-mortar mt-3 grid grid-cols-[minmax(7rem,auto)_1fr] gap-x-6 gap-y-3 border-t pt-4 font-sans text-[1rem]">
           <dt className="text-ash">Need</dt>
-          <dd>{done.trade}</dd>
+          <dd>{done.answers.trade}</dd>
           <dt className="text-ash">Situation</dt>
-          <dd className="whitespace-pre-wrap">{done.description}</dd>
-          {done.photoName && (
+          <dd className="whitespace-pre-wrap">{done.answers.description}</dd>
+          {done.photoCount > 0 && (
             <>
               <dt className="text-ash">Photo</dt>
-              <dd>{done.photoName}</dd>
+              <dd>{done.answers.photoName || 'Attached'}</dd>
             </>
           )}
           <dt className="text-ash">Urgency</dt>
-          <dd>{URGENCY_LABEL[done.urgency]}</dd>
+          <dd>{done.answers.urgency ? URGENCY_LABEL[done.answers.urgency] : ''}</dd>
           <dt className="text-ash">Where</dt>
-          <dd>{[done.zip, done.neighborhood].filter(Boolean).join(', ')}</dd>
+          <dd>{[done.answers.zip, done.answers.neighborhood].filter(Boolean).join(', ')}</dd>
           <dt className="text-ash">Reach you</dt>
           <dd>
-            {done.contact.name}
-            {done.contact.phone ? `, ${done.contact.phone}` : ''}
-            {done.contact.email ? `, ${done.contact.email}` : ''}
-            {done.contact.bestTime ? `. Best time: ${done.contact.bestTime}.` : ''}
+            {done.answers.contact.name}
+            {done.answers.contact.phone ? `, ${done.answers.contact.phone}` : ''}
+            {done.answers.contact.email ? `, ${done.answers.contact.email}` : ''}
+            {done.answers.contact.bestTime ? `. Best time: ${done.answers.contact.bestTime}.` : ''}
           </dd>
         </dl>
 
@@ -499,6 +531,14 @@ export default function RequestWizard({ trades, responseTk, serviceAreaTk }: Pro
           {step === STEPS.length - 1 ? 'Send request' : 'Continue'}
         </PrimaryButton>
         {pending && <FormStatus>Sending your request to the Guild.</FormStatus>}
+        {submitError && !pending && (
+          <p
+            role="alert"
+            className="border-brick bg-paper text-brick basis-full border-l-4 px-4 py-3 font-sans font-semibold"
+          >
+            {submitError}
+          </p>
+        )}
       </div>
       {step === 0 && a.trade && (
         <p className="sr-only" aria-live="polite">

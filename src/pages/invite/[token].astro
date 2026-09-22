@@ -1,0 +1,58 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/ui/PageHeader.astro';
+import AcceptInviteForm from '@/components/auth/AcceptInviteForm';
+import { markOpened } from '@/server/db/queries/invitations';
+
+export const prerender = false;
+
+const token = Astro.params.token ?? '';
+const result = await markOpened(token);
+const ROLE_LINE = { admin: 'as a Guild officer', member: 'as a Guild member' } as const;
+---
+
+<BaseLayout title="Your invitation" description="Accept an invitation to the Guild portal." noindex>
+  {result.state === 'open' ? (
+    <>
+      <PageHeader
+        title="Welcome to the Guild portal"
+        lede={`You were invited ${ROLE_LINE[result.row.role]}. Set a password and you are in.`}
+      />
+      <div class="wrap py-12 md:py-16">
+        <AcceptInviteForm
+          client:load
+          token={token}
+          email={result.row.email}
+          name={result.row.name ?? ''}
+        />
+      </div>
+    </>
+  ) : (
+    <>
+      <PageHeader
+        title={
+          result.state === 'accepted'
+            ? 'This invitation was already used'
+            : result.state === 'expired'
+              ? 'This invitation has expired'
+              : 'This link is not right'
+        }
+      />
+      <div class="wrap py-12 md:py-16">
+        <p class="max-w-[48ch] font-sans text-[1.0625rem] leading-relaxed">
+          {result.state === 'accepted'
+            ? 'The account is already set up. Log in with your email and password, or reset the password if you forgot it.'
+            : result.state === 'expired'
+              ? 'Invitations work for seven days. Ask the officer who invited you to send a new one.'
+              : 'Check that you opened the whole link from the email. If it still does not work, ask the officer who invited you to send a new one.'}
+        </p>
+        <a
+          href="/login"
+          class="mt-6 inline-block font-sans font-medium underline decoration-brass decoration-2 underline-offset-4"
+        >
+          Go to log in
+        </a>
+      </div>
+    </>
+  )}
+</BaseLayout>

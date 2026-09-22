@@ -1,7 +1,6 @@
 ---
 import Wordmark from '@/components/brand/Wordmark.astro';
 import Button from '@/components/ui/Button.astro';
-import { DONATE_URL } from '@/config/site';
 
 const links = [
   { href: '/directory', label: 'Directory' },
@@ -37,10 +36,7 @@ const isCurrent = (href: string) => current === href || current.startsWith(href 
       >
         Log in
       </a>
-      <Button
-        href={DONATE_URL === '#donate-placeholder' ? '/donate' : DONATE_URL}
-        variant="secondary"
-      >
+      <Button href="/donate" variant="secondary">
         Donate
       </Button>
     </nav>
@@ -95,11 +91,7 @@ const isCurrent = (href: string) => current === href || current.startsWith(href 
         </a>
       </li>
       <li class="py-4">
-        <Button
-          href={DONATE_URL === '#donate-placeholder' ? '/donate' : DONATE_URL}
-          variant="secondary"
-          class="w-full"
-        >
+        <Button href="/donate" variant="secondary" class="w-full">
           Donate
         </Button>
       </li>

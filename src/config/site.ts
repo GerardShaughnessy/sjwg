@@ -10,11 +10,77 @@ export const PARISH_NAME = 'Saint Mary of Victories Catholic Church';
 export const PARISH_CITY = 'St. Louis, Missouri';
 
 /**
- * Donation processor is undecided. Until it is, the donate CTA points at an
- * in-page anchor. Replace with the hosted giving URL (Stripe Checkout, Zeffy,
- * Eleo page, etc.) once the board chooses. See DONOR-SYSTEM-OPTIONS.md.
+ * The give form lives on the donate page. The button there creates a Stripe
+ * Checkout session on the server; no processor keys reach the browser.
  */
-export const DONATE_URL = '#donate-placeholder';
+export const DONATE_URL = '/donate#give';
+
+/**
+ * Giving levels, in cents. Used by the donate page, the give form, the
+ * Stripe checkout route, receipts, and the giving_tiers seed. The benefits
+ * are quid pro quo goods and services: an accountant must set their fair
+ * market value (giving_tiers.fmv_cents) before formal receipts go out for
+ * these levels. See DONOR-SYSTEM-OPTIONS.md.
+ */
+export const GIVING_LEVELS = [
+  {
+    key: 'master',
+    name: 'Master',
+    minCents: 2_000_000,
+    amount: '$20,000 and up',
+    benefits: [
+      'Personally named, with a special intention, during our Masses and Holy Hours.',
+      'A copy of Fr. Donald Calloway\u2019s Consecration to St. Joseph.',
+      'A hand-crafted wooden crucifix and a customized rosary made by Guild members.',
+      'One pro bono small repair under $600 at your home, and up to five hours of pro bono plumbing inspection, diagnosis, or consultation.',
+      'A paid, all-inclusive invitation to the annual retreat, and invitations to all public Guild events.',
+    ],
+  },
+  {
+    key: 'foreman',
+    name: 'Foreman',
+    minCents: 500_000,
+    amount: '$5,000 and up',
+    benefits: [
+      'Personally named, with a special intention, during our Masses and Holy Hours.',
+      'A copy of Consecration to St. Joseph.',
+      'A hand-crafted wooden key holder made by a Guild member.',
+      'One pro bono small repair under $200 at your home, and up to two hours of pro bono plumbing inspection, diagnosis, or consultation.',
+      'An invitation to the annual retreat, and to all public Guild events.',
+    ],
+  },
+  {
+    key: 'journeyman',
+    name: 'Journeyman',
+    minCents: 100_000,
+    amount: '$1,000 and up',
+    benefits: [
+      'Personally named, with a special intention, during our Masses and Holy Hours.',
+      'A copy of Consecration to St. Joseph.',
+      'A hand-crafted wooden key holder made by a Guild member.',
+      'Invitations to all public Guild events.',
+    ],
+  },
+  {
+    key: 'apprentice',
+    name: 'Apprentice',
+    minCents: 50_000,
+    amount: '$500 and up',
+    benefits: [
+      'Personally named, with a special intention, during our Masses and Holy Hours.',
+      'A copy of Consecration to St. Joseph.',
+    ],
+  },
+  {
+    key: 'pre-apprentice',
+    name: 'Pre-apprentice',
+    minCents: 2_500,
+    amount: '$25 and up',
+    benefits: ['Personally named in the prayer intentions at our Masses and Holy Hours.'],
+  },
+] as const;
+
+export type GivingLevelKey = (typeof GIVING_LEVELS)[number]['key'];
 
 /**
  * Facts that have not been supplied. Each has the real fact needed (`text`)
@@ -97,11 +163,3 @@ export const TK = {
     sample: 'Names withheld at the members\u2019 request.',
   },
 } as const;
-
-/** Demo accounts for the faked portal. No real auth exists. */
-// BACKEND: replace with a real auth provider (Netlify Identity, Clerk, Supabase Auth, etc.)
-export const DEMO_ACCOUNTS = [
-  { email: 'guildmember@test.com', role: 'member', name: 'Demo Guild Member', memberId: 'm-01' },
-  { email: 'customer@test.com', role: 'customer', name: 'Demo Customer' },
-] as const;
-export const DEMO_PASSWORD = 'guild2026';
