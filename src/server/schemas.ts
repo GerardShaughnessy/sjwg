@@ -155,3 +155,94 @@ export function parseOrThrow<T extends z.ZodTypeAny>(schema: T, data: unknown): 
   const { message, fields } = issuesToFields(r.error.issues);
   throw new HttpError(400, message, fields);
 }
+
+/* ------------------------------------------------------- portal editors */
+export const profileSchema = z.object({
+  name: trimmed(120).min(1, 'Your name as it should be listed.'),
+  trade: trimmed(80).min(1, 'What trade are you in?'),
+  areas: z.array(trimmed(80).min(1)).max(8, 'Eight areas at most.').default([]),
+  yearsInTrade: z.number().int().min(0).max(80).default(0),
+  availability: z.enum(['available', 'limited', 'unavailable']).default('available'),
+  bio: trimmed(280, 'Keep it to one line, under 280 characters.').default(''),
+  public: z.boolean().default(false),
+});
+
+export const reminderPrefsSchema = z
+  .object({
+    email: z.boolean().default(false),
+    sms: z.boolean().default(false),
+    phone: trimmed(40).default(''),
+  })
+  .superRefine((v, ctx) => {
+    if (v.sms && !isPhone(v.phone))
+      ctx.addIssue({
+        code: 'custom',
+        path: ['phone'],
+        message: 'Text reminders need a ten-digit mobile number.',
+      });
+  });
+
+export const postSchema = z.object({
+  title: trimmed(200).min(1, 'Give the post a title first.'),
+  description: trimmed(300).default(''),
+  bodyMd: trimmed(50_000).default(''),
+});
+
+const isoDate = z
+  .string()
+  .trim()
+  .refine((v) => !Number.isNaN(Date.parse(v)), 'That date and time do not look right.');
+
+export const eventSchema = z
+  .object({
+    title: trimmed(200).min(1, 'Give the event a title.'),
+    kind: z
+      .enum(['mass', 'meeting', 'retreat', 'procession', 'workday', 'party', 'other'])
+      .default('other'),
+    start: isoDate,
+    end: z.union([isoDate, z.literal('')]).optional(),
+    location: trimmed(200).default(''),
+    summary: trimmed(300).default(''),
+    body: trimmed(10_000).default(''),
+    membersOnly: z.boolean().default(false),
+    published: z.boolean().default(true),
+    tk: trimmed(300).optional().nullable(),
+  })
+  .superRefine((v, ctx) => {
+    if (v.end && Date.parse(v.end) < Date.parse(v.start))
+      ctx.addIssue({ code: 'custom', path: ['end'], message: 'The end is before the start.' });
+  });
+
+export const sponsorSchema = z.object({
+  name: trimmed(120).min(1, 'Give the sponsor a name.'),
+  url: z
+    .union([z.literal(''), z.string().trim().url('Use a full web address, starting with https://')])
+    .default(''),
+  tier: z.enum(['partner', 'sponsor', 'supporter', 'in-kind']).default('sponsor'),
+  logoAlt: trimmed(200).default(''),
+  active: z.boolean().default(true),
+  sortOrder: z.number().int().min(0).max(9999).default(0),
+});
+
+export const uploadSchema = z.object({
+  name: trimmed(200).default('upload'),
+  dataBase64: z.string().min(1, 'Choose a file first.'),
+});
+
+export const manualDonationSchema = z.object({
+  donorName: trimmed(160).min(1, 'Who gave it?'),
+  donorEmail: z.union([z.literal(''), emailField]).default(''),
+  amountCents: z.number().int().min(100, 'At least one dollar.').max(100_000_000),
+  method: z.enum(['check', 'cash', 'ach', 'card', 'other']).default('check'),
+  fund: trimmed(80).default('general'),
+  tier: trimmed(40).default(''),
+  recurring: z.boolean().default(false),
+  receivedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date as YYYY-MM-DD.'),
+  note: trimmed(500).default(''),
+});
+
+export const donationPatchSchema = z.object({
+  ackStatus: z.enum(['not_required', 'pending_review', 'sent', 'manual']).optional(),
+  fmvCents: z.number().int().min(0).nullable().optional(),
+  note: trimmed(500).optional(),
+});

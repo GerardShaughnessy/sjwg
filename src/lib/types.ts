@@ -51,18 +51,6 @@ export interface RequestAnswers {
   contact: RequestContact;
 }
 
-export interface HelpRequest extends Omit<RequestAnswers, 'photoName' | 'urgency'> {
-  id: string;
-  ref: string;
-  createdAt: string;
-  status: RequestStatus;
-  urgency: Urgency;
-  photoName?: string;
-  owner: 'seed' | 'local';
-  claimedBy?: string;
-  notes?: string;
-}
-
 export type Role = 'admin' | 'member';
 
 /** Mirror of the server's AppSession, passed to the portal as a prop. */
@@ -74,36 +62,4 @@ export interface Session {
   memberId: string | null;
 }
 
-export interface PostDraft {
-  id: string;
-  title: string;
-  body: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Donation {
-  id: string;
-  date: string;
-  donorName: string;
-  amount: number;
-  method: 'check' | 'card' | 'cash' | 'other';
-  fund: string;
-  tier: string;
-  recurring: boolean;
-}
-
-export interface ReminderPrefs {
-  email: boolean;
-  sms: boolean;
-  phone: string;
-}
-
 export type FormKind = 'contact' | 'partner' | 'membership';
-
-export interface FormSubmission {
-  id: string;
-  kind: FormKind;
-  payload: Record<string, string>;
-  at: string;
-}

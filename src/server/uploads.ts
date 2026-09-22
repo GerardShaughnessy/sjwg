@@ -1,4 +1,4 @@
-import { getDeployStore, getStore, type Store } from '@netlify/blobs';
+import { getStore, type Store } from '@netlify/blobs';
 import { randomUUID } from 'node:crypto';
 import { env } from './env';
 
@@ -16,14 +16,15 @@ const IMAGE_TYPES: Record<string, string> = {
 const LOGO_TYPES: Record<string, string> = { ...IMAGE_TYPES, 'image/svg+xml': 'svg' };
 
 let store: Store | null = null;
+/**
+ * One site-wide store per environment so previews and production never mix
+ * and uploads survive redeploys. UPLOADS_STORE is "uploads" in the production
+ * context and "uploads-dev" everywhere else (see .env.example).
+ */
 export function uploadStore(): Store {
   if (store) return store;
-  const name = 'uploads';
-  // Production writes to the site-wide store; previews and local dev stay deploy-scoped.
-  store =
-    env('CONTEXT') === 'production'
-      ? getStore({ name, consistency: 'strong' })
-      : getDeployStore({ name, consistency: 'strong' });
+  const name = env('UPLOADS_STORE') ?? 'uploads-dev';
+  store = getStore({ name, consistency: 'strong' });
   return store;
 }
 
@@ -98,12 +99,18 @@ export async function putSponsorLogo(sponsorId: string, v: Validated) {
 export async function readBlob(
   key: string,
 ): Promise<{ bytes: ArrayBuffer; contentType: string } | null> {
-  const res = await uploadStore().getWithMetadata(key, { type: 'arrayBuffer' });
-  if (!res) return null;
-  return {
-    bytes: res.data,
-    contentType: String(res.metadata.contentType ?? 'application/octet-stream'),
-  };
+  try {
+    const res = await uploadStore().getWithMetadata(key, { type: 'arrayBuffer' });
+    if (!res) return null;
+    return {
+      bytes: res.data,
+      contentType: String(res.metadata.contentType ?? 'application/octet-stream'),
+    };
+  } catch (err) {
+    // A blob written by another deploy context (or a missing store locally) reads as not found.
+    console.warn('[uploads] read failed for', key, (err as Error).message);
+    return null;
+  }
 }
 
 export function fileResponse(

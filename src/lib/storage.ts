@@ -6,13 +6,7 @@ const PREFIX = 'sjwg:v1:';
 
 export const KEYS = {
   welcome: `${PREFIX}welcome-dismissed`,
-  session: `${PREFIX}session`,
-  requests: `${PREFIX}requests`,
   requestDraft: `${PREFIX}request-draft`,
-  postDrafts: `${PREFIX}post-drafts`,
-  profileOverrides: `${PREFIX}profile-overrides`,
-  reminders: `${PREFIX}reminders`,
-  formSubmissions: `${PREFIX}form-submissions`,
 } as const;
 
 export const canUseDom = () => typeof window !== 'undefined' && typeof document !== 'undefined';
@@ -63,7 +57,7 @@ export function removeKey(key: string, kind: 'local' | 'session' = 'local'): voi
 let version = 0;
 const listeners = new Set<() => void>();
 
-function emit() {
+export function emit() {
   version++;
   listeners.forEach((l) => l());
 }

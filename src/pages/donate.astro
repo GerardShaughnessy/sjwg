@@ -4,6 +4,7 @@ import PageHeader from '@/components/ui/PageHeader.astro';
 import Section from '@/components/ui/Section.astro';
 import Button from '@/components/ui/Button.astro';
 import Tk from '@/components/ui/Tk.astro';
+import SponsorStrip from '@/components/home/SponsorStrip.astro';
 import { DONATE_URL, TK } from '@/config/site';
 
 const uses = [
@@ -230,4 +231,5 @@ const giveHref = DONATE_URL;
       </Button>
     </div>
   </Section>
+  <SponsorStrip tone="paper" heading="Sponsors and partners already with us" />
 </BaseLayout>

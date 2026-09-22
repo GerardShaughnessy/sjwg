@@ -7,6 +7,9 @@ import MemberCalendar from './member/MemberCalendar';
 import ProfileEditor from './member/ProfileEditor';
 import PostEditor from './member/PostEditor';
 import DonorRecords from './member/DonorRecords';
+import EventsEditor from './admin/EventsEditor';
+import SponsorsEditor from './admin/SponsorsEditor';
+import InvitationsPanel from './admin/InvitationsPanel';
 
 interface Props {
   session: Session;
@@ -18,7 +21,7 @@ interface Props {
 /**
  * The portal for a logged-in Guild member. The page that renders this island
  * runs on demand and only reaches here with a verified session, so there is
- * no client-side gate.
+ * no client-side gate. Officers get the admin tabs.
  */
 export default function PortalApp({ session, members, events, areas }: Props) {
   const [tab, setTab] = useState('');
@@ -28,28 +31,30 @@ export default function PortalApp({ session, members, events, areas }: Props) {
   }, []);
 
   useEffect(() => {
-    if (!session) return;
     const p = new URLSearchParams(window.location.search);
     if (tab) p.set('tab', tab);
     else p.delete('tab');
     const qs = p.toString();
     window.history.replaceState(null, '', `${window.location.pathname}${qs ? `?${qs}` : ''}`);
-  }, [tab, session]);
+  }, [tab]);
 
-  const memberNames = Object.fromEntries(members.map((m) => [m.id, m.name]));
-  const me = members.find((m) => m.id === session.memberId) ?? members[0];
-
+  const isAdmin = session.role === 'admin';
   const tabs: Tab[] = [
-    {
-      id: 'jobs',
-      label: 'Job board',
-      content: <JobBoard session={session} memberNames={memberNames} />,
-    },
-    { id: 'calendar', label: 'Calendar', content: <MemberCalendar events={events} /> },
-    { id: 'profile', label: 'My entry', content: <ProfileEditor base={me} areas={areas} /> },
-    { id: 'posts', label: 'Blog posts', content: <PostEditor /> },
-    ...(session.role === 'admin'
-      ? [{ id: 'donors', label: 'Donor records', content: <DonorRecords /> }]
+    { id: 'jobs', label: 'Job board', content: <JobBoard session={session} /> },
+    { id: 'calendar', label: 'Calendar', content: <MemberCalendar initial={events} /> },
+    { id: 'profile', label: 'My entry', content: <ProfileEditor areas={areas} /> },
+    { id: 'posts', label: 'Blog posts', content: <PostEditor session={session} /> },
+    ...(isAdmin
+      ? [
+          { id: 'events', label: 'Events', content: <EventsEditor /> },
+          { id: 'sponsors', label: 'Sponsors', content: <SponsorsEditor /> },
+          { id: 'donors', label: 'Donor records', content: <DonorRecords /> },
+          {
+            id: 'invitations',
+            label: 'Invitations',
+            content: <InvitationsPanel members={members} />,
+          },
+        ]
       : []),
   ];
 

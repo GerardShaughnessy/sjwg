@@ -37,6 +37,9 @@ export function route(fn: (ctx: APIContext) => Promise<Response>) {
       return await fn(ctx);
     } catch (err) {
       if (err instanceof HttpError) return err.toResponse();
+      // A malformed id (not a uuid) is a 404, not a database error.
+      if ((err as { cause?: { code?: string } })?.cause?.code === '22P02')
+        return notFound().toResponse();
       console.error(`[api] ${ctx.request.method} ${new URL(ctx.request.url).pathname}`, err);
       return json({ error: 'Something went wrong on our end. Try again in a minute.' }, 500);
     }

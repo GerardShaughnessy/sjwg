@@ -21,5 +21,7 @@ export default defineConfig({
   integrations: [react(), sitemap({ filter: (page) => !PRIVATE.test(page) })],
   vite: {
     plugins: [tailwindcss()],
+    // Pre-bundle the auth client so dev never serves a stale optimized dep for it.
+    optimizeDeps: { include: ['@neondatabase/auth'] },
   },
 });
