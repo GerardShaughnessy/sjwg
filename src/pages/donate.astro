@@ -5,6 +5,10 @@ import Section from '@/components/ui/Section.astro';
 import Button from '@/components/ui/Button.astro';
 import Tk from '@/components/ui/Tk.astro';
 import SponsorStrip from '@/components/home/SponsorStrip.astro';
+import GiveForm from '@/components/donate/GiveForm';
+
+// Built at deploy time: the give form appears once DONATIONS_LIVE is true and Stripe keys exist.
+const live = (import.meta.env.DONATIONS_LIVE ?? process.env.DONATIONS_LIVE) === 'true';
 import { DONATE_URL, TK } from '@/config/site';
 
 const uses = [
@@ -155,15 +159,16 @@ const giveHref = DONATE_URL;
         </h2>
         <div class="mt-5 flex flex-col gap-5 leading-relaxed">
           <div class="border-t-4 border-brass bg-paper p-6">
-            <h3 class="text-h3">Online</h3>
-            <p class="mt-2">
-              <Tk {...TK.onlineGiving} />
-            </p>
-            <div class="mt-4">
-              <Button href={giveHref} aria-disabled="true">
-                Give online
-              </Button>
-            </div>
+            {live ? (
+              <GiveForm client:visible />
+            ) : (
+              <>
+                <h3 class="text-h3">Online</h3>
+                <p class="mt-2">
+                  <Tk {...TK.onlineGiving} />
+                </p>
+              </>
+            )}
           </div>
           <div class="border-t border-mortar pt-5">
             <h3 class="text-h3">By check</h3>

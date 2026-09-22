@@ -1,0 +1,63 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/ui/PageHeader.astro';
+import { describeSession, donationsLive } from '@/server/stripe';
+import { dollars } from '@/server/receipts';
+
+export const prerender = false;
+
+const id = Astro.url.searchParams.get('session_id') ?? '';
+let info: Awaited<ReturnType<typeof describeSession>> | null = null;
+if (id && donationsLive()) {
+  try {
+    info = await describeSession(id);
+  } catch {
+    info = null;
+  }
+}
+Astro.response.headers.set('cache-control', 'private, no-store');
+---
+
+<BaseLayout
+  title="Thank you"
+  description="Thank you for your gift to the St. Joseph the Worker Guild."
+  noindex
+  suppressWelcome
+>
+  <PageHeader
+    title="Thank you."
+    lede={
+      info
+        ? `Your ${info.recurring ? 'monthly ' : ''}gift of ${dollars(info.amountCents)} reached the Guild.`
+        : 'Your gift reached the Guild.'
+    }
+  />
+  <div class="wrap py-12 md:py-16">
+    <div class="max-w-[56ch] leading-relaxed">
+      <p>
+        {info?.email
+          ? `A receipt is on its way to ${info.email}. If it does not arrive in a few minutes, check spam, then contact the Guild.`
+          : 'A receipt goes to the email you gave Stripe. If it does not arrive in a few minutes, check spam, then contact the Guild.'}
+      </p>
+      <p class="mt-4">
+        You will be remembered by name at the Guild's Masses and Holy Hours. Your gift funds parish
+        repair days, medical costs for underinsured tradesmen, emergency home maintenance for
+        families with no one else to call, and training for men entering the trades.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-4">
+        <a
+          href="/"
+          class="bg-brick text-paper hover:bg-kiln inline-flex min-h-[3.25rem] items-center px-7 py-3 font-sans font-semibold no-underline"
+        >
+          Back to the home page
+        </a>
+        <a
+          href="/events"
+          class="inline-flex min-h-[3.25rem] items-center font-sans font-medium underline decoration-brass decoration-2 underline-offset-4"
+        >
+          See upcoming events
+        </a>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

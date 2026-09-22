@@ -37,7 +37,7 @@ All defined in `src/config/site.ts` under `TK`, rendered through `src/components
 - **Events** (`src/data/events.json`): every date, time, venue, cost, and celebrant is sample. The Christmas party was mentioned in conversation and does not appear in the Case for Support; confirm it exists. Retreat cost $180 and party cost $15 are invented.
 - **Member directory** (`src/data/members.json`): all 14 members are fictional with placeholder surnames (Sampleton, Placeholder, Mockwell). Replace wholesale. Real members named in the Case for Support (Greg, Sam, Milton, Jake) are the first candidates. What appears publicly for a real person (phone, last name, exact area, photo) is a consent question, not a design question. The directory banner and the home strip note say "sample" until then.
 - **Sample requests** (`src/data/sample-requests.json`) and **donations** (`src/data/donations.json`): fictional, for the portal demo only.
-- **Demo accounts** (`src/config/site.ts`): `guildmember@test.com` and `customer@test.com`, password `guild2026`. Remove when real auth exists.
+- **Test accounts** exist only on the Neon `dev` branch (`guildmember@test.com`, `officer@test.com`, password `guild2026-dev`). Production has none; officers are invited.
 - **Founder**: the founding story does not name the plumber. Decide whether he wants to be named.
 - **Hero eyebrow and dialog copy** describe the Guild as "Catholic tradesmen of Saint Mary of Victories" and "a nonprofit". Both are from the Guild's material; only the tax status line is sample.
 
@@ -58,29 +58,24 @@ Defined in `src/data/images.ts`. Stock files are in `src/assets/stock/` with sou
 
 Also wanted: before-and-after photos of the parish jobs (the decks ask for these twice), and photographs of completed work generally.
 
-## 4. Donate URL
+## 4. Turn the real services on
 
-`DONATE_URL` in `src/config/site.ts` is `#donate-placeholder`, which scrolls to the "How to give" section. Replace with the hosted giving page once a processor is chosen. Every donate button on the site reads from this one constant.
+Everything below is wired and tested; each needs one thing from Gerard.
 
-## 5. Backend seams
+| Service               | What to do                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Where it lands                                                                                                        |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Email (Resend)        | Create a free account, make an API key, add it as `RESEND_API_KEY` in Netlify (production) and `.env`. Until then every send is logged as "skipped" in `email_log` and nothing else breaks. When the Guild has a domain, add Resend's DKIM and SPF records and set `EMAIL_FROM` to an address on it.                                                                                                                                                                                                                                        | Request confirmations, intake alerts, invitations, notes to requesters, receipts, form notifications, event reminders |
+| Stripe                | The site currently runs on an unclaimed Stripe sandbox (test mode, no real money; expires 2026-09-29). Claim it with the link the CLI printed, or create the Guild's real account, activate it with the EIN and bank details, and apply for the nonprofit rate. Then replace `STRIPE_SECRET_KEY` (a restricted key) and `STRIPE_WEBHOOK_SECRET` in Netlify production and set `DONATIONS_LIVE=true`. Add `https://sjwg.netlify.app/api/webhooks/stripe` as a webhook endpoint in the real account for the five events listed in the README. | The give form on `/donate`                                                                                            |
+| Netlify build hook    | Site settings, Build and deploy, Build hooks: create one called "publish" and add its URL as `NETLIFY_BUILD_HOOK_URL`. Until then, publishing from the portal marks a rebuild pending and the public pages update at the next deploy.                                                                                                                                                                                                                                                                                                       | Blog, events, sponsors, directory changes                                                                             |
+| Accountant            | Price the benefits at each giving level and enter the value in `giving_tiers.fmv_cents` (any SQL client, or ask for a portal field). Until then, gifts at levels with benefits get a plain thank-you and sit in "Receipt pending review" in Donor records; the officer sends the formal receipt by hand.                                                                                                                                                                                                                                    | Receipts                                                                                                              |
+| First officer account | Run `npm run db:seed -- --admin you@example.com` against production to print an invitation link, or use the one generated at launch. Then invite the other officers and members from the portal.                                                                                                                                                                                                                                                                                                                                            | Portal                                                                                                                |
+| Member consent        | Each real member ticks "List me in the public directory" on his own entry. Seed rows are public because they are fictional; delete them once real members are in.                                                                                                                                                                                                                                                                                                                                                                           | Directory                                                                                                             |
 
-Every `// BACKEND:` comment in the code. All but two are in `src/lib/store.ts`.
+## 5. Manual steps that are not code
 
-| File                                   | Seam                                                                                                                         |
-| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `src/lib/store.ts` (`auth`)            | Replace demo login with a real auth provider (Netlify Identity, Clerk, Supabase Auth). Role comes from the user record       |
-| `src/lib/store.ts` (`requests.create`) | POST the request to an API, persist it, notify the Guild's intake contact by email or text. Reference number from the server |
-| `src/lib/store.ts` (`requests.update`) | Status changes server-side and audited                                                                                       |
-| `src/lib/store.ts` (`posts`)           | Git-based CMS (Decap) or a posts table; publishing writes markdown into `src/content/blog`                                   |
-| `src/lib/store.ts` (`reminders`)       | Email provider and Twilio for texts; scheduled reminder jobs                                                                 |
-| `src/lib/store.ts` (`profile`)         | Members table; a member edits only his own row; public fields gated by consent                                               |
-| `src/lib/store.ts` (`donations`)       | Stripe and a donor CRM synced to QuickBooks. See `DONOR-SYSTEM-OPTIONS.md`                                                   |
-| `src/lib/store.ts` (`forms`)           | Netlify Forms for contact, partner, and membership forms                                                                     |
-| `src/content.config.ts`                | Where a CMS would write blog markdown                                                                                        |
-| `src/config/site.ts`                   | Demo accounts to remove                                                                                                      |
-| `astro.config.mjs`                     | Set `site` to the real domain                                                                                                |
-
-Photo upload in the request wizard keeps the file in memory and shows a preview only; a real implementation needs object storage with a signed upload URL.
+- Register the Guild with the Missouri Attorney General's charitable registry if required (see `DONOR-SYSTEM-OPTIONS.md`).
+- Decide whether password-reset emails should be branded. Today Neon sends them from its own address; branding needs a Neon Auth webhook configured in the Neon console pointing at a route this site would add.
+- Texting: reminders and intake alerts by SMS need a Twilio number registered under the Guild's EIN (A2P 10DLC). The preference is stored already.
 
 ## 6. Legal and accounting items surfaced by the content
 
@@ -91,6 +86,7 @@ Photo upload in the request wizard keeps the file in memory and shows a preview 
 
 ## 7. Not built on purpose
 
-- No real login, database, email, texting, payments, or CMS. See the README for what attaches where.
+- No customer accounts. A requester gets a private tracking link instead.
+- No donor CRM. Donor records live in the database with CSV export for QuickBooks; see `DONOR-SYSTEM-OPTIONS.md` for when to add Little Green Light.
 - No map embed on "Where we meet"; it links to a maps search instead.
-- The portal route cannot be protected on a static host. It is `noindex` and gated client-side only.
+- No member photo upload yet (the slot and the file route exist).

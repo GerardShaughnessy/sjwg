@@ -64,9 +64,10 @@ Revisit custom only if the Guild passes a few thousand donors or needs something
 - Quid pro quo: any gift over $75 where the donor receives benefits requires a written disclosure of the benefits' fair market value. The Master and Foreman tiers include pro bono labor at the donor's home. An accountant should price that and decide whether to keep it as a benefit.
 - 1099s: if the Guild pays a member for work on a client's home out of hardship funds, that is contractor income to the member. QuickBooks handles the 1099 filing; the CRM does not.
 
-## What the site does today
+## What was built (stage three, September 2026)
 
-- `src/config/site.ts`: `DONATE_URL` is a placeholder anchor. Replace with the hosted giving page.
-- `src/pages/donate.astro`: giving levels, use of funds, check and in-person instructions, and the church-direct option, all static.
-- `src/lib/store.ts` under `donations`: reads `src/data/donations.json` (fictional) and exports CSV. The `// BACKEND:` comment marks where a CRM or Stripe export would attach.
-- `src/components/portal/member/DonorRecords.tsx`: the mock admin view (totals by fund and level, table, CSV).
+- **Stripe hosted Checkout** for one-time and monthly gifts at the five giving levels or any amount, from the give form on `/donate`. No card details touch the site. The webhook at `/api/webhooks/stripe` records every gift once (idempotent on the Stripe event id) and emails a receipt.
+- **Receipts** follow IRS substantiation rules: legal name, EIN, 501(c)(3) statement, date, amount, and either "no goods or services" or the fair market value of the benefits with the deductible remainder. Levels with benefits wait in "pending review" until an accountant enters the value in `giving_tiers.fmv_cents`.
+- **Donor records** in the portal show every gift, totals by fund and level, receipts to review, manual entry for checks and cash, and a CSV export that matches what QuickBooks Online imports.
+- **Still to decide:** the CRM. The recommendation stands: once gifts pass a few dozen donors, add Little Green Light for mailings, year-end statements, and native QuickBooks sync, importing the CSV. The site can keep taking gifts through Stripe either way.
+- **Test mode:** the site currently uses a Stripe sandbox (no real money). See `CONTENT-TODO.md` for switching to the Guild's real account and the nonprofit rate.

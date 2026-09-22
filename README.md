@@ -1,39 +1,48 @@
 # St. Joseph the Worker Guild website
 
-Public website for the St. Joseph the Worker Guild (SJWG), a Catholic fraternal organization for tradesmen based at Saint Mary of Victories in St. Louis, Missouri.
+Public website and member portal for the St. Joseph the Worker Guild (SJWG), a Catholic fraternal organization for tradesmen based at Saint Mary of Victories in St. Louis, Missouri.
 
-This is a **stage one and two mockup**: design and in-browser function. Everything works with no server. Nothing is sent anywhere, nothing is persisted beyond the visitor's own browser, there is no real login. Every place a backend would attach is marked `// BACKEND:` in the code and listed in `CONTENT-TODO.md`.
+Stage three: the site is real. Public pages are prerendered from a Postgres database, the portal has real logins, help requests and forms are stored and emailed, gifts run through Stripe, and content is edited in the portal. One operator (Gerard) runs it; the stack is chosen so it costs a few dollars a month and no Guild officer needs a vendor dashboard.
 
 ## Run it
 
 ```
 npm install
-npm run dev        # http://localhost:4321
-npm run build      # static output in dist/
-npm run preview    # serve dist/
-npm run check      # astro check (types)
-npm test           # vitest (lib helpers and the faked store)
-npm run lh         # Lighthouse CI against dist/ (needs a build first)
+cp .env.example .env     # then fill it in (see Environment below)
+npm run dev              # netlify dev on http://localhost:8888 (functions, Blobs, .env)
+npm run build            # static pages + one Netlify function for the on-demand routes
+npm run check            # astro check (types)
+npm test                 # vitest
+npm run lh               # Lighthouse CI against dist/ (build first)
+npm run db:generate      # drizzle-kit: new migration from src/server/db/schema.ts
+npm run db:migrate       # apply migrations to DATABASE_URL
+npm run db:seed          # sample content; add --with-test-users on the dev branch
 ```
 
-Node 22 or newer. Astro 7 runs the dev server as a daemon: `npx astro dev stop` stops it.
+Node 22 or newer. `npm run dev` sets `ASTRO_DEV_BACKGROUND=1` because Astro 7 otherwise backgrounds itself under an AI agent and `netlify dev` exits. If a build or the dev server gets stale after adding a dependency: `npx astro dev stop && rm -rf node_modules/.vite && npm run dev`.
+
+For Stripe locally: `stripe listen --events checkout.session.completed,checkout.session.async_payment_succeeded,checkout.session.async_payment_failed,invoice.paid,invoice.payment_failed --forward-to localhost:8888/api/webhooks/stripe` and put the printed `whsec_` in `.env`.
 
 ## What is on the site
 
-| Route                       | What it is                                                                                                                                                    |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`                         | Hero with promo-video slot, what the Guild is, four pillars, founding story, member strip, how to help, testimonials, events and blog previews, where we meet |
-| `/directory`                | Member directory. Filter by trade and area, sort, URL-synced. Sample data. The QR-code landing page for business cards; `/hire` redirects here                |
-| `/request`                  | Five-question request-help wizard with a confirmation and reference number. Never mentions money                                                              |
-| `/events`, `/events/[slug]` | Upcoming and past events with detail pages                                                                                                                    |
-| `/about`                    | What a guild is, why one is needed, the five program areas, values, where the Guild is headed                                                                 |
-| `/get-involved`             | Join as a tradesman (interest form), volunteer, partner, hire                                                                                                 |
-| `/donate`                   | Where a gift goes, five giving levels, how to give, church-direct giving, partner with the Guild                                                              |
-| `/contact`                  | Contact form and a partnership form                                                                                                                           |
-| `/blog`, `/blog/[id]`       | Markdown posts from `src/content/blog`                                                                                                                        |
-| `/login`, `/portal`         | Faked portal. Member: job board, calendar with reminders, own directory entry, blog drafts, donor records with CSV export. Customer: their requests           |
+| Route                       | What it is                                                                                                                                                      |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                         | Hero with promo-video slot, what the Guild is, four pillars, founding story, member strip, how to help, testimonials, events and blog previews, where we meet   |
+| `/directory`                | Member directory. Filter by trade and area, sort, URL-synced. Sample data. The QR-code landing page for business cards; `/hire` redirects here                  |
+| `/request`                  | Five-question request-help wizard with a confirmation and reference number. Never mentions money                                                                |
+| `/events`, `/events/[slug]` | Upcoming and past events with detail pages                                                                                                                      |
+| `/about`                    | What a guild is, why one is needed, the five program areas, values, where the Guild is headed                                                                   |
+| `/get-involved`             | Join as a tradesman (interest form), volunteer, partner, hire                                                                                                   |
+| `/donate`                   | Where a gift goes, five giving levels, how to give, church-direct giving, partner with the Guild                                                                |
+| `/contact`                  | Contact form and a partnership form                                                                                                                             |
+| `/blog`, `/blog/[id]`       | Markdown posts from `src/content/blog`                                                                                                                          |
+| `/login`, `/portal`         | Member portal. Members: job board, calendar with email reminders, own directory entry, blog drafts. Officers also: events, sponsors, donor records, invitations |
+| `/request/track/[token]`    | A requester's private status page, linked from the confirmation email                                                                                           |
+| `/invite/[token]`           | Set a password from an officer's invitation. There is no public sign-up                                                                                         |
+| `/donate/thank-you`         | After Stripe Checkout                                                                                                                                           |
+| `/api/*`                    | JSON routes behind the portal and the public forms; `/api/webhooks/stripe` records gifts                                                                        |
 
-Demo accounts: `guildmember@test.com` and `customer@test.com`, password `guild2026`.
+Logins are invite-only. On the Neon `dev` branch the seed creates `guildmember@test.com` (member) and `officer@test.com` (officer), password `guild2026-dev`. Production accounts come only from invitations.
 
 ## Design plan
 
@@ -76,36 +85,50 @@ Rule: brick appears once per page at scale, plus on primary buttons. Separation 
 | Cream page with terracotta accent                      | Limestone-grey ground, brick as structure, brass as hairline                                                                                               |
 | Give / Join / Hire as three identical cards            | A brick block, an outlined panel, and a plain list link                                                                                                    |
 
-## What is faked, and where the real thing attaches
+## What is real, and how it fits
 
-Everything below lives behind one file, `src/lib/store.ts`. Each namespace has a `// BACKEND:` comment.
+| Piece         | How it works                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Database      | Neon Postgres, project `sjwg`. Branch `main` is production, `dev` is local and preview. Schema in `src/server/db/schema.ts`, migrations in `drizzle/`, applied from a laptop with `npm run db:migrate` (never in a Netlify build).                                                                                                                                                                                                                                             |
+| Public pages  | Prerendered at build. `src/content.config.ts` reads members, events, posts, and sponsors from the database and falls back to `src/data/seed/` if it cannot. Publishing from the portal calls the Netlify build hook (coalesced to one every few minutes; `netlify/functions/rebuild-if-pending.mts` flushes hourly).                                                                                                                                                           |
+| Logins        | Neon Managed Better Auth, proxied at `/api/auth/*` by `src/pages/api/auth/[...path].ts` with the Astro adapter in `src/server/auth/`. Sign-up is refused unless an opened, unexpired invitation matches; a Better Auth identity without an `app_users` row gets nothing. Roles: `admin` (officers) and `member`.                                                                                                                                                               |
+| Help requests | `POST /api/requests` stores the row, a downsized photo in Netlify Blobs, and an audit trail; emails the requester a private tracking link and the Guild an alert. Members claim, refer, close, and note from the job board.                                                                                                                                                                                                                                                    |
+| Forms         | Contact, partnership, and membership interest post to `/api/forms/[kind]`, are stored, and emailed to `GUILD_NOTIFY_EMAIL`. Honeypot field drops bots.                                                                                                                                                                                                                                                                                                                         |
+| Email         | Resend through `src/server/email/send.ts`; every attempt is logged in `email_log`. Without `RESEND_API_KEY` sends are logged as skipped and nothing else fails.                                                                                                                                                                                                                                                                                                                |
+| Gifts         | Stripe hosted Checkout (`/api/donate/checkout`), one-time or monthly. The webhook at `/api/webhooks/stripe` is the only writer of card gifts, idempotent on `stripe_events`. Receipts follow IRS substantiation rules (`src/server/receipts.ts`); levels with benefits wait in "pending review" until an accountant sets the fair market value in `giving_tiers`. Checks and cash are entered by hand in Donor records. The give form appears only when `DONATIONS_LIVE=true`. |
+| Uploads       | Netlify Blobs store named by `UPLOADS_STORE` (`uploads` in production, `uploads-dev` elsewhere), served through `/api/files/*`.                                                                                                                                                                                                                                                                                                                                                |
+| Reminders     | `netlify/functions/event-reminders.mts` runs daily at 14:00 UTC and emails members who opted in about tomorrow's events (Chicago time). Text reminders are stored, not sent, until texting is registered.                                                                                                                                                                                                                                                                      |
 
-| Faked                              | How                                                                                      | Real implementation                                                                                                    |
-| ---------------------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Login                              | Two demo accounts, session in localStorage                                               | Netlify Identity, Clerk, or Supabase Auth; role from the user record                                                   |
-| Help requests                      | Seeded from `src/data/sample-requests.json` into localStorage; wizard submissions append | POST to an API, store in Postgres (Neon), notify the intake contact by email or text. Reference number from the server |
-| Blog drafts                        | localStorage                                                                             | Decap CMS writing markdown into `src/content/blog`, or a posts table                                                   |
-| Event reminders                    | Preference saved to localStorage                                                         | Email provider plus Twilio for texts, with scheduled jobs                                                              |
-| Directory entry edits              | Overrides in localStorage on top of `members.json`                                       | Members table; the member edits only his own row                                                                       |
-| Donor records                      | `src/data/donations.json`, CSV export client-side                                        | Stripe plus a donor CRM (Little Green Light or Eleo) synced to QuickBooks. See `DONOR-SYSTEM-OPTIONS.md`               |
-| Contact, partner, membership forms | Saved to localStorage after a delay                                                      | Netlify Forms is the cheapest attach point on a static host                                                            |
-| Photo upload                       | Local preview only, bytes never leave the device                                         | Object storage with a signed upload URL                                                                                |
-| Donate button                      | `DONATE_URL` in `src/config/site.ts` points to an in-page anchor                         | Set to the hosted giving page once a processor is chosen                                                               |
+### Environment
 
-The portal route is `noindex` and cannot be protected on a static host; the gate is client-side only.
+Copy `.env.example`. Production values live in Netlify (Site settings, Environment variables) in the `production` context; `deploy-preview` and `branch-deploy` point at the Neon `dev` branch.
+
+| Variable                                                       | What                                                                                                |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                                                 | Neon pooled connection string for the branch                                                        |
+| `NEON_AUTH_BASE_URL`, `NEON_AUTH_COOKIE_SECRET`                | Neon Auth for the branch; the secret is 32+ random characters                                       |
+| `PUBLIC_SITE_URL`                                              | Used in emails and Stripe redirects                                                                 |
+| `RESEND_API_KEY`, `EMAIL_FROM`                                 | Email. `onboarding@resend.dev` delivers only to the Resend account owner until a domain is verified |
+| `GUILD_INTAKE_EMAIL`, `GUILD_NOTIFY_EMAIL`                     | Who gets new requests, and who gets forms and payment failures                                      |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `DONATIONS_LIVE` | Stripe. Prefer a restricted key. The give form shows only when `DONATIONS_LIVE=true`                |
+| `ORG_LEGAL_NAME`, `ORG_EIN`                                    | Printed on receipts                                                                                 |
+| `UPLOADS_STORE`                                                | Blobs store name                                                                                    |
+| `NETLIFY_BUILD_HOOK_URL`                                       | Publish hook; without it, content changes wait for the next build                                   |
 
 ## Content
 
-- `src/data/members.json` is the only source for the directory, the home page strip, and the request flow's trade list. Members are fictional with obviously placeholder names.
-- `src/data/events.json` and `src/content/blog/*.md` hold events and posts. Sample copy is marked in `CONTENT-TODO.md`.
+- Members, events, posts, and sponsors live in the database and are edited in the portal. `src/data/seed/` holds the fictional sample content the seed script loads and the build falls back to.
 - `src/data/images.ts` maps every image slot to a file and alt text. Stock photos are in `src/assets/stock/` with credits in `stock-credits.json`; a `null` slot renders a labeled placeholder region.
 - `src/config/site.ts` holds every sample value (`TK`) with the real fact it stands in for.
 
 ## Deploy
 
-Static output, no adapter. `netlify.toml` sets the build command, publish directory, Node 22, security headers, and the `/hire` redirect.
+Production deploys from a laptop with `npx netlify deploy --prod --build --context production` until the GitHub repo is connected in Netlify (Site configuration, Build and deploy, Link repository); after that a push to `main` builds. `netlify.toml` sets the build, the scheduled functions, headers, and the `/hire` redirect. Drafts: `npx netlify deploy --build --context deploy-preview`.
 
-- Connected to GitHub: push to `main` and Netlify builds.
-- By CLI: `npx netlify deploy --prod --build`.
+Before a schema change reaches production: `DATABASE_URL=<main> npm run db:migrate` from a laptop, then push.
 
-Set `site` in `astro.config.mjs` to the real domain when there is one, so canonical URLs and the sitemap are right.
+Set `site` in `astro.config.mjs` (or `PUBLIC_SITE_URL`) to the real domain when there is one, and add it as a trusted origin in Neon Auth.
+
+## Cost
+
+Netlify Pro (already paid), Neon Launch at about $1 to $4 a month for this load, Neon Auth and Resend on free tiers, Stripe per gift only. See `DONOR-SYSTEM-OPTIONS.md` for the donor CRM question.
