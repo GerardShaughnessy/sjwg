@@ -61,23 +61,25 @@ const CHECKLIST: Seed[] = [
       'Exact name as it should appear on IRS documents. Missouri needs at least three directors. The mailing address can change later.',
   },
   {
-    title: 'Check the name is available with the Missouri Secretary of State',
+    title: 'Fill out the attorney’s intake form with Greg and send it back',
     section: 'Paperwork',
     who: 'us',
+    due: '2026-10-05',
+    notes:
+      'After Monday’s meeting. The attorney (under the $500 agreement Michael signed) files the Missouri articles; the IRS paperwork is not part of her agreement, so we do that ourselves.',
   },
   {
-    title: 'Draft the articles of incorporation',
+    title: 'Ask the attorney to put the 501(c)(3) clauses in the articles',
     section: 'Paperwork',
     who: 'us',
     notes:
-      'Missouri nonprofit corporation. Include the IRS purpose clause and the dissolution clause (assets go to another 501(c)(3)); the IRS rejects applications without them. Rocket Lawyer for the form, Claude for the clauses.',
+      'The IRS needs two clauses in the articles: a purpose clause limited to 501(c)(3) purposes, and a dissolution clause sending assets to another 501(c)(3). Without them the Form 1023 stalls until the articles are amended. Also ask who she lists as registered agent, and for a copy of everything she files.',
   },
   {
-    title: 'File the articles with Missouri (about $25)',
+    title: 'Attorney files the articles with Missouri',
     section: 'Paperwork',
-    who: 'us',
-    notes:
-      'Online with the Secretary of State. Needs a registered agent with a Missouri street address; a director can serve.',
+    who: 'the attorney',
+    notes: 'When Missouri approves, the EIN card is unblocked.',
   },
   {
     title: 'Draft bylaws, conflict-of-interest policy, and first-meeting minutes',
