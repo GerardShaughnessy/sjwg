@@ -47,6 +47,7 @@ export const giftMethod = pgEnum('gift_method', ['card', 'check', 'cash', 'ach',
 export const ackStatus = pgEnum('ack_status', ['not_required', 'pending_review', 'sent', 'manual']);
 export const formKind = pgEnum('form_kind', ['contact', 'partner', 'membership']);
 export const emailStatus = pgEnum('email_status', ['sent', 'failed', 'skipped']);
+export const taskStatus = pgEnum('task_status', ['todo', 'doing', 'waiting', 'done']);
 
 const id = () => uuid('id').primaryKey().defaultRandom();
 const createdAt = () => timestamp('created_at', { withTimezone: true }).notNull().defaultNow();
@@ -414,6 +415,30 @@ export const formSubmissions = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index('form_submissions_kind_idx').on(t.kind, t.createdAt)],
+);
+
+/* ------------------------------------------------------------------ tasks */
+/** The officers' to-do board. `waitingOn` names an outside party (Greg, the IRS) when no login fits. */
+export const tasks = pgTable(
+  'tasks',
+  {
+    id: id(),
+    title: text('title').notNull(),
+    notes: text('notes').notNull().default(''),
+    status: taskStatus('status').notNull().default('todo'),
+    section: text('section').notNull().default('General'),
+    assigneeId: uuid('assignee_id').references(() => appUsers.id, { onDelete: 'set null' }),
+    waitingOn: text('waiting_on').notNull().default(''),
+    dueDate: date('due_date'),
+    sortOrder: integer('sort_order').notNull().default(0),
+    createdBy: uuid('created_by').references(() => appUsers.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    index('tasks_status_idx').on(t.status, t.sortOrder),
+    index('tasks_assignee_idx').on(t.assigneeId),
+  ],
 );
 
 /* ------------------------------------------------------------ email + misc */

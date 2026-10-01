@@ -17,7 +17,12 @@ npm run lh               # Lighthouse CI against dist/ (build first)
 npm run db:generate      # drizzle-kit: new migration from src/server/db/schema.ts
 npm run db:migrate       # apply migrations to DATABASE_URL
 npm run db:seed          # sample content; add --with-test-users on the dev branch
+npx tsx scripts/tasks.ts seed --owner you@example.com      # load the launch checklist onto the Tasks board
+npx tsx scripts/tasks.ts handover --waiting-on Greg --to greg@example.com --from Gerard   # give an officer his cards, one summary email
+npx tsx scripts/invite.ts --email x@example.com --name "Name" --role admin --from you@example.com   # send a portal invitation
 ```
+
+The portal's **Tasks** tab (officers only) is a four-column board: To do, In progress, Waiting on someone, Done. Assigning a card to another officer emails him a link that opens the card (`/portal?tab=tasks&task=<id>`).
 
 Node 22 or newer. `npm run dev` sets `ASTRO_DEV_BACKGROUND=1` because Astro 7 otherwise backgrounds itself under an AI agent and `netlify dev` exits. If a build or the dev server gets stale after adding a dependency: `npx astro dev stop && rm -rf node_modules/.vite && npm run dev`.
 

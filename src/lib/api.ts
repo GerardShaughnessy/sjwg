@@ -437,3 +437,35 @@ export const announcements = {
       json('POST', input),
     ),
 };
+
+/* ------------------------------------------------------------------ tasks */
+export type TaskStatus = 'todo' | 'doing' | 'waiting' | 'done';
+export interface Task {
+  id: string;
+  title: string;
+  notes: string;
+  status: TaskStatus;
+  section: string;
+  assigneeId: string | null;
+  waitingOn: string;
+  dueDate: string;
+  sortOrder: number;
+  createdBy: string | null;
+  updatedAt: string;
+}
+export type TaskInput = Omit<Task, 'id' | 'createdBy' | 'updatedAt'>;
+export interface Assignee {
+  id: string;
+  name: string | null;
+  email: string;
+}
+type Emailed = 'sent' | 'failed' | 'skipped' | null;
+
+export const tasks = {
+  list: () => call<{ tasks: Task[]; assignees: Assignee[] }>('/api/tasks'),
+  create: (input: TaskInput) =>
+    mutate<{ task: Task; emailed: Emailed }>('/api/tasks', json('POST', input)),
+  update: (id: string, patch: Partial<TaskInput>) =>
+    mutate<{ task: Task; emailed: Emailed }>(`/api/tasks/${id}`, json('PATCH', patch)),
+  remove: (id: string) => mutate<{ ok: true }>(`/api/tasks/${id}`, { method: 'DELETE' }),
+};

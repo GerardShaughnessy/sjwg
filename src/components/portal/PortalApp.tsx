@@ -12,6 +12,7 @@ import SponsorsEditor from './admin/SponsorsEditor';
 import InvitationsPanel from './admin/InvitationsPanel';
 import MembersAdmin from './admin/MembersAdmin';
 import AnnouncementsPanel from './admin/AnnouncementsPanel';
+import TasksBoard from './admin/TasksBoard';
 
 interface Props {
   session: Session;
@@ -36,6 +37,7 @@ export default function PortalApp({ session, members, events, areas }: Props) {
     const p = new URLSearchParams(window.location.search);
     if (tab) p.set('tab', tab);
     else p.delete('tab');
+    if (tab && tab !== 'tasks') p.delete('task');
     const qs = p.toString();
     window.history.replaceState(null, '', `${window.location.pathname}${qs ? `?${qs}` : ''}`);
   }, [tab]);
@@ -48,6 +50,7 @@ export default function PortalApp({ session, members, events, areas }: Props) {
     { id: 'posts', label: 'Blog posts', content: <PostEditor session={session} /> },
     ...(isAdmin
       ? [
+          { id: 'tasks', label: 'Tasks', content: <TasksBoard session={session} /> },
           { id: 'events', label: 'Events', content: <EventsEditor /> },
           { id: 'sponsors', label: 'Sponsors', content: <SponsorsEditor /> },
           { id: 'donors', label: 'Donor records', content: <DonorRecords /> },

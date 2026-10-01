@@ -268,3 +268,38 @@ export const announcementSchema = z.object({
   subject: trimmed(150).min(1, 'Give it a subject.'),
   body: trimmed(10_000).min(1, 'Write the message.'),
 });
+
+export const TASK_STATUSES = ['todo', 'doing', 'waiting', 'done'] as const;
+export const TASK_SECTIONS = [
+  'Paperwork',
+  '501(c)(3)',
+  'Money',
+  'Site launch',
+  'Content',
+  'General',
+] as const;
+
+const taskFields = {
+  title: trimmed(200).min(1, 'Give the task a title.'),
+  notes: trimmed(10_000),
+  status: z.enum(TASK_STATUSES),
+  section: z.enum(TASK_SECTIONS, { message: 'Pick a section.' }),
+  assigneeId: z.string().uuid('Pick someone from the list.').nullable(),
+  waitingOn: trimmed(120),
+  dueDate: z.union([z.literal(''), z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date as YYYY-MM-DD.')]),
+  sortOrder: z.number().int().min(0).max(99_999),
+};
+
+export const taskSchema = z.object({
+  ...taskFields,
+  notes: taskFields.notes.default(''),
+  status: taskFields.status.default('todo'),
+  section: taskFields.section.default('General'),
+  assigneeId: taskFields.assigneeId.default(null),
+  waitingOn: taskFields.waitingOn.default(''),
+  dueDate: taskFields.dueDate.default(''),
+  sortOrder: taskFields.sortOrder.default(0),
+});
+
+/** Moving a card or editing part of one. No defaults, so absent fields stay untouched. */
+export const taskPatchSchema = z.object(taskFields).partial();
