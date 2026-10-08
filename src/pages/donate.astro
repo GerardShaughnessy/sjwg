@@ -131,7 +131,7 @@ const giveHref = DONATE_URL;
       Ways to give
     </h2>
     <p class="mt-3 max-w-[60ch] leading-relaxed">
-      Every donor at every level is remembered by name at the Guild's Masses and Holy Hours. Larger
+      Every donor's name and prayer intentions are offered at our Guild holy hours, on request. Larger
       gifts carry the thanks of working men: things made by hand, and work done at your home.
     </p>
     <div class="mt-8 border-t border-mortar">
@@ -157,6 +157,23 @@ const giveHref = DONATE_URL;
         <h2 id="how-title" class="text-h2">
           How to give
         </h2>
+        <div class="mt-5 border-l-4 border-brass bg-paper p-6 leading-relaxed">
+          <p>
+            We are awaiting our 501(c)(3) status. Until it arrives, St. Mary of Victories Catholic
+            Church has generously provided a fiscal agreement for our mutual benefit, so we ask you
+            to give through St. Mary of Victories.
+          </p>
+          <p class="mt-3 font-sans text-[0.95rem] text-ash">
+            Note "St. Joseph the Worker Guild" with your gift so the parish can direct it to the
+            Guild.
+          </p>
+          <a
+            href="https://www.zeffy.com/en-US/donation-form/6eafe8fc-b9f4-4014-a65c-7c529f9f994e"
+            class="mt-5 inline-block bg-brick px-5 py-3 font-sans font-semibold text-paper no-underline hover:bg-kiln"
+          >
+            Give through St. Mary of Victories
+          </a>
+        </div>
         <div class="mt-5 flex flex-col gap-5 leading-relaxed">
           <div class="border-t-4 border-brass bg-paper p-6">
             {live ? (
@@ -185,19 +202,7 @@ const giveHref = DONATE_URL;
         </div>
       </div>
       <div>
-        <h2 class="text-h2">Prefer to give to the church itself?</h2>
-        <p class="mt-5 max-w-[48ch] leading-relaxed">
-          Some donors want to keep a historic parish standing and are not looking for a membership
-          organization. A dedicated page routes gifts directly to Saint Mary of Victories. No Guild
-          overhead is taken from them.
-        </p>
-        <p class="mt-4">
-          <a href="#donate-placeholder" class="font-semibold">
-            <Tk {...TK.parishGiving} />
-          </a>
-        </p>
-
-        <h2 class="mt-12 text-h2">By the numbers</h2>
+        <h2 class="text-h2">By the numbers</h2>
         <dl class="mt-5 border-t border-mortar font-sans">
           <div class="flex items-baseline justify-between gap-4 border-b border-mortar py-3">
             <dt>Members targeted by 2029</dt>

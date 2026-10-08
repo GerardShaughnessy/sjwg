@@ -1,15 +1,10 @@
 ---
 /**
- * Hero. Charcoal band, Caslon headline left, promo video slot right.
- * The video is pending, so the slot ships with the poster only. When a file
- * exists, set data-src-mp4 / data-src-webm on the <video>; the script attaches
- * sources and plays muted only when the visitor allows motion and is not on
- * a data-saver connection. No autoplay or <source> in markup on purpose.
+ * Hero. Olive band, headline left, the circular SJWG monogram right
+ * (public/brand/monogram-ivory.svg, logo set E). The promo video, when it
+ * exists, can return here.
  */
 import Button from '@/components/ui/Button.astro';
-import Picture from '@/components/ui/Picture.astro';
-import Tk from '@/components/ui/Tk.astro';
-import { TK } from '@/config/site';
 ---
 
 <section class="bg-charcoal text-stone" aria-labelledby="hero-title">
@@ -22,8 +17,8 @@ import { TK } from '@/config/site';
         id="hero-title"
         class="mt-5 max-w-[22ch] text-[clamp(2rem,1.1rem+2.8vw,3.4rem)] leading-[1.08] tracking-[-0.01em]"
       >
-        Skilled tradesmen who support each other through mutual assistance, spiritual formation,
-        networking, and practical resources.
+        A Catholic brotherhood of devout local tradesmen who unite their families, communities,
+        and parishes in solidarity.
       </h1>
       <div class="mt-9 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-7">
         <Button href="/request" size="lg">
@@ -39,70 +34,17 @@ import { TK } from '@/config/site';
       </div>
     </div>
 
-    <figure class="lg:justify-self-end lg:w-full">
-      <div class="relative border-[6px] border-brick bg-kiln">
-        <Picture
-          slot="heroPoster"
-          priority
-          sizes="(min-width: 64rem) 40vw, 100vw"
-          aspect="4 / 3"
-          class="hero-poster"
-        />
-        <video
-          class="absolute inset-0 hidden h-full w-full object-cover"
-          muted
-          playsinline
-          loop
-          preload="none"
-          aria-hidden="true"
-          tabindex="-1"
-          data-hero-video
-          data-src-mp4=""
-          data-src-webm=""
-        ></video>
-      </div>
-      <figcaption class="mt-3 font-sans text-[0.9rem] leading-snug text-stone/70">
-        <Tk {...TK.promoVideo} />
-      </figcaption>
-    </figure>
+    <div class="flex justify-center lg:justify-end">
+      <img
+        src="/brand/monogram-ivory.svg"
+        alt="The St. Joseph the Worker Guild monogram: SJWG within a ring, crowned by a cross"
+        width="4673"
+        height="4520"
+        class="h-auto w-[min(72vw,22rem)] lg:w-full lg:max-w-[26rem]"
+        fetchpriority="high"
+      />
+    </div>
   </div>
   <div class="h-2 bg-brick" aria-hidden="true"></div>
 </section>
 
-<style>
-  /* Sit the still into the charcoal band rather than letting it glow. */
-  :global(.hero-poster) {
-    filter: saturate(0.5) contrast(1.05) brightness(0.92);
-  }
-</style>
-
-<script>
-  const video = document.querySelector<HTMLVideoElement>('[data-hero-video]');
-  const mp4 = video?.dataset.srcMp4;
-  const webm = video?.dataset.srcWebm;
-  const allowMotion = matchMedia('(prefers-reduced-motion: no-preference)').matches;
-  const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection
-    ?.saveData;
-
-  if (video && (mp4 || webm) && allowMotion && !saveData) {
-    if (webm) {
-      const s = document.createElement('source');
-      s.src = webm;
-      s.type = 'video/webm';
-      video.append(s);
-    }
-    if (mp4) {
-      const s = document.createElement('source');
-      s.src = mp4;
-      s.type = 'video/mp4';
-      video.append(s);
-    }
-    video.load();
-    video
-      .play()
-      .then(() => video.classList.remove('hidden'))
-      .catch(() => {
-        /* autoplay refused: the poster stays, which is fine */
-      });
-  }
-</script>

@@ -141,10 +141,6 @@ export const TK = {
     text: 'donation processor and hosted giving URL; see DONOR-SYSTEM-OPTIONS.md',
     sample: 'Online giving opens soon. Until then, give by check or in person.',
   },
-  parishGiving: {
-    text: 'link to the parish\u2019s own giving page, or confirm it exists',
-    sample: 'Give to the parish directly through the Saint Mary of Victories giving page.',
-  },
   giftInPerson: {
     text: 'who to hand a gift to at a Mass or event',
     sample: 'Hand it to any Guild officer, or to the usher at a Guild Mass.',
