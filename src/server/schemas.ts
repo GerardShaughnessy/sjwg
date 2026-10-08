@@ -208,7 +208,7 @@ export const eventSchema = z
   .object({
     title: trimmed(200).min(1, 'Give the event a title.'),
     kind: z
-      .enum(['mass', 'meeting', 'retreat', 'procession', 'workday', 'party', 'other'])
+      .enum(['mass', 'holy_hour', 'meeting', 'retreat', 'procession', 'workday', 'party', 'other'])
       .default('other'),
     start: isoDate,
     end: z.union([isoDate, z.literal('')]).optional(),

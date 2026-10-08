@@ -86,7 +86,7 @@ async function main() {
     id: string;
     slug: string;
     title: string;
-    kind: 'mass' | 'meeting' | 'retreat' | 'procession' | 'workday' | 'party' | 'other';
+    kind: 'mass' | 'holy_hour' | 'meeting' | 'retreat' | 'procession' | 'workday' | 'party' | 'other';
     start: string;
     end?: string;
     location: string;

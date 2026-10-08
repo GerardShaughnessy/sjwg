@@ -13,7 +13,7 @@ export interface Member {
 }
 
 export type EventKind =
-  'mass' | 'meeting' | 'retreat' | 'procession' | 'workday' | 'party' | 'other';
+  'mass' | 'holy_hour' | 'meeting' | 'retreat' | 'procession' | 'workday' | 'party' | 'other';
 
 export interface GuildEvent {
   id: string;

@@ -37,6 +37,7 @@ export const eventKind = pgEnum('event_kind', [
   'meeting',
   'retreat',
   'procession',
+  'holy_hour',
   'workday',
   'party',
   'other',

@@ -18,6 +18,7 @@ import {
 
 const KINDS: { value: EventKind; label: string }[] = [
   { value: 'mass', label: 'Mass or adoration' },
+  { value: 'holy_hour', label: 'Holy hour' },
   { value: 'meeting', label: 'Meeting or formation' },
   { value: 'retreat', label: 'Retreat' },
   { value: 'procession', label: 'Procession' },

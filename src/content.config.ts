@@ -97,7 +97,7 @@ const eventSchema = z.object({
   id: z.string(),
   slug: z.string(),
   title: z.string(),
-  kind: z.enum(['mass', 'meeting', 'retreat', 'procession', 'workday', 'party', 'other']),
+  kind: z.enum(['mass', 'holy_hour', 'meeting', 'retreat', 'procession', 'workday', 'party', 'other']),
   start: z.string(),
   end: z.string().optional(),
   location: z.string(),

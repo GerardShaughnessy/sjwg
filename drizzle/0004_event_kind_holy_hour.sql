@@ -1,0 +1,1 @@
+ALTER TYPE "public"."event_kind" ADD VALUE 'holy_hour' BEFORE 'workday';
