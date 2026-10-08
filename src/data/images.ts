@@ -3,8 +3,8 @@ import pipeWrenches from '@/assets/stock/stock-pixabay-840835-pipe-wrenches.jpg'
 import electrician from '@/assets/stock/stock-pixabay-3273340-electrician-wiring.jpg';
 import carpenter from '@/assets/stock/stock-pixabay-2385634-carpenter-plane.jpg';
 import kneeling from '@/assets/stock/stock-pixabay-2598802-man-kneeling-chapel.jpg';
-import vanSmallHouse from '@/assets/stock/stock-pixabay-1834826-van-small-house.jpg';
-import handsElderly from '@/assets/stock/stock-pixabay-2906458-hands-elderly.jpg';
+import whiteVan from '@/assets/stock/stock-pixabay-2590854-white-van-street.jpg';
+import basilicaConstruction from '@/assets/photos/basilica-construction-1910.jpg';
 import smovExterior from '@/assets/stock/stock-wikimedia-smov-exterior.jpg';
 
 /**
@@ -26,14 +26,14 @@ export const images = {
     credit: 'stevepb, Pixabay',
   },
   guildAtWork: {
-    src: handsElderly,
-    alt: "A younger hand resting gently on an elderly woman's folded hands",
-    credit: 'sabinevanerp, Pixabay',
+    src: basilicaConstruction,
+    alt: 'Workmen and a lattice crane atop a stone bell tower of the Cathedral Basilica of Saint Louis during its construction, about 1910',
+    credit: 'Cathedral Basilica of Saint Louis under construction, about 1910',
   },
   foundingStory: {
-    src: vanSmallHouse,
-    alt: 'An old van parked at the curb in front of a small house',
-    credit: 'Pexels, Pixabay',
+    src: whiteVan,
+    alt: 'A worn white work van with brown stripes parked at the curb on a city street',
+    credit: 'StockSnap, Pixabay',
   },
   spiritual: {
     src: kneeling,

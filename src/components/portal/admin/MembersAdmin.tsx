@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Member } from '@/lib/types';
 import { members as api, type MemberAdmin, type MemberInput } from '@/lib/api';
 import { useResource } from '@/lib/hooks';
+import { byTradeThenName, COMMON_TRADES, OTHER_TRADE } from '@/lib/trades';
 import {
   btnMuted,
   btnPrimary,
@@ -43,7 +44,13 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
-  const list = data ?? [];
+  const [sortBy, setSortBy] = useState<'trade' | 'name'>('trade');
+  const list = (data ?? [])
+    .slice()
+    .sort(sortBy === 'trade' ? byTradeThenName : (a, b) => a.name.localeCompare(b.name));
+  const isCommon = (COMMON_TRADES as readonly string[]).includes(form.trade);
+  const [otherTrade, setOtherTrade] = useState(false);
+  const tradeChoice = isCommon ? form.trade : form.trade || otherTrade ? OTHER_TRADE : '';
   const allAreas = [...new Set([...areas, ...list.flatMap((m) => m.areas), ...form.areas])].sort(
     (a, b) => a.localeCompare(b),
   );
@@ -69,6 +76,7 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   function reset() {
+    setOtherTrade(false);
     setId(null);
     setForm(EMPTY);
     setStatus('');
@@ -162,12 +170,35 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
           />
         </Labeled>
         <Labeled label="Trade" error={fields.trade}>
-          <input
-            value={form.trade}
-            onChange={(e) => setForm({ ...form, trade: e.target.value })}
+          <select
+            value={tradeChoice}
+            onChange={(e) => {
+              const v = e.target.value;
+              setOtherTrade(v === OTHER_TRADE);
+              setForm({ ...form, trade: v === OTHER_TRADE ? '' : v });
+            }}
             className={inputCls}
-          />
+          >
+            <option value="">Pick a trade</option>
+            {COMMON_TRADES.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+            <option value={OTHER_TRADE}>Other (type it in)</option>
+          </select>
         </Labeled>
+        {tradeChoice === OTHER_TRADE && (
+          <Labeled label="His trade" error={fields.trade}>
+            <input
+              value={form.trade}
+              onChange={(e) => setForm({ ...form, trade: e.target.value })}
+              placeholder="For example, Stained Glass"
+              className={inputCls}
+              autoFocus
+            />
+          </Labeled>
+        )}
         <Labeled label="Years in the trade" error={fields.yearsInTrade}>
           <input
             type="number"
@@ -263,15 +294,6 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
             />
           </Labeled>
         </div>
-        <Labeled label="Order" hint="Lower numbers come first in the directory.">
-          <input
-            type="number"
-            min={0}
-            value={form.sortOrder}
-            onChange={(e) => setForm({ ...form, sortOrder: Number(e.target.value) || 0 })}
-            className={`${inputCls} w-28`}
-          />
-        </Labeled>
         <label className="flex items-center gap-2">
           <input
             type="checkbox"
@@ -321,6 +343,26 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
         {loading && !data && (
           <div className="mt-2">
             <Loading what="members" />
+          </div>
+        )}
+        {list.length > 1 && (
+          <div className="mt-2 flex items-center gap-3 text-[0.9rem]">
+            <span className="text-ash">Sort by</span>
+            {(['trade', 'name'] as const).map((k) => (
+              <button
+                key={k}
+                type="button"
+                onClick={() => setSortBy(k)}
+                aria-pressed={sortBy === k}
+                className={
+                  sortBy === k
+                    ? 'font-semibold underline decoration-brass decoration-2 underline-offset-4'
+                    : 'text-ash hover:text-charcoal'
+                }
+              >
+                {k === 'trade' ? 'Trade' : 'Name'}
+              </button>
+            ))}
           </div>
         )}
         {list.length > 0 && (

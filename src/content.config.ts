@@ -72,7 +72,7 @@ const members = defineCollection({
           .select()
           .from(schema.members)
           .where(eq(schema.members.public, true))
-          .orderBy(asc(schema.members.sortOrder), asc(schema.members.name));
+          .orderBy(asc(schema.members.trade), asc(schema.members.name));
         return rows.map((m) => ({
           id: m.id,
           name: m.name,

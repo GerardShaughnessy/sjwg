@@ -1,5 +1,48 @@
-/** Trade and area helpers. members.json is the only source of trade names. */
+/** Trade and area helpers. The directory's trade filter lists the trades members actually have. */
 export const NOT_SURE = 'Not sure';
+
+/** The trades officers pick from in the portal. "Other" lets them type one in. */
+export const COMMON_TRADES = [
+  'Appliance Repair',
+  'Auto Mechanic',
+  'Cabinetry',
+  'Carpentry',
+  'Concrete',
+  'Drywall',
+  'Electrical',
+  'Excavation',
+  'Fencing',
+  'Flooring',
+  'Garage Doors',
+  'General Contracting',
+  'General Repair',
+  'Glass and Glazing',
+  'Gutters',
+  'Handyman',
+  'HVAC',
+  'Insulation',
+  'Ironwork',
+  'Landscaping',
+  'Locksmith',
+  'Masonry',
+  'Painting',
+  'Pest Control',
+  'Plastering',
+  'Plumbing',
+  'Roofing',
+  'Siding',
+  'Tile',
+  'Tree Service',
+  'Welding',
+  'Windows and Doors',
+] as const;
+
+export const OTHER_TRADE = 'Other';
+
+/** Directory order: by trade, then by name. */
+export function byTradeThenName<T extends { trade: string; name: string }>(a: T, b: T): number {
+  return a.trade.localeCompare(b.trade) || a.name.localeCompare(b.name);
+}
 
 type HasTrade = { trade: string; areas: string[] };
 

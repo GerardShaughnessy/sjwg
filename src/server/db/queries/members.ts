@@ -39,7 +39,7 @@ export async function listMembersAdmin() {
     .select({ m: members, accountEmail: appUsers.email })
     .from(members)
     .leftJoin(appUsers, eq(appUsers.memberId, members.id))
-    .orderBy(asc(members.sortOrder), asc(members.name));
+    .orderBy(asc(members.trade), asc(members.name));
   return rows.map(({ m, accountEmail }) => memberView(m, accountEmail));
 }
 
