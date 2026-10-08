@@ -1,3 +1,4 @@
+import { titleCase } from '@/lib/text';
 import { useEffect, useState } from 'react';
 import type { GuildEvent } from '@/lib/types';
 import { formatEventDate, formatEventTime, monthKey, splitEvents } from '@/lib/events';
@@ -81,7 +82,7 @@ export default function MemberCalendar({ initial }: { initial: GuildEvent[] }) {
                   <div>
                     <p className="font-serif text-[1.2rem]">
                       <a href={`/events/${ev.slug}`} className="no-underline hover:underline">
-                        {ev.title}
+                        {titleCase(ev.title)}
                       </a>
                     </p>
                     <p className="text-ash font-sans text-[0.95rem]">

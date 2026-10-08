@@ -1,4 +1,5 @@
 ---
+import { titleCase } from '@/lib/text';
 import type { GuildEvent } from '@/lib/types';
 import { formatEventDate, formatEventTime } from '@/lib/events';
 
@@ -28,7 +29,7 @@ const KIND_LABEL: Record<GuildEvent['kind'], string> = {
   <div class="min-w-0">
     <h3 class="text-h3">
       <a href={`/events/${event.slug}`} class="no-underline hover:underline">
-        {event.title}
+        {titleCase(event.title)}
       </a>
     </h3>
     <p class="mt-1 font-sans text-[0.95rem] text-ash">

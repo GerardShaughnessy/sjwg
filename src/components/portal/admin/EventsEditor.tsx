@@ -3,6 +3,7 @@ import type { EventKind, GuildEvent } from '@/lib/types';
 import { events as api, type EventInput } from '@/lib/api';
 import { useResource } from '@/lib/hooks';
 import { formatEventDate, formatEventTime } from '@/lib/events';
+import { EVENT_TEMPLATES, GUILD_LOCATION, nextDate } from '@/config/event-templates';
 import {
   btnMuted,
   btnPrimary,
@@ -32,7 +33,7 @@ const EMPTY: EventInput = {
   kind: 'other',
   start: '',
   end: '',
-  location: 'Saint Mary of Victories, St. Louis',
+  location: GUILD_LOCATION,
   summary: '',
   body: '',
   membersOnly: false,
@@ -98,6 +99,30 @@ export default function EventsEditor() {
     setFormError('');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+  /** Fill the form from a template: usual title, time, place, wording, next date. */
+  function applyTemplate(key: string) {
+    const t = EVENT_TEMPLATES.find((x) => x.key === key);
+    if (!t) return;
+    const date = nextDate(t);
+    // An end time earlier than the start (the retreat) means a later day; leave it for the officer.
+    const sameDay = t.endTime > t.startTime;
+    setForm({
+      ...EMPTY,
+      title: t.title,
+      kind: t.kind,
+      start: date ? fromLocal(`${date}T${t.startTime}`) : '',
+      end: date && sameDay ? fromLocal(`${date}T${t.endTime}`) : '',
+      location: t.location,
+      summary: t.summary,
+      body: t.body,
+      membersOnly: t.membersOnly,
+    });
+    setStatus(
+      date
+        ? `Filled in from "${t.title}" for ${formatEventDate(fromLocal(`${date}T${t.startTime}`))}. Check it, then add.`
+        : `Filled in from "${t.title}". Pick the dates, then add.`,
+    );
+  }
   function reset() {
     setId(null);
     setForm(EMPTY);
@@ -141,7 +166,23 @@ export default function EventsEditor() {
           Times are Central time. Published events appear on the events page, the home page, and the
           member calendar.
         </p>
-        <Labeled label="Title" error={fields.title}>
+        {!id && (
+          <Labeled label="Start from" hint="Fills in the usual time, place, and wording, and the next date.">
+            <select
+              value=""
+              onChange={(e) => applyTemplate(e.target.value)}
+              className={inputCls}
+            >
+              <option value="">Blank event</option>
+              {EVENT_TEMPLATES.map((t) => (
+                <option key={t.key} value={t.key}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </Labeled>
+        )}
+        <Labeled label="Title" hint="Shown in Title Case on the site." error={fields.title}>
           <input
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}

@@ -1,5 +1,6 @@
 import { z } from 'astro/zod';
 import { hasPhoneOrEmail, isEmail, isPhone, isZip } from '@/lib/validate';
+import { titleCase } from '@/lib/text';
 import { HttpError } from './http';
 
 /**
@@ -206,7 +207,7 @@ const isoDate = z
 
 export const eventSchema = z
   .object({
-    title: trimmed(200).min(1, 'Give the event a title.'),
+    title: trimmed(200).min(1, 'Give the event a title.').transform(titleCase),
     kind: z
       .enum(['mass', 'holy_hour', 'meeting', 'retreat', 'procession', 'workday', 'party', 'other'])
       .default('other'),
