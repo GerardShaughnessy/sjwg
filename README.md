@@ -132,7 +132,7 @@ The Netlify site is connected to this GitHub repo: a push to `main` builds and d
 
 Before a schema change reaches production: `DATABASE_URL=<main> npm run db:migrate` from a laptop, then push.
 
-The domain is sjwguild.com, registered at Namecheap with nameservers delegated to Netlify DNS (zone managed in Netlify; it also holds Resend's DKIM, SPF, and DMARC records). `PUBLIC_SITE_URL` is https://sjwguild.com in production and it is a trusted origin in Neon Auth.
+The domain is sjwg.org, registered at Namecheap with nameservers delegated to Netlify DNS (zone managed in Netlify; it also holds Resend's DKIM, SPF, and DMARC records). `PUBLIC_SITE_URL` is https://sjwg.org in production and it is a trusted origin in Neon Auth. The earlier domain, sjwguild.com, and sjwg.netlify.app redirect to it permanently (`netlify.toml`); keep sjwguild.com registered so old links keep working.
 
 ## Cost
 

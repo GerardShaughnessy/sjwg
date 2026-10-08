@@ -108,7 +108,7 @@ export const TK = {
     sample: 'A nonprofit whose application for 501(c)(3) recognition is pending with the IRS.',
   },
   phone: { text: 'Guild phone number', sample: '(314) 555-0147' },
-  email: { text: 'Guild email address', sample: 'hello@sjwguild.org' },
+  email: { text: 'Guild email address', sample: 'hello@sjwg.org' },
   responseCommitment: {
     text: 'what actually happens after a request comes in, and how fast',
     sample:
