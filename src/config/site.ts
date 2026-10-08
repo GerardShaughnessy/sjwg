@@ -98,11 +98,6 @@ export const TK = {
     text: 'mailing address for the Guild',
     sample: 'P.O. Box 4200, St. Louis, MO 63102',
   },
-  meetingSchedule: {
-    text: 'meeting time and room (the day is confirmed: first Thursday of every month), and the Mass schedule',
-    sample:
-      'The Guild meets the first Thursday of every month at 7:00 PM in the parish hall. Tradesmen\u2019s Mass and adoration are announced on the events page.',
-  },
   taxStatus: {
     text: 'tax status line: update when the EIN arrives and again when the 501(c)(3) determination letter arrives (expected 1 to 5 months from September 2026)',
     sample: 'A nonprofit whose application for 501(c)(3) recognition is pending with the IRS.',

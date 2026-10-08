@@ -3,6 +3,9 @@ import pipeWrenches from '@/assets/stock/stock-pixabay-840835-pipe-wrenches.jpg'
 import electrician from '@/assets/stock/stock-pixabay-3273340-electrician-wiring.jpg';
 import carpenter from '@/assets/stock/stock-pixabay-2385634-carpenter-plane.jpg';
 import kneeling from '@/assets/stock/stock-pixabay-2598802-man-kneeling-chapel.jpg';
+import vanSmallHouse from '@/assets/stock/stock-pixabay-1834826-van-small-house.jpg';
+import handsElderly from '@/assets/stock/stock-pixabay-2906458-hands-elderly.jpg';
+import smovExterior from '@/assets/stock/stock-wikimedia-smov-exterior.jpg';
 
 /**
  * Every image on the site is looked up here by a semantic slot. Swap a stock
@@ -23,12 +26,14 @@ export const images = {
     credit: 'stevepb, Pixabay',
   },
   guildAtWork: {
-    src: null,
-    alt: 'A Guild tradesman shaking hands with a homeowner at the front door after a repair',
+    src: handsElderly,
+    alt: "A younger hand resting gently on an elderly woman's folded hands",
+    credit: 'sabinevanerp, Pixabay',
   },
   foundingStory: {
-    src: null,
-    alt: "A plumber's work van parked at the curb of a small, weathered house",
+    src: vanSmallHouse,
+    alt: 'An old van parked at the curb in front of a small house',
+    credit: 'Pexels, Pixabay',
   },
   spiritual: {
     src: kneeling,
@@ -46,8 +51,10 @@ export const images = {
     credit: 'Pixabay',
   },
   meetingPlace: {
-    src: null,
-    alt: 'Exterior of Saint Mary of Victories Catholic Church in St. Louis',
+    src: smovExterior,
+    alt: 'Exterior of Saint Mary of Victories Catholic Church in St. Louis, red brick with arched windows',
+    // CC BY-SA 4.0: the credit must stay visible (WhereWeMeet.astro shows it).
+    credit: 'Nheyob, CC BY-SA 4.0, via Wikimedia Commons',
   },
   memberPortrait: {
     src: null,

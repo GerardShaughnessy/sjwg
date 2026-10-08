@@ -1,8 +1,7 @@
 ---
 import Section from '@/components/ui/Section.astro';
 import Picture from '@/components/ui/Picture.astro';
-import Tk from '@/components/ui/Tk.astro';
-import { PARISH_NAME, PARISH_CITY, TK, PARISH_STREET, PARISH_ZIP } from '@/config/site';
+import { PARISH_NAME, PARISH_CITY, PARISH_STREET, PARISH_ZIP } from '@/config/site';
 
 const mapsHref =
   'https://www.google.com/maps/search/?api=1&query=' +
@@ -11,7 +10,12 @@ const mapsHref =
 
 <Section tone="stone" labelledby="meet-title">
   <div class="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-16">
-    <Picture slot="meetingPlace" sizes="(min-width: 64rem) 45vw, 100vw" aspect="4 / 3" />
+    <figure class="m-0">
+      <Picture slot="meetingPlace" sizes="(min-width: 64rem) 45vw, 100vw" aspect="4 / 3" />
+      <figcaption class="mt-2 font-sans text-[0.8rem] text-ash">
+        {'Photo: '}<a href="https://commons.wikimedia.org/wiki/File:Saint_Mary_of_Victories_Church_(St._Louis,_MO)_-_exterior.jpg" class="underline decoration-mortar underline-offset-2">Nheyob</a>{', '}<a href="https://creativecommons.org/licenses/by-sa/4.0" class="underline decoration-mortar underline-offset-2">CC BY-SA 4.0</a>{', via Wikimedia Commons'}
+      </figcaption>
+    </figure>
     <div>
       <h2 id="meet-title" class="text-h2">
         Where we meet
@@ -24,7 +28,8 @@ const mapsHref =
         </p>
       </address>
       <p class="mt-6 max-w-[52ch] leading-relaxed">
-        <Tk {...TK.meetingSchedule} />
+        The Guild meets the first Thursday of every month at 7:00 PM, and keeps a holy hour the
+        second Thursday at 6:30 PM, unless the events page says otherwise.
       </p>
       <p class="mt-6">
         <a

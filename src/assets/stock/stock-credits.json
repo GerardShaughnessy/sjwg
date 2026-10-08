@@ -54,5 +54,46 @@
     "width": 4790,
     "height": 3198,
     "bytes": 227490
+  },
+  {
+    "file": "stock-pixabay-1834826-van-small-house.jpg",
+    "provider": "pixabay",
+    "id": "1834826",
+    "query": "",
+    "alt": "house, parked, pavement, road, street, van, vehicle, volkswagen",
+    "photographer": "Pexels",
+    "photographer_url": "https://pixabay.com/users/Pexels-2286921/",
+    "source_page": "https://pixabay.com/photos/house-parked-pavement-road-street-1834826/",
+    "license": "Pixabay Content License \u2014 free for commercial use, no attribution required.",
+    "width": 4669,
+    "height": 3113,
+    "bytes": 427833,
+    "slot": "foundingStory"
+  },
+  {
+    "file": "stock-pixabay-2906458-hands-elderly.jpg",
+    "provider": "pixabay",
+    "id": "2906458",
+    "query": "",
+    "alt": "christmas wallpaper, hands, old, old age, elderly, vulnerable, care, old person, self-reliance, help, health, seniors, mother, daughter, family, love, mothers day, mother's day, mom, grandmother, grandparents",
+    "photographer": "sabinevanerp",
+    "photographer_url": "https://pixabay.com/users/sabinevanerp-2145163/",
+    "source_page": "https://pixabay.com/photos/christmas-wallpaper-hands-old-2906458/",
+    "license": "Pixabay Content License \u2014 free for commercial use, no attribution required.",
+    "width": 6000,
+    "height": 4000,
+    "bytes": 251146,
+    "slot": "guildAtWork"
+  },
+  {
+    "file": "stock-wikimedia-smov-exterior.jpg",
+    "slot": "meetingPlace",
+    "provider": "wikimedia",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Saint_Mary_of_Victories_Church_(St._Louis,_MO)_-_exterior.jpg",
+    "photographer": "Nheyob",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attribution_required": true,
+    "note": "The real church. Credit shown under the photo on the home page."
   }
 ]
