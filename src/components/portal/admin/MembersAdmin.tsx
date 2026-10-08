@@ -310,7 +310,7 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
         </div>
       </form>
       <div>
-        <h3 className="text-brass font-sans text-[0.95rem] font-semibold">
+        <h3 className="text-brass-ink font-sans text-[0.95rem] font-semibold">
           All entries ({list.length})
         </h3>
         {error && (

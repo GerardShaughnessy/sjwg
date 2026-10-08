@@ -217,7 +217,7 @@ export default function ProfileEditor({ areas }: { areas: string[] }) {
         </div>
       </form>
       <div>
-        <h3 className="text-brass font-sans text-[0.95rem] font-semibold">Preview</h3>
+        <h3 className="text-brass-ink font-sans text-[0.95rem] font-semibold">Preview</h3>
         <div className="border-mortar mt-2 border-b">
           <MemberCard member={preview} />
         </div>

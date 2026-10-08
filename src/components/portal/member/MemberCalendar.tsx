@@ -63,7 +63,7 @@ export default function MemberCalendar({ initial }: { initial: GuildEvent[] }) {
           <section key={month} aria-labelledby={`m-${month.replace(/\s/g, '')}`} className="mt-8">
             <h3
               id={`m-${month.replace(/\s/g, '')}`}
-              className="text-brass font-sans text-[0.95rem] font-semibold"
+              className="text-brass-ink font-sans text-[0.95rem] font-semibold"
             >
               {month}
             </h3>

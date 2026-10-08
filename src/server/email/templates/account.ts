@@ -25,7 +25,7 @@ ${link}
 If you were not expecting this, ignore it and nothing happens.${textFooter()}`;
   const html = shell({
     title: 'You are invited to the Guild portal',
-    bodyHtml: `${paragraphs(`${greeting}\n\n${body}`)}${button(link, 'Set your password')}<p style="margin:0;font-size:14px;color:#6e6560">If you were not expecting this, ignore it and nothing happens.</p>`,
+    bodyHtml: `${paragraphs(`${greeting}\n\n${body}`)}${button(link, 'Set your password')}<p style="margin:0;font-size:14px;color:#6b6450">If you were not expecting this, ignore it and nothing happens.</p>`,
   });
   return { subject: 'Your invitation to the Guild portal', text, html };
 }
@@ -57,10 +57,10 @@ export function formNotification(kind: string, fields: Record<string, string>): 
   const text = `${label} from the website\n\n${lines.map(([k, v]) => `${k}: ${v}`).join('\n')}${textFooter()}`;
   const html = shell({
     title: `${label} from the website`,
-    bodyHtml: `<table role="presentation" cellpadding="0" cellspacing="0" style="font-size:16px;line-height:1.5;color:#2b2624">${lines
+    bodyHtml: `<table role="presentation" cellpadding="0" cellspacing="0" style="font-size:16px;line-height:1.5;color:#43402a">${lines
       .map(
         ([k, v]) =>
-          `<tr><td style="padding:4px 16px 4px 0;color:#6e6560;vertical-align:top">${escapeHtml(k)}</td><td>${escapeHtml(v).replace(/\n/g, '<br>')}</td></tr>`,
+          `<tr><td style="padding:4px 16px 4px 0;color:#6b6450;vertical-align:top">${escapeHtml(k)}</td><td>${escapeHtml(v).replace(/\n/g, '<br>')}</td></tr>`,
       )
       .join('')}</table>`,
   });

@@ -237,7 +237,7 @@ export default function EventsEditor() {
         </div>
       </form>
       <div>
-        <h3 className="text-brass font-sans text-[0.95rem] font-semibold">All events</h3>
+        <h3 className="text-brass-ink font-sans text-[0.95rem] font-semibold">All events</h3>
         {error && (
           <div className="mt-2">
             <ErrorStrip>{error}</ErrorStrip>

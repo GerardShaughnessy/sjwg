@@ -287,7 +287,7 @@ export default function DonorRecords() {
 
           <div className="mt-8 grid gap-8 md:grid-cols-2">
             <div>
-              <h3 className="text-brass font-sans text-[0.95rem] font-semibold">By fund</h3>
+              <h3 className="text-brass-ink font-sans text-[0.95rem] font-semibold">By fund</h3>
               <dl className="border-mortar mt-2 border-t font-sans">
                 {[...byFund.entries()].map(([f, n]) => (
                   <div key={f} className="border-mortar flex justify-between border-b py-2">
@@ -298,7 +298,7 @@ export default function DonorRecords() {
               </dl>
             </div>
             <div>
-              <h3 className="text-brass font-sans text-[0.95rem] font-semibold">By giving level</h3>
+              <h3 className="text-brass-ink font-sans text-[0.95rem] font-semibold">By giving level</h3>
               <dl className="border-mortar mt-2 border-t font-sans">
                 {[...byTier.entries()].map(([t, n]) => (
                   <div key={t} className="border-mortar flex justify-between border-b py-2">

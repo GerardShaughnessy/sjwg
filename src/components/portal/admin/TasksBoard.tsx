@@ -210,7 +210,7 @@ function Card({
       }}
       className={`bg-paper border-charcoal flex cursor-grab flex-col gap-2 border-2 p-3 ${t.status === 'done' ? 'opacity-70' : ''}`}
     >
-      <span className="text-brass text-[0.8rem] font-semibold tracking-wide uppercase">
+      <span className="text-brass-ink text-[0.8rem] font-semibold tracking-wide uppercase">
         {t.section}
       </span>
       <button

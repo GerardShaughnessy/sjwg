@@ -185,7 +185,7 @@ export default function SponsorsEditor() {
         </div>
       </form>
       <div>
-        <h3 className="text-brass font-sans text-[0.95rem] font-semibold">Sponsors and partners</h3>
+        <h3 className="text-brass-ink font-sans text-[0.95rem] font-semibold">Sponsors and partners</h3>
         {error && (
           <div className="mt-2">
             <ErrorStrip>{error}</ErrorStrip>

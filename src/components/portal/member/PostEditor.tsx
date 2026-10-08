@@ -138,7 +138,7 @@ export default function PostEditor({ session }: { session: Session }) {
         </div>
       </form>
       <div>
-        <h3 className="text-brass font-sans text-[0.95rem] font-semibold">Posts</h3>
+        <h3 className="text-brass-ink font-sans text-[0.95rem] font-semibold">Posts</h3>
         {error && (
           <div className="mt-2">
             <ErrorStrip>{error}</ErrorStrip>

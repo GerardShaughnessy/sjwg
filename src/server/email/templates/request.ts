@@ -45,19 +45,19 @@ Keep this email. The link is the only way to see your request, so do not forward
   const html = shell({
     title: 'Your request reached the Guild',
     bodyHtml: `
-      <p style="margin:0 0 6px 0;font-size:14px;color:#6e6560;text-transform:uppercase;letter-spacing:0.06em">Reference number</p>
-      <p style="margin:0 0 24px 0;font-family:Georgia,serif;font-size:30px;color:#2b2624">${escapeHtml(r.ref)}</p>
-      <h2 style="margin:0 0 8px 0;font-size:18px;color:#2b2624">What happens next</h2>
+      <p style="margin:0 0 6px 0;font-size:14px;color:#6b6450;text-transform:uppercase;letter-spacing:0.06em">Reference number</p>
+      <p style="margin:0 0 24px 0;font-family:Georgia,serif;font-size:30px;color:#43402a">${escapeHtml(r.ref)}</p>
+      <h2 style="margin:0 0 8px 0;font-size:18px;color:#43402a">What happens next</h2>
       ${paragraphs(whatNext)}
       ${button(link, 'Check on your request')}
-      <h2 style="margin:8px 0 8px 0;font-size:18px;color:#2b2624">What you sent</h2>
-      <table role="presentation" cellpadding="0" cellspacing="0" style="font-size:16px;line-height:1.5;color:#2b2624">
-        <tr><td style="padding:2px 16px 2px 0;color:#6e6560">Help with</td><td>${escapeHtml(r.trade)}</td></tr>
-        <tr><td style="padding:2px 16px 2px 0;color:#6e6560">How urgent</td><td>${escapeHtml(URGENCY_LABEL[r.urgency] ?? r.urgency)}</td></tr>
-        <tr><td style="padding:2px 16px 2px 0;color:#6e6560">Where</td><td>${escapeHtml([r.zip, r.neighborhood].filter(Boolean).join(', '))}</td></tr>
+      <h2 style="margin:8px 0 8px 0;font-size:18px;color:#43402a">What you sent</h2>
+      <table role="presentation" cellpadding="0" cellspacing="0" style="font-size:16px;line-height:1.5;color:#43402a">
+        <tr><td style="padding:2px 16px 2px 0;color:#6b6450">Help with</td><td>${escapeHtml(r.trade)}</td></tr>
+        <tr><td style="padding:2px 16px 2px 0;color:#6b6450">How urgent</td><td>${escapeHtml(URGENCY_LABEL[r.urgency] ?? r.urgency)}</td></tr>
+        <tr><td style="padding:2px 16px 2px 0;color:#6b6450">Where</td><td>${escapeHtml([r.zip, r.neighborhood].filter(Boolean).join(', '))}</td></tr>
       </table>
-      <div style="margin:12px 0 20px 0;padding:12px 16px;border-left:4px solid #b08d57;background:#efeae4">${paragraphs(r.description)}</div>
-      <p style="margin:0;font-size:14px;line-height:1.5;color:#6e6560">Keep this email. The link is the only way to see your request, so do not forward it to anyone you would not want reading it.</p>`,
+      <div style="margin:12px 0 20px 0;padding:12px 16px;border-left:4px solid #a37820;background:#f3ead5">${paragraphs(r.description)}</div>
+      <p style="margin:0;font-size:14px;line-height:1.5;color:#6b6450">Keep this email. The link is the only way to see your request, so do not forward it to anyone you would not want reading it.</p>`,
   });
   return { subject: `Your request to the Guild, ${r.ref}`, text, html };
 }
@@ -88,14 +88,14 @@ Open it on the job board: ${link}${textFooter()}`;
   const html = shell({
     title: `${urgent ? 'Urgent: ' : ''}New help request ${r.ref}`,
     bodyHtml: `
-      <table role="presentation" cellpadding="0" cellspacing="0" style="font-size:16px;line-height:1.5;color:#2b2624">
-        <tr><td style="padding:2px 16px 2px 0;color:#6e6560">Help with</td><td>${escapeHtml(r.trade)}</td></tr>
-        <tr><td style="padding:2px 16px 2px 0;color:#6e6560">How urgent</td><td style="${urgent ? 'color:#8c3a2e;font-weight:700' : ''}">${escapeHtml(URGENCY_LABEL[r.urgency] ?? r.urgency)}</td></tr>
-        <tr><td style="padding:2px 16px 2px 0;color:#6e6560">Where</td><td>${escapeHtml(where)}</td></tr>
-        <tr><td style="padding:2px 16px 2px 0;color:#6e6560">Contact</td><td>${escapeHtml(contact)}</td></tr>
-        <tr><td style="padding:2px 16px 2px 0;color:#6e6560">Photos</td><td>${r.photoCount}</td></tr>
+      <table role="presentation" cellpadding="0" cellspacing="0" style="font-size:16px;line-height:1.5;color:#43402a">
+        <tr><td style="padding:2px 16px 2px 0;color:#6b6450">Help with</td><td>${escapeHtml(r.trade)}</td></tr>
+        <tr><td style="padding:2px 16px 2px 0;color:#6b6450">How urgent</td><td style="${urgent ? 'color:#483223;font-weight:700' : ''}">${escapeHtml(URGENCY_LABEL[r.urgency] ?? r.urgency)}</td></tr>
+        <tr><td style="padding:2px 16px 2px 0;color:#6b6450">Where</td><td>${escapeHtml(where)}</td></tr>
+        <tr><td style="padding:2px 16px 2px 0;color:#6b6450">Contact</td><td>${escapeHtml(contact)}</td></tr>
+        <tr><td style="padding:2px 16px 2px 0;color:#6b6450">Photos</td><td>${r.photoCount}</td></tr>
       </table>
-      <div style="margin:16px 0;padding:12px 16px;border-left:4px solid #b08d57;background:#efeae4">${paragraphs(r.description)}</div>
+      <div style="margin:16px 0;padding:12px 16px;border-left:4px solid #a37820;background:#f3ead5">${paragraphs(r.description)}</div>
       ${button(link, 'Open on the job board')}`,
   });
   return { subject: `${urgent ? 'Urgent: ' : ''}New request ${r.ref}: ${r.trade}`, text, html };
@@ -117,7 +117,7 @@ ${note}
 ${replyLine}${textFooter()}`;
   const html = shell({
     title: `A note on your request ${r.ref}`,
-    bodyHtml: `<div style="margin:0 0 16px 0;padding:12px 16px;border-left:4px solid #b08d57;background:#efeae4">${paragraphs(note)}</div>${link ? button(link, 'Reply on the tracking page') : paragraphs(replyLine)}`,
+    bodyHtml: `<div style="margin:0 0 16px 0;padding:12px 16px;border-left:4px solid #a37820;background:#f3ead5">${paragraphs(note)}</div>${link ? button(link, 'Reply on the tracking page') : paragraphs(replyLine)}`,
   });
   return { subject: `A note on your request ${r.ref}`, text, html };
 }
@@ -135,7 +135,7 @@ ${note}
 Open it: ${link}${textFooter()}`;
   const html = shell({
     title: `New note on ${r.ref}`,
-    bodyHtml: `<p style="margin:0 0 12px 0;font-size:16px;color:#2b2624">From ${escapeHtml(r.contactName)}:</p><div style="margin:0 0 16px 0;padding:12px 16px;border-left:4px solid #b08d57;background:#efeae4">${paragraphs(note)}</div>${button(link, 'Open on the job board')}`,
+    bodyHtml: `<p style="margin:0 0 12px 0;font-size:16px;color:#43402a">From ${escapeHtml(r.contactName)}:</p><div style="margin:0 0 16px 0;padding:12px 16px;border-left:4px solid #a37820;background:#f3ead5">${paragraphs(note)}</div>${button(link, 'Open on the job board')}`,
   });
   return { subject: `New note on ${r.ref} from ${r.contactName}`, text, html };
 }
@@ -186,13 +186,13 @@ Open it on the job board and claim it if you can take it: ${link}${textFooter()}
   const html = shell({
     title: `A request was referred to you: ${r.ref}`,
     bodyHtml: `${paragraphs(`${o.memberName},\n\n${o.referredBy} referred a help request to you${o.note ? `: ${o.note}` : '.'}`)}
-      <table role="presentation" cellpadding="0" cellspacing="0" style="font-size:16px;line-height:1.5;color:#2b2624">
-        <tr><td style="padding:2px 16px 2px 0;color:#6e6560">Help with</td><td>${escapeHtml(r.trade)}</td></tr>
-        <tr><td style="padding:2px 16px 2px 0;color:#6e6560">How urgent</td><td>${escapeHtml(URGENCY_LABEL[r.urgency] ?? r.urgency)}</td></tr>
-        <tr><td style="padding:2px 16px 2px 0;color:#6e6560">Where</td><td>${escapeHtml(where)}</td></tr>
-        <tr><td style="padding:2px 16px 2px 0;color:#6e6560">Contact</td><td>${escapeHtml(contact)}</td></tr>
+      <table role="presentation" cellpadding="0" cellspacing="0" style="font-size:16px;line-height:1.5;color:#43402a">
+        <tr><td style="padding:2px 16px 2px 0;color:#6b6450">Help with</td><td>${escapeHtml(r.trade)}</td></tr>
+        <tr><td style="padding:2px 16px 2px 0;color:#6b6450">How urgent</td><td>${escapeHtml(URGENCY_LABEL[r.urgency] ?? r.urgency)}</td></tr>
+        <tr><td style="padding:2px 16px 2px 0;color:#6b6450">Where</td><td>${escapeHtml(where)}</td></tr>
+        <tr><td style="padding:2px 16px 2px 0;color:#6b6450">Contact</td><td>${escapeHtml(contact)}</td></tr>
       </table>
-      <div style="margin:16px 0;padding:12px 16px;border-left:4px solid #b08d57;background:#efeae4">${paragraphs(r.description)}</div>
+      <div style="margin:16px 0;padding:12px 16px;border-left:4px solid #a37820;background:#f3ead5">${paragraphs(r.description)}</div>
       ${button(link, 'Open on the job board')}`,
   });
   return { subject: `Referred to you: ${r.ref}, ${r.trade}`, text, html };
@@ -205,7 +205,7 @@ export function announcement(o: { subject: string; body: string; from: string })
 Sent by ${o.from} through the Guild portal.${textFooter()}`;
   const html = shell({
     title: o.subject,
-    bodyHtml: `${paragraphs(o.body)}<p style="margin:16px 0 0 0;font-size:13px;color:#6e6560">Sent by ${escapeHtml(o.from)} through the Guild portal.</p>`,
+    bodyHtml: `${paragraphs(o.body)}<p style="margin:16px 0 0 0;font-size:13px;color:#6b6450">Sent by ${escapeHtml(o.from)} through the Guild portal.</p>`,
   });
   return { subject: o.subject, text, html };
 }

@@ -2,19 +2,26 @@
 @plugin '@tailwindcss/typography';
 
 /*
-  Design tokens. Palette is taken verbatim from the Guild's donor decks
-  (brick #8C3A2E, brass #B08D57, charcoal #2B2624, off-white #EFEAE4) so the
-  site matches what donors have already seen. See README for contrast table.
+  Design tokens. Palette from the Guild's brand guide (JT Graphic Designs,
+  October 2026): Deep Olive #43402A, Earth Brown #483223, Mustard #A37820,
+  Warm Ivory #F3EAD5. Token names are kept from the first palette so every
+  component recolors from here. Mustard is decoration only (3.3:1 on ivory);
+  text uses brass-ink on light grounds and brass-glow on dark ones.
+
+  Contrast: olive on ivory 8.8, earth on ivory 10.0, ivory on earth (buttons)
+  10.0, ash on ivory 4.9, brass-ink on ivory 5.4, brass-glow on olive 5.1.
 */
 @theme {
-  --color-brick: #8c3a2e;
-  --color-kiln: #5f2419;
-  --color-brass: #b08d57;
-  --color-charcoal: #2b2624;
-  --color-ash: #6e6560;
-  --color-stone: #efeae4;
-  --color-mortar: #b9afa8;
-  --color-paper: #ffffff;
+  --color-brick: #483223; /* Earth Brown: primary buttons, active states */
+  --color-kiln: #2f2016; /* Earth Brown, pressed and hover */
+  --color-brass: #a37820; /* Mustard: rules, borders, focus rings */
+  --color-brass-ink: #7a5915; /* Mustard as text on light grounds */
+  --color-brass-glow: #d9ae52; /* Mustard as text on olive grounds */
+  --color-charcoal: #43402a; /* Deep Olive: text, dark bands */
+  --color-ash: #6b6450; /* muted text */
+  --color-stone: #f3ead5; /* Warm Ivory: page ground */
+  --color-mortar: #cbbf9f; /* hairlines, borders */
+  --color-paper: #fbf7ee; /* cards and inputs, a lighter ivory */
 
   --font-serif: 'Libre Caslon Text', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
   --font-sans: 'Archivo Variable', 'Helvetica Neue', Arial, sans-serif;
