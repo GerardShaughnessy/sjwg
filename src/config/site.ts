@@ -125,10 +125,6 @@ export const TK = {
     sample: 'Partnership inquiries go to the Guild secretary, Daniel Kovach.',
   },
   legalName: { text: 'legal name for checks', sample: 'St. Joseph the Worker Guild' },
-  dues: {
-    text: 'dues amount and what it covers (the board has not set this figure)',
-    sample: '$35 a month, or $400 a year. No man is turned away over dues.',
-  },
   leadership: {
     text: 'board and officer names, and the chaplain',
     sample: 'Thomas Reilly, president. Daniel Kovach, secretary. Fr. Michael Novak, chaplain.',

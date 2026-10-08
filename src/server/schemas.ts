@@ -117,6 +117,7 @@ export const formSchemas = {
       name: trimmed(120).min(1, 'Tell us your name.'),
       trade: trimmed(120).min(1, 'What trade are you in?'),
       business: optionalText,
+      status: optionalText,
       phone: phoneField,
       email: trimmed(200)
         .default('')

@@ -59,3 +59,15 @@ describe('formSchemas', () => {
     ).toBe(true);
   });
 });
+
+describe('membership form', () => {
+  it('keeps the "which describes you" answer', () => {
+    const v = formSchemas.membership.parse({
+      name: 'Pat',
+      trade: 'Plumbing',
+      email: 'pat@example.com',
+      status: 'Retired from the trades',
+    });
+    expect(v.status).toBe('Retired from the trades');
+  });
+});

@@ -26,25 +26,75 @@ import { TK } from '@/config/site';
         </h2>
         <div class="mt-5 flex max-w-[52ch] flex-col gap-4 leading-relaxed">
           <p>
-            Membership is for self-employed and small-shop Catholic tradesmen. Plumbers,
-            electricians, carpenters, roofers, masons, painters, HVAC, and the trades between.
+            Membership is for practicing Catholic men, 16 and older, who work in the skilled trades
+            full time or part time, or who have retired from them. Shop owners, the self-employed,
+            and employees are all welcome. Plumbers, electricians, carpenters, roofers, masons,
+            painters, HVAC, welders, mechanics, and the trades between.
           </p>
-          <p>What it involves:</p>
+          <p>What membership asks of a man:</p>
           <ul class="flex flex-col gap-2">
             <li class="border-l-2 border-brass pl-4">
-              Monthly tradesmen's Mass, and monthly formation meetings in Catholic business ethics.
+              The membership pledge and the Guild's ethical standards, signed before orientation.
             </li>
             <li class="border-l-2 border-brass pl-4">
-              At least two days of designated pro bono work a year.
+              At least 16 hours, two service days, of designated charity work a year: parish work
+              days and home repairs for people in need.
             </li>
             <li class="border-l-2 border-brass pl-4">
-              A listing in the member directory once you agree to what appears publicly, and
-              referrals from the men who know your work.
+              Six of the twelve monthly formation meetings or Guild Masses and holy hours a year.
             </li>
             <li class="border-l-2 border-brass pl-4">
-              Dues: <Tk {...TK.dues} />
+              Dues, by membership tier below. A man facing real hardship talks to an officer and it
+              is handled case by case.
+            </li>
+            <li class="border-l-2 border-brass pl-4">
+              From 2027, a sponsor from among current members.
             </li>
           </ul>
+          <p>
+            In return: the Guild's Masses, holy hours, and retreats, formation and courses, the tool
+            library and shop space, and a listing in the member directory for men who run their own
+            shops, with referrals from the men who know your work.
+          </p>
+        </div>
+
+        <h3 class="mt-10 text-h3">Membership tiers</h3>
+        <dl class="mt-4 grid max-w-[60ch] border-t border-mortar font-sans">
+          {
+            [
+              {
+                name: 'Active Brother',
+                dues: '$25 a month, or $250 a year',
+                who: 'Working in the skilled trades for a year or more, as an employee, owner, or self-employed. Owners carry general liability insurance.',
+              },
+              {
+                name: 'Inactive Brother',
+                dues: '$25 a month, or $250 a year',
+                who: 'Part-time tradesmen, and members not yet meeting every requirement.',
+              },
+              {
+                name: 'Guild Builder',
+                dues: '$500 to $1,500 a year',
+                who: 'Owners of trade businesses with $250,000 or more in adjusted gross income, scaled by income. Six service hours and three meetings a year.',
+              },
+              {
+                name: 'Faithful Brother',
+                dues: '$12 a month, or $100 a year',
+                who: 'Supporters of the mission, men retired from the trades, and Sons of the Guild (16 and 17, with a parent’s consent).',
+              },
+            ].map((t) => (
+              <div class="grid gap-1 border-b border-mortar py-4 sm:grid-cols-[11rem_1fr] sm:gap-6">
+                <dt class="font-semibold">{t.name}</dt>
+                <dd>
+                  <span class="block font-semibold text-brick">{t.dues}</span>
+                  <span class="mt-1 block text-[0.95rem] leading-relaxed text-ash">{t.who}</span>
+                </dd>
+              </div>
+            ))
+          }
+        </dl>
+
+        <div class="mt-8 flex max-w-[52ch] flex-col gap-4 leading-relaxed">
           <p>
             Not a tradesman yet but drawn to the work? The Guild runs come-and-see visits for men
             and families discerning the trades. Say so in the note below.
@@ -73,6 +123,20 @@ import { TK } from '@/config/site';
                 label: 'Your trade',
                 required: true,
                 hint: 'Or "discerning" if you are looking at the trades.',
+              },
+              {
+                id: 'status',
+                label: 'Which describes you',
+                type: 'select',
+                optional: true,
+                options: [
+                  'I own a shop or work for myself',
+                  'I work for a trade company',
+                  'Part time in the trades',
+                  'Retired from the trades',
+                  'Discerning the trades',
+                  'Supporter of the mission',
+                ],
               },
               {
                 id: 'business',
