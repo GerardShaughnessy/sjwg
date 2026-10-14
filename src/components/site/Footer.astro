@@ -1,6 +1,7 @@
 ---
 import Wordmark from '@/components/brand/Wordmark.astro';
 import Tk from '@/components/ui/Tk.astro';
+import SubscribeForm from '@/components/forms/SubscribeForm';
 import { PARISH_NAME, PARISH_CITY, TK, PARISH_STREET, PARISH_ZIP } from '@/config/site';
 
 const year = new Date().getFullYear();
@@ -27,6 +28,19 @@ const cols = [
 ---
 
 <footer class="bg-charcoal text-stone">
+  <section aria-labelledby="footer-signup-title" class="border-b border-stone/15">
+    <div class="wrap grid gap-6 py-10 md:grid-cols-[1fr_1.1fr] md:items-center md:gap-12 md:py-12">
+      <div>
+        <h2 id="footer-signup-title" class="text-[1.6rem] leading-tight md:text-[2rem]">
+          Stay Close to the Guild
+        </h2>
+        <p class="mt-2 max-w-[46ch] font-sans leading-relaxed text-stone/80">
+          Holy hours, work days, and Guild news, about once a month. No spam, ever.
+        </p>
+      </div>
+      <SubscribeForm client:visible source="footer" tone="dark" submitLabel="Sign up" />
+    </div>
+  </section>
   <div class="wrap grid gap-12 py-14 md:grid-cols-[1.4fr_1fr_1fr] md:py-20">
     <div class="flex flex-col gap-6">
       <img

@@ -11,6 +11,7 @@ import EventsEditor from './admin/EventsEditor';
 import SponsorsEditor from './admin/SponsorsEditor';
 import InvitationsPanel from './admin/InvitationsPanel';
 import MembersAdmin from './admin/MembersAdmin';
+import EmailListPanel from './admin/EmailListPanel';
 import AnnouncementsPanel from './admin/AnnouncementsPanel';
 import TasksBoard from './admin/TasksBoard';
 
@@ -61,6 +62,7 @@ export default function PortalApp({ session, members, events, areas }: Props) {
           },
           { id: 'members', label: 'Members', content: <MembersAdmin areas={areas} /> },
           { id: 'announce', label: 'Email members', content: <AnnouncementsPanel /> },
+          { id: 'emaillist', label: 'Email list', content: <EmailListPanel /> },
         ]
       : []),
   ];

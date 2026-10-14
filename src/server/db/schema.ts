@@ -418,6 +418,24 @@ export const formSubmissions = pgTable(
   (t) => [index('form_submissions_kind_idx').on(t.kind, t.createdAt)],
 );
 
+/* ------------------------------------------------------------ subscribers */
+/** The public email list: popup, footer, and contact-page sign-ups. Emails are stored lowercased. */
+export const subscribers = pgTable(
+  'subscribers',
+  {
+    id: id(),
+    email: text('email').notNull(),
+    name: text('name'),
+    /** Where he signed up: popup, footer, contact, donate. */
+    source: text('source').notNull().default('site'),
+    ipHash: text('ip_hash'),
+    unsubscribedAt: timestamp('unsubscribed_at', { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [uniqueIndex('subscribers_email_idx').on(t.email)],
+);
+
 /* ------------------------------------------------------------------ tasks */
 /** The officers' to-do board. `waitingOn` names an outside party (Greg, the IRS) when no login fits. */
 export const tasks = pgTable(

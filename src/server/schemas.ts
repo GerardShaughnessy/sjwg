@@ -305,3 +305,12 @@ export const taskSchema = z.object({
 
 /** Moving a card or editing part of one. No defaults, so absent fields stay untouched. */
 export const taskPatchSchema = z.object(taskFields).partial();
+
+/* ---------------------------------------------------------- email list */
+export const SUBSCRIBE_SOURCES = ['popup', 'footer', 'contact', 'donate', 'site'] as const;
+
+export const subscribeSchema = z.object({
+  email: emailField.transform((v) => v.toLowerCase()),
+  name: trimmed(120).optional().default(''),
+  source: z.enum(SUBSCRIBE_SOURCES).catch('site'),
+});

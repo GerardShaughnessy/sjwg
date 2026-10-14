@@ -13,12 +13,13 @@ import Button from '@/components/ui/Button.astro';
       <p class="font-sans text-[1rem] text-brass-glow md:text-[1.05rem]">
         Generously hosted by Saint Mary of Victories, St. Louis, Missouri.
       </p>
-      <h1
-        id="hero-title"
-        class="mt-5 max-w-[22ch] text-[clamp(2rem,1.1rem+2.8vw,3.4rem)] leading-[1.08] tracking-[-0.01em]"
-      >
-        A Catholic brotherhood of devout local tradesmen who unite their families, communities,
-        and parishes in solidarity.
+      <h1 id="hero-title" class="mt-5">
+        <span class="block max-w-[16ch] text-[clamp(2.4rem,1.2rem+3.6vw,4.1rem)] leading-[1.02] tracking-[-0.015em]">
+          A Catholic brotherhood of devout local tradesmen
+        </span>
+        <span class="mt-5 block max-w-[34ch] font-sans text-[clamp(1.1rem,0.95rem+0.6vw,1.4rem)] leading-[1.45] text-stone/85">
+          who unite their families, communities, and parishes in solidarity.
+        </span>
       </h1>
       <div class="mt-9 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-7">
         <Button href="/request" size="lg">
@@ -47,4 +48,3 @@ import Button from '@/components/ui/Button.astro';
   </div>
   <div class="h-2 bg-brick" aria-hidden="true"></div>
 </section>
-

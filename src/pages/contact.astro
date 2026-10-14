@@ -1,4 +1,5 @@
 ---
+import SubscribeForm from '@/components/forms/SubscribeForm';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import PageHeader from '@/components/ui/PageHeader.astro';
 import Tk from '@/components/ui/Tk.astro';
@@ -118,4 +119,17 @@ import { PARISH_NAME, PARISH_CITY, TK, PARISH_STREET, PARISH_ZIP } from '@/confi
       </div>
     </section>
   </div>
+  <section aria-labelledby="contact-signup-title" class="bg-stone">
+    <div class="wrap grid gap-6 py-12 md:grid-cols-[1fr_1.1fr] md:items-center md:gap-12 md:py-16">
+      <div>
+        <h2 id="contact-signup-title" class="text-h2">
+          Join the Email List
+        </h2>
+        <p class="mt-3 max-w-[46ch] leading-relaxed">
+          Not ready to write? Get holy hours, work days, and Guild news about once a month.
+        </p>
+      </div>
+      <SubscribeForm client:visible source="contact" withName submitLabel="Sign up" />
+    </div>
+  </section>
 </BaseLayout>

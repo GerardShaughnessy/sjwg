@@ -469,3 +469,18 @@ export const tasks = {
     mutate<{ task: Task; emailed: Emailed }>(`/api/tasks/${id}`, json('PATCH', patch)),
   remove: (id: string) => mutate<{ ok: true }>(`/api/tasks/${id}`, { method: 'DELETE' }),
 };
+
+export type SubscriberView = {
+  id: string;
+  email: string;
+  name: string | null;
+  source: string;
+  createdAt: string;
+};
+
+export const emailList = {
+  subscribe: (input: { email: string; name?: string; source: string; website?: string }) =>
+    mutate<{ ok: true }>('/api/subscribe', json('POST', input)),
+  list: () => call<SubscriberView[]>('/api/subscribers'),
+  csvUrl: '/api/subscribers/export.csv',
+};
