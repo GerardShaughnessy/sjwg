@@ -4,9 +4,9 @@ import Button from '@/components/ui/Button.astro';
 
 const links = [
   { href: '/directory', label: 'Directory' },
-  { href: '/events', label: 'Events' },
   { href: '/about', label: 'About' },
-  { href: '/get-involved', label: 'Get involved' },
+  { href: '/events', label: 'Events' },
+  { href: '/get-involved', label: 'Get Involved' },
   { href: '/contact', label: 'Contact' },
 ];
 const current = Astro.url.pathname;
@@ -34,7 +34,7 @@ const isCurrent = (href: string) => current === href || current.startsWith(href 
         href="/login"
         class="font-sans text-[1rem] font-medium text-ash no-underline hover:underline"
       >
-        Log in
+        Log In
       </a>
       <Button href="/donate" variant="secondary">
         Donate
@@ -87,7 +87,7 @@ const isCurrent = (href: string) => current === href || current.startsWith(href 
           href="/login"
           class="block py-4 font-sans text-[1.125rem] font-medium text-ash no-underline"
         >
-          Log in
+          Log In
         </a>
       </li>
       <li class="py-4">

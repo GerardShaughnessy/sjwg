@@ -10,11 +10,11 @@ import { TK } from '@/config/site';
 ---
 
 <BaseLayout
-  title="Get involved"
+  title="Get Involved"
   description="Join the St. Joseph the Worker Guild as a tradesman, volunteer at a parish work day, partner with the Guild, or hire a member."
 >
   <PageHeader
-    title="Get involved"
+    title="Get Involved"
     lede="For tradesmen who want brothers, for neighbors who want to help, and for organizations that want to work with the Guild."
   />
 
@@ -22,7 +22,7 @@ import { TK } from '@/config/site';
     <div class="grid gap-10 lg:grid-cols-[1fr_1fr] lg:gap-16">
       <div>
         <h2 id="join-title" class="text-h2">
-          Join as a tradesman
+          Join as a Tradesman
         </h2>
         <div class="mt-5 flex max-w-[52ch] flex-col gap-4 leading-relaxed">
           <p>
@@ -31,7 +31,19 @@ import { TK } from '@/config/site';
             and employees are all welcome. Plumbers, electricians, carpenters, roofers, masons,
             painters, HVAC, welders, mechanics, and the trades between.
           </p>
-          <p>What membership asks of a man:</p>
+          <h3 class="mt-4 text-h3">How Community Forms Our Tradesmen</h3>
+          <p>
+            Brothers of the Guild receive full access to Guild Masses, confession, and holy hours,
+            retreats, spiritual formation, business ethics discussions, our tool library and shop
+            space, a listing in our public directory, a brotherhood that rallies when a family faces
+            an emergency, and qualified referrals from men who know your work.
+          </p>
+          <p>
+            Iron sharpens iron. Members are formed into holier workers, stewards, and fathers
+            through the corporal works of mercy. The Guild designates good works for each member,
+            suited to his state in life.
+          </p>
+          <p class="font-semibold">What membership asks of a man:</p>
           <ul class="flex flex-col gap-2">
             <li class="border-l-2 border-brass pl-4">
               The membership pledge and the Guild's ethical standards, signed before orientation.
@@ -51,50 +63,46 @@ import { TK } from '@/config/site';
               From 2027, a sponsor from among current members.
             </li>
           </ul>
-          <p>
-            In return: the Guild's Masses, holy hours, and retreats, formation and courses, the tool
-            library and shop space, and a listing in the member directory for men who run their own
-            shops, with referrals from the men who know your work.
-          </p>
         </div>
 
-        <h3 class="mt-10 text-h3">Membership tiers</h3>
+        <h3 class="mt-10 text-h3">Membership Tiers</h3>
         <dl class="mt-4 grid max-w-[60ch] border-t border-mortar font-sans">
-          {
-            [
-              {
-                name: 'Active Brother',
-                dues: '$25 a month, or $250 a year',
-                who: 'Working in the skilled trades for a year or more, as an employee, owner, or self-employed. Owners carry general liability insurance.',
-              },
-              {
-                name: 'Inactive Brother',
-                dues: '$25 a month, or $250 a year',
-                who: 'Part-time tradesmen, and members not yet meeting every requirement.',
-              },
-              {
-                name: 'Guild Builder',
-                dues: '$500 to $1,500 a year',
-                who: 'Owners of trade businesses with $250,000 or more in adjusted gross income, scaled by income. Six service hours and three meetings a year.',
-              },
-              {
-                name: 'Faithful Brother',
-                dues: '$12 a month, or $100 a year',
-                who: 'Supporters of the mission, men retired from the trades, and Sons of the Guild (16 and 17, with a parent’s consent).',
-              },
-            ].map((t) => (
-              <div class="grid gap-1 border-b border-mortar py-4 sm:grid-cols-[11rem_1fr] sm:gap-6">
-                <dt class="font-semibold">{t.name}</dt>
-                <dd>
-                  <span class="block font-semibold text-brick">{t.dues}</span>
-                  <span class="mt-1 block text-[0.95rem] leading-relaxed text-ash">{t.who}</span>
-                </dd>
-              </div>
-            ))
-          }
+          {[
+            {
+              name: 'Active Brother',
+              dues: '$25 a month, or $250 a year',
+              who: 'Working in the skilled trades for a year or more, as an employee, owner, or self-employed. Owners carry general liability insurance.',
+            },
+            {
+              name: 'Inactive Brother',
+              dues: '$25 a month, or $250 a year',
+              who: 'Part-time tradesmen, and members not yet meeting every requirement.',
+            },
+            {
+              name: 'Guild Builder',
+              dues: '$500 to $1,500 a year',
+              who: 'Owners of trade businesses with $250,000 or more in adjusted gross income, scaled by income. Six service hours and three meetings a year.',
+            },
+            {
+              name: 'Faithful Brother',
+              dues: '$12 a month, or $100 a year',
+              who: 'Supporters of the mission, men retired from the trades, and Sons of the Guild (16 and 17, with a parent’s or legal guardian’s consent).',
+            },
+          ].map((t) => (
+            <div class="grid gap-1 border-b border-mortar py-4 sm:grid-cols-[11rem_1fr] sm:gap-6">
+              <dt class="font-semibold">{t.name}</dt>
+              <dd>
+                <span class="block font-semibold text-brick">{t.dues}</span>
+                <span class="mt-1 block text-[0.95rem] leading-relaxed text-ash">{t.who}</span>
+              </dd>
+            </div>
+          ))}
         </dl>
 
         <div class="mt-8 flex max-w-[52ch] flex-col gap-4 leading-relaxed">
+          <h3 class="text-h3">
+            Discerning a Career in the Skilled Trades? Need Supplemental Income?
+          </h3>
           <p>
             Not a tradesman yet but drawn to the work? The Guild runs come-and-see visits for men
             and families discerning the trades. Say so in the note below.
@@ -105,7 +113,7 @@ import { TK } from '@/config/site';
         </div>
       </div>
       <div class="border-t-4 border-brass bg-paper p-6 md:p-10">
-        <h3 class="text-h3">Ask about membership</h3>
+        <h3 class="text-h3">Ask About Membership</h3>
         <p class="mt-2 max-w-[48ch] font-sans text-[0.95rem] text-ash">
           <Tk {...TK.whoReplies} />
         </p>
@@ -172,14 +180,18 @@ import { TK } from '@/config/site';
 
   <Section tone="paper" labelledby="other-title">
     <h2 id="other-title" class="text-h2">
-      Other ways in
+      Other Ways In
     </h2>
     <div class="mt-8 grid gap-8 border-t border-mortar pt-8 md:grid-cols-3">
       <div>
         <h3 class="text-h3">Volunteer</h3>
         <p class="mt-3 leading-relaxed">
-          Parish work days need hands that are not tradesmen: hauling, cleanup, food, and setup for
-          the procession and the Christmas party. <Tk {...TK.volunteerRoles} />
+          Parish work days need hands that are not only tradesmen's: hauling, cleanup, food, and
+          setup for the procession and the Christmas party (see{' '}
+          <a href="/events" class="underline decoration-brass decoration-2 underline-offset-4">
+            events
+          </a>
+          ).
         </p>
         <div class="mt-4">
           <Button href="/contact" variant="quiet">
@@ -190,8 +202,9 @@ import { TK } from '@/config/site';
       <div>
         <h3 class="text-h3">Partner</h3>
         <p class="mt-3 leading-relaxed">
-          Parishes, schools, and shrines that need work. Suppliers who can discount materials.
-          Sponsors for programs and events.
+          Parishes, schools, and shrines that see potential to flourish with us. Suppliers who can
+          discount materials. Sponsors for programs and events. Used materials and tool donations
+          are always welcome for our shop!
         </p>
         <div class="mt-4">
           <Button href="/contact#partner" variant="quiet">
@@ -200,9 +213,11 @@ import { TK } from '@/config/site';
         </div>
       </div>
       <div>
-        <h3 class="text-h3">Hire a member</h3>
+        <h3 class="text-h3">Hire a Member</h3>
         <p class="mt-3 leading-relaxed">
-          The simplest way to support a Guild tradesman is to hire him at his ordinary rate.
+          The simplest way to support a Guild tradesman is to hire him at his ordinary rate. You
+          aren’t just supporting any business. You are supporting a fellow Catholic who shares your
+          values.
         </p>
         <div class="mt-4">
           <Button href="/directory" variant="quiet">

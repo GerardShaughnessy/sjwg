@@ -2,7 +2,7 @@ import type { ImageMetadata } from 'astro';
 import pipeWrenches from '@/assets/stock/stock-pixabay-840835-pipe-wrenches.jpg';
 import electrician from '@/assets/stock/stock-pixabay-3273340-electrician-wiring.jpg';
 import carpenter from '@/assets/stock/stock-pixabay-2385634-carpenter-plane.jpg';
-import kneeling from '@/assets/stock/stock-pixabay-2598802-man-kneeling-chapel.jpg';
+import leoXIII from '@/assets/stock/stock-wikimedia-leo-xiii-1887.jpg';
 import whiteVan from '@/assets/stock/stock-pixabay-2590854-white-van-street.jpg';
 import basilicaConstruction from '@/assets/photos/basilica-construction-1910.jpg';
 import smovExterior from '@/assets/stock/stock-wikimedia-smov-exterior.jpg';
@@ -36,10 +36,11 @@ export const images = {
     credit: 'StockSnap, Pixabay',
   },
   spiritual: {
-    src: kneeling,
-    alt: 'A man kneeling alone in prayer between the pews of an empty church',
-    credit: 'Pixabay',
+    src: leoXIII,
+    alt: 'Pope Leo XIII, seated in a carved chair in white cassock and pectoral cross',
+    credit: 'Public domain, via Wikimedia Commons',
   },
+
   electrician: {
     src: electrician,
     alt: "An electrician's hands fastening wires inside an open panel",

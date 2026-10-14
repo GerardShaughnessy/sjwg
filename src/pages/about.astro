@@ -9,35 +9,35 @@ import { TK } from '@/config/site';
 
 const values = [
   {
-    term: 'Steadfast endurance',
+    term: 'Steadfast Endurance',
     text: 'We work diligently, follow through on our commitments, and pursue excellence in everything entrusted to us. (2 Peter 1:6)',
   },
   {
-    term: 'Humble service',
+    term: 'Humble Service',
     text: 'We lead and contribute with humility, putting our talents to work for the benefit of others.',
   },
   {
-    term: 'Faithful integrity',
+    term: 'Faithful Integrity',
     text: 'We act honestly and transparently, ensuring our words, decisions, and conduct remain faithful to Catholic teaching.',
   },
   {
-    term: 'Proactive ownership',
+    term: 'Proactive Ownership',
     text: 'We approach obstacles with resourcefulness, personal responsibility, and a determination to move forward.',
   },
 ];
 
 const programs = [
   {
-    name: 'Spiritual growth',
+    name: 'Spiritual Growth',
     items: [
       'Consecration to St. Joseph the Worker and St. Louis IX as patrons.',
-      'Monthly tradesmen-focused Masses, adoration, and spiritual direction.',
+      'Monthly tradesmen-focused Holy Hours, adoration, and spiritual direction.',
       'An annual tradesmen’s retreat.',
       'The annual St. Joseph the Worker Holy Day procession.',
     ],
   },
   {
-    name: 'Business networking and fraternity',
+    name: 'Business Networking and Fraternity',
     items: [
       'A member directory for referrals and a public directory of vetted Catholic tradesmen.',
       'A monthly newsletter, and pricing advocacy that accounts for local costs of living, for clients, employees, and owners alike.',
@@ -45,7 +45,7 @@ const programs = [
     ],
   },
   {
-    name: 'Corporal works of mercy',
+    name: 'Corporal Works of Mercy',
     items: [
       'Discounted and pro bono work for families, parishes, schools, and shrines in need.',
       'Emergency response: storm cleanup, tarping, and manual labor.',
@@ -53,17 +53,17 @@ const programs = [
     ],
   },
   {
-    name: 'Education and opportunity',
+    name: 'Education and Opportunity',
     items: [
       'Career guidance and enrichment courses for members, and introductory classes for Catholic homeowners.',
       'Come-and-see visits and career consultation for families and prospective members discerning a future in the trades.',
     ],
   },
   {
-    name: 'Practical resources',
+    name: 'Practical Resources',
     items: [
       'A shared workshop and tool library, stocked and maintained by member donations, so no tradesman has to buy alone what the Guild can provide together. Used in part to discount material costs for work serving disadvantaged clients.',
-      'Healthcare options and financial relief for members between jobs, recently laid off, or supporting a family through a hard season.',
+      'Healthcare cost advocacy for underinsured tradesmen, and a community that rallies around any tradesman and his family facing a hard season.',
     ],
   },
 ];
@@ -71,7 +71,7 @@ const programs = [
 
 <BaseLayout
   title="About the Guild"
-  description="What a Catholic tradesmen's guild is, why one is needed again, what the St. Joseph the Worker Guild does, and where it is headed."
+  description="Who the St. Joseph the Worker Guild is, why a guild is needed again, its five pillars of work, and where it is headed."
 >
   <PageHeader
     title="About the Guild"
@@ -82,38 +82,25 @@ const programs = [
     <div class="grid gap-10 lg:grid-cols-[3fr_2fr] lg:gap-16">
       <div class="measure flex flex-col gap-5 leading-relaxed">
         <h2 id="def-title" class="text-h2">
-          What a guild is
+          Who We Are
         </h2>
-        <p class="font-serif text-[1.2rem] leading-[1.65]">
-          A Catholic tradesmen's guild is an association of men engaged in the skilled trades who,
-          under the social teaching of the Church, unite their professional, fraternal, and
-          spiritual lives. They seek holiness through their work, mutual assistance through
-          brotherhood, and the flourishing of their families, trades, parishes, and communities.
-        </p>
-        <p>
-          Catholic workers' guilds were once near the heart of maintaining the fabric of Christian
-          society. They served workers, the people, and the Church alike. Worker's guilds were the
-          very soul of pre-modern Catholic civilization, and they may be again.
-        </p>
         <dl class="mt-2 grid gap-4 border-t border-mortar pt-5 sm:grid-cols-[auto_1fr] sm:gap-x-8">
-          <dt class="font-sans font-semibold">Purpose</dt>
+          <dt class="font-sans font-semibold">Mission Statement</dt>
           <dd>
             We exist to build a brotherhood where Catholic tradesmen and their families can
             flourish.
           </dd>
-          <dt class="font-sans font-semibold">How</dt>
+          <dt class="font-sans font-semibold">Niche</dt>
           <dd>
             We unite our members through mutual assistance, spiritual formation, networking, and
             practical resources.
           </dd>
           <dt class="font-sans font-semibold">Who</dt>
-          <dd>
-            Catholic men in the skilled trades, working or retired, and their families.
-          </dd>
+          <dd>Devout Catholic men working in, or retired from, the skilled trades.</dd>
         </dl>
       </div>
       <div class="flex flex-col gap-6">
-        <Picture slot="spiritual" sizes="(min-width: 64rem) 35vw, 100vw" aspect="4 / 3" />
+        <Picture slot="spiritual" sizes="(min-width: 64rem) 35vw, 100vw" aspect="4 / 5" />
         <blockquote class="border-l-4 border-brass pl-5 font-serif italic leading-relaxed">
           <p>
             “We greatly wish, for the salvation of the people, that these guilds may be generally
@@ -129,29 +116,58 @@ const programs = [
   </Section>
 
   <Section tone="paper" labelledby="need-title">
-    <div class="grid gap-10 lg:grid-cols-[2fr_3fr] lg:gap-16">
+    <div class="grid gap-10 lg:grid-cols-[3fr_2fr] lg:gap-16">
       <div>
         <h2 id="need-title" class="text-h2">
-          Why a guild is needed again
+          A New Guild for Modern Challenges
         </h2>
-        <p class="mt-5 max-w-[44ch] leading-relaxed">
-          Skilled tradesmen keep the water running, the lights on, the heat working, and the roofs
-          over our heads. For those with limited means, a small independent tradesman may be the
-          last person willing to answer the call. Yet the men who faithfully care for others are
-          often left to carry their own burdens alone.
-        </p>
+        <div class="mt-5 flex max-w-[60ch] flex-col gap-4 leading-relaxed">
+          <p>
+            Skilled tradesmen are among the quiet stewards of our common life. They keep the water
+            running, the lights on, the heat working, and the roofs over our heads. For those with
+            limited means, a small, independent tradesman may be the last person willing to answer
+            the call. Yet the men who faithfully care for others are often left to carry their own
+            burdens alone.
+          </p>
+          <p>
+            These burdens are especially acute for small, independent tradesmen. There may be no
+            employer-sponsored health plan, institutional safety net, or built-in community to catch
+            a family when work slows or crisis strikes. Among our own members, more than 90% have no
+            employer-sponsored health insurance, and at least 20% have no health coverage at all.
+          </p>
+          <p>We have seen the consequences, and the difference a brotherhood can make.</p>
+          <p>
+            One member was enduring the slowest month of his business when his wife suffered a
+            medical emergency, leaving the family facing roughly $12,000 in medical costs, which
+            could have put him out of business. Without adequate coverage, he turned, humbly, to the
+            local Catholic community. Within two weeks, fellow Catholics had raised the funds.
+            Another young father, caught between careers and struggling to provide for his family,
+            was given work, mentorship, and generous wages by fellow Catholic tradesmen. In both
+            cases, what sustained a family was not an institution, but a community willing to say:
+            you are not alone.
+          </p>
+          <p>
+            The Church knows that a man is more than his occupation or income. He is body and soul,
+            husband and father, neighbor and brother. He needs not only fair work, but spiritual
+            fellowship; not only assistance in crisis, but faithful accompaniment; not only
+            professional connections, but a community rooted in Christ. The St. Joseph the Worker
+            Guild seeks to give that brotherhood a home: to strengthen and extend what has already
+            begun organically among Catholic tradesmen in St. Louis, Missouri. The men who help our
+            homes stand upright should not be left standing alone.
+          </p>
+        </div>
       </div>
-      <div class="flex flex-col gap-6">
+      <div class="flex flex-col gap-6 lg:sticky lg:top-8 lg:self-start">
         <dl class="border-t border-mortar">
           <div class="grid gap-1 border-b border-mortar py-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-8">
-            <dt class="font-sans font-semibold">Highest suicide rate</dt>
+            <dt class="font-sans font-semibold">Highest Suicide Rate</dt>
             <dd>
               The CDC identifies construction and extraction as the occupational group with the
               highest suicide rate in the nation.
             </dd>
           </div>
           <div class="grid gap-1 border-b border-mortar py-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-8">
-            <dt class="font-sans font-semibold">Second in fatal injury</dt>
+            <dt class="font-sans font-semibold">Second in Fatal Injury</dt>
             <dd>
               Construction and extraction ranks second in fatal workplace injury, with 12.6 deaths
               per 100,000 workers in 2024, nearly four times the rate across all occupations. This
@@ -159,7 +175,7 @@ const programs = [
             </dd>
           </div>
           <div class="grid gap-1 border-b border-mortar py-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-8">
-            <dt class="font-sans font-semibold">Isolating work</dt>
+            <dt class="font-sans font-semibold">Isolating Work</dt>
             <dd>
               Construction ranks among the industries with the highest rates of substance-use
               disorder, and research increasingly points to loneliness and lack of social support as
@@ -167,7 +183,7 @@ const programs = [
             </dd>
           </div>
           <div class="grid gap-1 border-b border-mortar py-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-8">
-            <dt class="font-sans font-semibold">No safety net</dt>
+            <dt class="font-sans font-semibold">No Safety Net</dt>
             <dd>
               Among the Guild's own members, more than 90% have no employer-sponsored health
               insurance, and at least 20% have no health coverage at all.
@@ -178,28 +194,13 @@ const programs = [
           Sources: CDC, suicide rates by occupational group; U.S. Bureau of Labor Statistics, Census
           of Fatal Occupational Injuries, 2024. Membership figures are the Guild's own.
         </p>
-        <div class="measure flex flex-col gap-4 border-t border-mortar pt-6 leading-relaxed">
-          <p>
-            We have seen the consequences, and the difference a brotherhood makes. One member was
-            enduring the slowest month of his business when his wife suffered a medical emergency,
-            leaving the family facing roughly $12,000 in medical costs. It could have put him out of
-            business. Within two weeks, fellow Catholics had raised the funds. Another young father,
-            caught between careers and struggling to provide for his family, was given work,
-            mentorship, and generous wages by fellow Catholic tradesmen. In both cases what
-            sustained a family was not an institution, but a community willing to say: you are not
-            alone.
-          </p>
-          <p class="font-sans text-[0.9rem] text-ash">
-            <Tk {...TK.consentCases} />
-          </p>
-        </div>
       </div>
     </div>
   </Section>
 
   <Section tone="stone" labelledby="programs-title">
     <h2 id="programs-title" class="text-h2">
-      What the Guild does
+      Our 5 Pillars of Works
     </h2>
     <p class="mt-3 max-w-[60ch] leading-relaxed">
       Five areas of work. Spiritual growth comes first because everything else depends on it.
@@ -217,7 +218,7 @@ const programs = [
       ))}
     </div>
     <div class="mt-10 border-t border-mortar pt-8">
-      <h3 class="text-h3">Done so far at Saint Mary of Victories</h3>
+      <h3 class="text-h3">Concrete Results at Saint Mary of Victories</h3>
       <p class="mt-3 max-w-[64ch] leading-relaxed">
         Since the Guild began serving at Saint Mary of Victories, the parish's operating costs are
         down 8% year over year. The Guild has given countless hours of discounted and pro bono labor
@@ -230,7 +231,7 @@ const programs = [
     <div class="grid gap-10 lg:grid-cols-[1fr_1fr] lg:gap-16">
       <div>
         <h2 id="values-title" class="text-h2">
-          Our values
+          Our Values
         </h2>
         <dl class="mt-6 border-t border-mortar">
           {values.map((v) => (
@@ -242,29 +243,31 @@ const programs = [
         </dl>
       </div>
       <div>
-        <h2 class="text-h2">Where we are headed</h2>
+        <h2 class="text-h2">Where We Are Headed</h2>
         <dl class="mt-6 border-t border-mortar">
           <div class="border-b border-mortar py-4">
-            <dt class="font-sans font-semibold">This year</dt>
+            <dt class="font-sans font-semibold">This Year</dt>
             <dd class="mt-1 leading-relaxed">
               Build the founding board, welcome the first 60 dues-paying members, stand up the
-              referral and networking system members have been asking for, secure access to
-              tradesmen's Masses and the sacraments, and put a concrete healthcare plan on the table
-              to be implemented in 2028.
+              referral and networking system members have been asking for, hold the St. Joseph the
+              Worker Procession, secure regular tradesmen's Masses, confession, and holy hours, and
+              build an emergency assistance fund for tradesmen and families in crisis, ready by
+              2028.
             </dd>
           </div>
           <div class="border-b border-mortar py-4">
-            <dt class="font-sans font-semibold">By 2029</dt>
+            <dt class="font-sans font-semibold">2029 Goals</dt>
             <dd class="mt-1 leading-relaxed">
-              350 active members, monthly Mass and Holy Hour, an annual retreat, an established
-              tradesmen education program, a working referral directory, healthcare options for
-              members, and a governing board of five to seven.
+              100 active members, monthly Mass and Holy Hour, an annual overnight retreat, an
+              established tradesmen education partnership, a wide-ranging referral directory with a
+              surplus of tradesmen to choose from, healthcare cost advocacy for tradesmen, and a
+              governing board of five to seven.
             </dd>
           </div>
           <div class="border-b border-mortar py-4">
-            <dt class="font-sans font-semibold">By 2031</dt>
+            <dt class="font-sans font-semibold">2031 Target</dt>
             <dd class="mt-1 leading-relaxed">
-              500 Guild members with a 75% year-over-year retention rate.
+              250 well-formed tradesmen serving our community, with a 75% retention rate.
             </dd>
           </div>
         </dl>
@@ -278,7 +281,7 @@ const programs = [
   <Section tone="charcoal" labelledby="join-title">
     <div class="measure flex flex-col gap-5 font-serif text-[1.2rem] leading-[1.65]">
       <h2 id="join-title" class="text-h2 font-sans">
-        Join us
+        Join Us
       </h2>
       <p>
         There is a fallen plaque in the ancient corridors of the Catholic Church. A plaque lying
@@ -296,7 +299,7 @@ const programs = [
       </p>
       <div class="mt-4 flex flex-wrap gap-4 font-sans text-[1rem]">
         <Button href="/get-involved" variant="inverse">
-          Get involved
+          Get Involved
         </Button>
         <Button href="/donate" variant="quiet" class="text-stone">
           Support the Guild

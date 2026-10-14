@@ -11,7 +11,7 @@ interface Props {
   tone?: 'stone' | 'paper';
   heading?: string;
 }
-const { tone = 'stone', heading = 'Sponsors and partners' } = Astro.props;
+const { tone = 'stone', heading = 'Sponsors and Partners' } = Astro.props;
 
 const all = (await getCollection('sponsors')).map((s) => s.data);
 const TIERS: { key: (typeof all)[number]['tier']; label: string }[] = [
