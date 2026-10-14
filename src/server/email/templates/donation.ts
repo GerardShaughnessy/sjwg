@@ -1,4 +1,4 @@
-import { PARISH_CITY, PARISH_NAME, SITE_NAME, TK } from '@/config/site';
+import { PARISH_CITY, PARISH_NAME, SITE_NAME } from '@/config/site';
 import { env } from '../../env';
 import { dollars } from '../../receipts';
 import { escapeHtml, paragraphs, shell, textFooter, type Email } from '../layout';
@@ -57,7 +57,7 @@ ${gs}
 ${taxStatusLine()}
 
 Your gift funds parish repair days, medical costs for underinsured tradesmen, emergency home maintenance for families with no one else to call, and training for men entering the trades. Your name and prayer intentions are offered at our Guild holy hours, on request.`;
-  const footer = `${org}. ${PARISH_NAME}, ${PARISH_CITY}. Mailing address: ${TK.mailingAddress.sample}.`;
+  const footer = `${org}. ${PARISH_NAME}, ${PARISH_CITY}.`;
   return {
     subject: `Receipt for your gift to ${SITE_NAME}`,
     text: `${body}\n\n${footer}${textFooter()}`,
