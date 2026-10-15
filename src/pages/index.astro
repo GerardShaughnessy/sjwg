@@ -2,7 +2,9 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import Section from '@/components/ui/Section.astro';
 import Hero from '@/components/home/Hero.astro';
-import WhatIsTheGuild from '@/components/home/WhatIsTheGuild.astro';
+import ModernChallenges from '@/components/home/ModernChallenges.astro';
+import ConcreteResults from '@/components/home/ConcreteResults.astro';
+import ThreeSteps from '@/components/home/ThreeSteps.astro';
 import Pillars from '@/components/home/Pillars.astro';
 import FoundingStory from '@/components/home/FoundingStory.astro';
 import MembersStrip from '@/components/home/MembersStrip.astro';
@@ -16,18 +18,20 @@ import SponsorStrip from '@/components/home/SponsorStrip.astro';
 
 <BaseLayout>
   <Hero />
-  <WhatIsTheGuild />
+  <ModernChallenges />
   <Pillars />
   <FoundingStory />
   <Testimonials />
+  <ConcreteResults />
+  <ThreeSteps />
   <HowToHelp />
   <MembersStrip />
-  <Section tone="paper" labelledby="events-title">
+  <Section tone="stone" labelledby="events-title">
     <div class="grid gap-12 lg:grid-cols-2 lg:gap-16">
       <EventsPreview />
       <BlogPreview />
     </div>
   </Section>
-  <SponsorStrip tone="stone" />
+  <SponsorStrip tone="paper" />
   <WhereWeMeet />
 </BaseLayout>

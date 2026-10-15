@@ -1,9 +1,11 @@
 ---
 import Section from '@/components/ui/Section.astro';
 import Picture from '@/components/ui/Picture.astro';
+
+const { tone = 'stone' } = Astro.props as { tone?: 'stone' | 'paper' };
 ---
 
-<Section tone="stone" labelledby="what-title">
+<Section tone={tone} labelledby="what-title">
   <div class="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-16">
     <div>
       <h2 id="what-title" class="text-h2">
