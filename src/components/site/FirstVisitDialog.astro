@@ -112,6 +112,8 @@ import { TK } from '@/config/site';
   const skip = ['/request', '/portal', '/login', '/invite', '/forgot-password', '/reset-password'];
   if (dialog && !skip.some((p) => location.pathname.startsWith(p)) && shouldShow()) {
     let timer = 0;
+    // Opens at most once per page view; after that only the footer form remains.
+    let shown = false;
     // The footer has its own sign-up; never cover it with this one.
     const footerSignup = document.getElementById('footer-signup-title')?.closest('section');
     const footerInView = () => {
@@ -119,8 +121,13 @@ import { TK } from '@/config/site';
       const r = footerSignup.getBoundingClientRect();
       return r.top < window.innerHeight && r.bottom > 0;
     };
+    const stop = () => {
+      window.clearTimeout(timer);
+      window.removeEventListener('scroll', onScroll);
+    };
     const open = () => {
-      if (dialog.open || footerInView()) return;
+      if (shown || dialog.open || footerInView()) return;
+      shown = true;
       window.clearTimeout(timer);
       // Non-modal on purpose: the page stays usable and nothing is dimmed.
       dialog.show();
@@ -130,12 +137,17 @@ import { TK } from '@/config/site';
       const max = document.documentElement.scrollHeight - window.innerHeight;
       // While the footer sign-up is on screen, step aside rather than cover it.
       if (dialog.open) dialog.style.visibility = footerInView() ? 'hidden' : '';
-      else if (max > 0 && window.scrollY / max > 0.33) open();
+      else if (!shown && max > 0 && window.scrollY / max > 0.33) open();
     };
     const dismiss = () => {
       write(DISMISSED);
+      stop();
       dialog.close();
     };
+    // Clicking anywhere outside the popup counts as "no thanks".
+    document.addEventListener('pointerdown', (e) => {
+      if (dialog.open && !dialog.contains(e.target as Node)) dismiss();
+    });
 
     const start = () => {
       timer = window.setTimeout(open, 8000);
@@ -151,8 +163,7 @@ import { TK } from '@/config/site';
     });
     // Signed up anywhere on the page: thank him, then get out of the way.
     window.addEventListener('sjwg:subscribed', () => {
-      window.clearTimeout(timer);
-      window.removeEventListener('scroll', onScroll);
+      stop();
       if (dialog.open) window.setTimeout(() => dialog.close(), 2500);
     });
   }
