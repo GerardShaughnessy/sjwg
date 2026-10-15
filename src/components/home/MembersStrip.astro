@@ -6,28 +6,31 @@ import MemberCard from '@/components/members/MemberCard';
 
 const all = await getCollection('members');
 const featured = all.filter((m) => m.data.featured).slice(0, 5);
+/* Nothing to show until a member agrees to a public listing. */
 const allSample = featured.length > 0 && featured.every((m) => m.data.sample);
 ---
 
-<Section tone="paper" labelledby="members-title">
-  <div class="flex flex-wrap items-end justify-between gap-4">
-    <h2 id="members-title" class="text-h2">
-      Guild Members
-    </h2>
-    {allSample && (
-      <p class="font-sans text-[0.95rem] text-ash">
-        Sample entries. Real members are listed once each has agreed to what appears publicly.
-      </p>
-    )}
-  </div>
-  <div class="mt-6 border-b border-mortar">
-    {featured.map((m) => (
-      <MemberCard member={m.data} compact />
-    ))}
-  </div>
-  <div class="mt-8">
-    <Button href="/directory" variant="secondary">
-      See the full directory
-    </Button>
-  </div>
-</Section>
+{featured.length > 0 && (
+  <Section tone="paper" labelledby="members-title">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <h2 id="members-title" class="text-h2">
+        Guild Members
+      </h2>
+      {allSample && (
+        <p class="font-sans text-[0.95rem] text-ash">
+          Sample entries. Real members are listed once each has agreed to what appears publicly.
+        </p>
+      )}
+    </div>
+    <div class="mt-6 border-b border-mortar">
+      {featured.map((m) => (
+        <MemberCard member={m.data} compact />
+      ))}
+    </div>
+    <div class="mt-8">
+      <Button href="/directory" variant="secondary">
+        See the full directory
+      </Button>
+    </div>
+  </Section>
+)}
