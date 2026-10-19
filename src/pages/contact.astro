@@ -48,11 +48,15 @@ import { PARISH_NAME, PARISH_CITY, TK, PARISH_STREET, PARISH_ZIP } from '@/confi
       <dl class="mt-12 grid grid-cols-[minmax(6rem,auto)_1fr] gap-x-6 gap-y-3 border-t border-mortar pt-6 font-sans">
         <dt class="text-ash">Phone</dt>
         <dd>
-          <a href="tel:+16362887002" class="no-underline hover:underline">(636) 288-7002</a>
+          <a href="tel:+16362887002" class="no-underline hover:underline">
+            (636) 288-7002
+          </a>
         </dd>
         <dt class="text-ash">Email</dt>
         <dd>
-          <a href="mailto:hello@sjwg.org" class="no-underline hover:underline">hello@sjwg.org</a>
+          <a href="mailto:hello@sjwg.org" class="no-underline hover:underline">
+            hello@sjwg.org
+          </a>
         </dd>
         <dt class="text-ash">Parish</dt>
         <dd>
@@ -71,13 +75,10 @@ import { PARISH_NAME, PARISH_CITY, TK, PARISH_STREET, PARISH_ZIP } from '@/confi
       </h2>
       <div class="mt-4 flex max-w-[52ch] flex-col gap-4 leading-relaxed">
         <p>
-          Parishes, schools, and shrines that see potential to flourish with us. Suppliers who can
-          discount materials. Sponsors for programs and events. Used materials and tool donations
-          are always welcome for our shop!
+          Parishes, schools, and shrines that need work. Suppliers who can discount materials.
+          Sponsors for programs and events. Used tools and materials are always welcome in our shop.
         </p>
-        <p>
-          Tell us who you are and what you have in mind, and a Guild officer will be in touch.
-        </p>
+        <p>Tell us what you have in mind and a Guild officer will be in touch.</p>
       </div>
       <div class="mt-8">
         <InquiryForm
@@ -112,9 +113,7 @@ import { PARISH_NAME, PARISH_CITY, TK, PARISH_STREET, PARISH_ZIP } from '@/confi
             { id: 'message', label: 'What do you have in mind?', type: 'textarea', required: true },
           ]}
         >
-          <p slot="successBody">
-            A Guild officer will be in touch.
-          </p>
+          <p slot="successBody">A Guild officer will be in touch.</p>
         </InquiryForm>
       </div>
     </section>

@@ -1,87 +1,64 @@
 ---
 /**
- * The stakes: why tradesmen need a guild. Full text from the Case for Support
- * beside the data chart. Moved from About to the home page (StoryBrand "stakes").
+ * The stakes: why tradesmen need a guild (StoryBrand "stakes"). Condensed from
+ * the Case for Support. The hardship story is kept to one sentence, without
+ * figures, until both members have given written consent.
  */
 import Section from '@/components/ui/Section.astro';
+
+const facts = [
+  {
+    term: 'Dangerous Work',
+    text: 'Construction and extraction has the second-highest rate of fatal workplace injury in the nation, nearly four times the average across all occupations.',
+  },
+  {
+    term: 'Lonely Work',
+    text: 'Long days alone in a van or on a job site. Research points to isolation and a lack of support as serious concerns across the trades.',
+  },
+  {
+    term: 'No Safety Net',
+    text: 'Most Guild members have no employer-sponsored health insurance. Some have no coverage at all.',
+  },
+];
 ---
 
 <Section tone="paper" labelledby="need-title">
   <div class="grid gap-10 lg:grid-cols-[3fr_2fr] lg:gap-16">
     <div>
       <h2 id="need-title" class="text-h2">
-        A New Guild for Modern Challenges
+        Why Tradesmen Need a Guild
       </h2>
       <div class="mt-5 flex max-w-[60ch] flex-col gap-4 leading-relaxed">
         <p>
-          Skilled tradesmen are among the quiet stewards of our common life. They keep the water
-          running, the lights on, the heat working, and the roofs over our heads. For those with
-          limited means, a small, independent tradesman may be the last person willing to answer the
-          call. Yet the men who faithfully care for others are often left to carry their own burdens
-          alone.
+          Tradesmen keep the water running, the lights on, and the roofs over our heads. For a
+          family of limited means, a small independent tradesman is often the last one willing to
+          answer the call.
         </p>
         <p>
-          These burdens are especially acute for small, independent tradesmen. There may be no
-          employer-sponsored health plan, institutional safety net, or built-in community to catch a
-          family when work slows or crisis strikes.
-        </p>
-        <p>We have seen the consequences, and the difference a brotherhood can make.</p>
-        <p>
-          One member was enduring the slowest month of his business when his wife suffered a medical
-          emergency, leaving the family facing roughly $12,000 in medical costs, which could have
-          put him out of business. Without adequate coverage, he turned, humbly, to the local
-          Catholic community. Within two weeks, fellow Catholics had raised the funds. Another young
-          father, caught between careers and struggling to provide for his family, was given work,
-          mentorship, and generous wages by fellow Catholic tradesmen. In both cases, what sustained
-          a family was not an institution, but a community willing to say: you are not alone.
+          Yet the men who carry others often carry their own burdens alone. Many run one-man shops
+          with no employer health plan, no safety net, and no one to call when work slows or a
+          crisis hits.
         </p>
         <p>
-          The Church knows that a man is more than his occupation or income. He is body and soul,
-          husband and father, neighbor and brother. He needs not only fair work, but spiritual
-          fellowship; not only assistance in crisis, but faithful accompaniment; not only
-          professional connections, but a community rooted in Christ. The St. Joseph the Worker
-          Guild seeks to give that brotherhood a home: to strengthen and extend what has already
-          begun organically among Catholic tradesmen in St. Louis, Missouri. The men who help our
-          homes stand upright should not be left standing alone.
+          We have seen what a brotherhood can do. When one member's family faced a medical emergency
+          in his slowest month, fellow Catholics covered the bills within two weeks. The Guild
+          exists to make that kind of help ordinary: fair work, faithful friendship, and a community
+          rooted in Christ.
         </p>
       </div>
     </div>
     <div class="flex flex-col gap-6 lg:sticky lg:top-8 lg:self-start">
       <dl class="border-t border-mortar">
-        <div class="grid gap-1 border-b border-mortar py-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-8">
-          <dt class="font-sans font-semibold">Highest Suicide Rate</dt>
-          <dd>
-            The CDC identifies construction and extraction as the occupational group with the
-            highest suicide rate in the nation.
-          </dd>
-        </div>
-        <div class="grid gap-1 border-b border-mortar py-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-8">
-          <dt class="font-sans font-semibold">Second in Fatal Injury</dt>
-          <dd>
-            Construction and extraction ranks second in fatal workplace injury, with 12.6 deaths per
-            100,000 workers in 2024, nearly four times the rate across all occupations. This is the
-            Bureau of Labor Statistics figure by occupation group, not by industry.
-          </dd>
-        </div>
-        <div class="grid gap-1 border-b border-mortar py-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-8">
-          <dt class="font-sans font-semibold">Isolating Work</dt>
-          <dd>
-            Construction ranks among the industries with the highest rates of substance-use
-            disorder, and research increasingly points to loneliness and lack of social support as
-            serious concerns for the trades.
-          </dd>
-        </div>
-        <div class="grid gap-1 border-b border-mortar py-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-8">
-          <dt class="font-sans font-semibold">No Safety Net</dt>
-          <dd>
-            Among the Guild's own members, more than 90% have no employer-sponsored health
-            insurance, and at least 20% have no health coverage at all.
-          </dd>
-        </div>
+        {facts.map((f) => (
+          <div class="grid gap-1 border-b border-mortar py-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-8">
+            <dt class="font-sans font-semibold">{f.term}</dt>
+            <dd>{f.text}</dd>
+          </div>
+        ))}
       </dl>
       <p class="font-sans text-[0.85rem] leading-snug text-ash">
-        Sources: CDC, suicide rates by occupational group; U.S. Bureau of Labor Statistics, Census
-        of Fatal Occupational Injuries, 2024. Membership figures are the Guild's own.
+        Source: U.S. Bureau of Labor Statistics, Census of Fatal Occupational Injuries, 2024.
+        Membership figures are the Guild's own.
       </p>
     </div>
   </div>
