@@ -1,0 +1,59 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>SJWG flyer</title>
+<link rel="stylesheet" href="assets/print.css">
+<style>
+@page { size: 8.75in 11.25in; margin: 0; }
+.sheet { --w: 8.5in; --h: 11in; --safe: 0.4in; }
+.band { position: absolute; left: 0; right: 0; top: 0; height: 5in; background: var(--olive); }
+.safe { display: flex; flex-direction: column; }
+.head { color: var(--ivory); text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.18in; height: calc(5in - var(--bleed) - var(--safe)); justify-content: center; }
+.head img.seal { width: 2.3in; height: 2.3in; }
+.head h1 { font: 700 36pt/1.02 var(--serif); }
+.head .sub { font: 400 14pt/1.4 var(--serif); font-style: italic; color: var(--mustard-glow); }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0.45in; padding: 0.3in 0 0.3in; flex: 1; min-height: 0; }
+.col { display: flex; flex-direction: column; gap: 0.12in; }
+.col .eyebrow { font-size: 9.5pt; }
+.col h2 { font: 700 23pt/1.08 var(--serif); }
+.col ul.check li { font: 400 12pt/1.4 var(--sans); margin-bottom: .3em; }
+.col .cta { display: grid; grid-template-columns: 1.25in 1fr; gap: 0.2in; align-items: center; margin-top: auto; }
+.col .cta .url { text-align: left; font-size: 12.5pt; font-weight: 700; margin: 0; }
+.col .cta .hint { font: 400 10pt/1.4 var(--sans); color: var(--ash); margin-top: 0.04in; }
+.foot { border-top: 2px solid var(--mustard); padding-top: 0.16in; display: grid; grid-template-columns: 1fr auto; gap: 0.3in; align-items: end; }
+.foot .events { font: 400 10.5pt/1.5 var(--sans); }
+.foot .events strong { font-weight: 700; }
+.foot .contact { font: 700 11pt/1.5 var(--sans); text-align: right; }
+.disc { margin-top: 0.14in; font-size: 7pt; }
+.label { color: var(--ivory); }
+</style></head>
+<body class="guides">
+<section class="sheet" aria-label="Flyer">
+  <div class="band"></div>
+  <div class="trim"><span class="label">Flyer · 8.5 × 11 in · one side</span>
+    <div class="safe">
+      <div class="head">
+        <img class="seal" src="assets/logo/seal.svg" alt="St. Joseph the Worker Guild seal">
+        <h1>Find a Catholic tradesman.<br>Or become one.</h1>
+        <div class="sub">A brotherhood of tradesmen at St. Mary of Victories, St. Louis</div>
+      </div>
+      <div class="cols">
+        <div class="col">
+          <div class="eyebrow">Homeowners and parishes</div>
+          <h2>Need a tradesman?</h2>
+          <ul class="check"><li>Plumbers, electricians, carpenters, handymen, and more</li><li>Local Catholic men</li><li>Honest work at a fair price</li><li>Every job supports a family</li></ul>
+          <div class="cta"><div class="qr-wrap"><img class="qr" src="assets/qr/directory-olive.svg" alt="QR code to sjwg.org/directory"></div><div><div class="url">sjwg.org/directory</div><div class="hint">Scan to see the directory.</div></div></div>
+        </div>
+        <div class="col">
+          <div class="eyebrow">Tradesmen</div>
+          <h2>Are you a tradesman?</h2>
+          <ul class="check"><li>Referral network and directory listing</li><li>Masses, Holy Hours, and retreats for the trades</li><li>Brothers who show up in a rough season</li><li>Side work and business know-how</li></ul>
+          <div class="cta"><div class="qr-wrap"><img class="qr" src="assets/qr/join-olive.svg" alt="QR code to sjwg.org/get-involved"></div><div><div class="url">sjwg.org/get-involved</div><div class="hint">Scan to join.</div></div></div>
+        </div>
+      </div>
+      <div class="foot">
+        <div class="events"><strong>Guild Meeting</strong> first Thursday, 7 PM<br><strong>Holy Hour</strong> third Thursday, 7 PM<br>St. Mary of Victories, 744 S Third St, St. Louis</div>
+        <div class="contact">sjwg.org<br>hello@sjwg.org<br>(636) 288-7002</div>
+      </div>
+      <p class="fine disc">The Guild does not employ its members and is not responsible for their business affairs.</p>
+    </div>
+  </div>
+</section>
+</body></html>

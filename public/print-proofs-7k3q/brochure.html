@@ -1,0 +1,125 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>SJWG tri-fold brochure</title>
+<link rel="stylesheet" href="assets/print.css">
+<style>
+@page { size: 11.25in 8.75in; margin: 0; }
+.sheet { --w: 11in; --h: 8.5in; --safe: 0.25in; }
+/* Tri-fold: the flap panel is 3.625in, the other two 3.6875in. */
+.panels { position: absolute; inset: var(--bleed); display: grid; }
+.outside .panels { grid-template-columns: 3.625in 3.6875in 3.6875in; }
+.inside .panels { grid-template-columns: 3.6875in 3.6875in 3.625in; }
+.panel { position: relative; padding: var(--safe); display: flex; flex-direction: column; gap: 0.2in; }
+.panel + .panel { border-left: 1px dashed rgba(0,0,0,.18); }
+.guides .panel::before { content: attr(data-name); position: absolute; top: 0.04in; left: 0.06in; font: 600 7px/1 var(--sans); color: #888; text-transform: uppercase; letter-spacing: .08em; }
+@media print { .panel + .panel { border-left: 0; } }
+.panel h2 { font: 700 23pt/1.08 var(--serif); }
+.panel h3 { font: 700 10.5pt/1.2 var(--serif); }
+.panel p { font: 400 12pt/1.5 var(--sans); }
+.panel ul.check li { font: 400 12.5pt/1.45 var(--sans); margin-bottom: .55em; }
+.dark { background: var(--olive); color: var(--ivory); }
+.dark p { color: var(--ivory); }
+.cta { display: grid; grid-template-columns: 1.45in 1fr; gap: 0.16in; align-items: center; margin-top: auto; }
+.cta .url { text-align: left; font-size: 11pt; font-weight: 700; margin: 0; }
+.cta .hint { font: 400 9.5pt/1.4 var(--sans); margin-top: 0.04in; }
+blockquote { margin: 0; font: 400 14pt/1.45 var(--serif); font-style: italic; }
+blockquote footer { font: 600 9pt/1.3 var(--sans); font-style: normal; margin-top: 0.12in; letter-spacing: .06em; text-transform: uppercase; }
+.contact { font: 400 12pt/1.7 var(--sans); }
+.contact b { font-weight: 700; display: inline-block; width: 0.75in; }
+/* Front cover */
+.cover { align-items: center; text-align: center; justify-content: center; gap: 0.2in; }
+.cover img.seal { width: 2.9in; height: 2.9in; }
+.cover h1 { font: 700 24pt/1.12 var(--serif); }
+.cover .sub { font: 700 11pt/1.3 var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--mustard); }
+.cover .foot { position: absolute; left: var(--safe); right: var(--safe); bottom: var(--safe); font: 600 9pt/1.4 var(--sans); letter-spacing: .04em; color: var(--ash); }
+/* Flap with Sirach quote */
+.flap { justify-content: center; align-items: center; text-align: center; gap: 0.25in; }
+.flap img { width: 2.7in; height: auto; }
+/* Back cover */
+.back img.mark { height: 0.55in; width: auto; }
+.back .tiny { font: 600 8pt/1.4 var(--sans); letter-spacing: .04em; text-transform: uppercase; color: var(--ash); }
+.panel .eyebrow { font-size: 9.5pt; }
+.panel ul.check li b { font-weight: 700; }
+.panel.dark ul.check li::before { color: var(--mustard-glow); }
+.inside .panel, .panel.back { justify-content: space-between; }
+.panel.back h2 { font-size: 20pt; }
+.panel.back .contact { font-size: 11pt; }
+.panel.back .contact b { width: 0.7in; }
+.inside .panel[data-name="Inside left"] ul.check li { font-size: 15pt; margin-bottom: .5em; }
+.inside .panel.dark ul.check li { font-size: 13pt; margin-bottom: .7em; }
+.inside .panel[data-name="Inside right (flap)"] ul.check li { font-size: 13pt; margin-bottom: .6em; }
+.inside .cta, .inside blockquote { margin-top: 0 !important; }
+.inside .panel { justify-content: space-between; }
+.inside .panel h2 { font-size: 26pt; }
+.inside .panel p { font-size: 13pt; }
+.inside .panel[data-name="Inside left"] ul.check li { font-size: 17pt; margin-bottom: .45em; }
+.inside .panel.dark ul.check li { font-size: 14pt; margin-bottom: .6em; }
+.inside .panel[data-name="Inside right (flap)"] ul.check li { font-size: 14pt; margin-bottom: .5em; }
+.inside blockquote { font-size: 15pt; }
+.inside .cta { grid-template-columns: 1.45in 1fr; }
+.inside .cta .url { font-size: 12.5pt; }
+.inside .cta .hint { font-size: 10.5pt; }
+.cover img.seal { width: 3.1in; height: 3.1in; }
+.cover h1 { font-size: 26pt; }
+</style></head>
+<body class="guides">
+
+<section class="sheet outside" aria-label="Outside">
+  <div class="trim"><span class="label">Outside · 11 × 8.5 in · flap | back cover | front cover</span></div>
+  <div class="panels">
+    <div class="panel flap dark" data-name="Fold-in flap (outside)">
+      <img src="assets/logo/sjwg-joseph-green-white.svg" alt="St. Joseph with hammer and chisel, NONNE HIC EST FABER">
+      <blockquote><p>“All these are skilled with their hands… Without them no city could be lived in. Yet they maintain the fabric of the world.”</p><footer>Sirach 38:31–34</footer></blockquote>
+    </div>
+    <div class="panel back" data-name="Back cover">
+      <img class="mark" src="assets/logo/wordmark-olive.svg" alt="St. Joseph the Worker Guild">
+      <h2>Rooted in St. Joseph. Built for the trades.</h2>
+      <p>A Catholic brotherhood of skilled tradesmen in greater St. Louis, based at the historic St. Mary of Victories.</p>
+      <hr class="rule">
+      <div class="contact"><b>Web</b> sjwg.org<br><b>Email</b> hello@sjwg.org<br><b>Phone</b> (636) 288-7002<br><b>Church</b> 744 S Third St, St. Louis, MO 63102</div>
+      <div class="cta"><div class="qr-wrap"><img class="qr" src="assets/qr/site-olive.svg" alt="QR code to sjwg.org"></div><div><div class="url">sjwg.org</div><div class="hint">Directory, membership, events, giving.</div></div></div>
+      <div class="tiny">St. Joseph the Worker Guild • A Catholic brotherhood of tradesmen</div>
+    </div>
+    <div class="panel cover" data-name="Front cover">
+      <img class="seal" src="assets/logo/seal.svg" alt="St. Joseph the Worker Guild seal">
+      <h1>Find a Catholic tradesman.<br>Or become one.</h1>
+      <div class="sub">St. Joseph the Worker Guild</div>
+      <div class="foot">Local tradesmen • Faith • Mutual support</div>
+    </div>
+  </div>
+</section>
+
+<section class="sheet inside" aria-label="Inside">
+  <div class="trim"><span class="label">Inside · 11 × 8.5 in · left | center | right (flap)</span></div>
+  <div class="panels">
+    <div class="panel" data-name="Inside left">
+      <div class="eyebrow">Homeowners and parishes</div>
+      <h2>Need a Catholic tradesman?</h2>
+      <ul class="check"><li>Plumbers</li><li>Electricians</li><li>Carpenters</li><li>Handymen</li><li>HVAC, masonry, painting, and more</li></ul>
+      <p>Local Catholic men. Honest work at a fair price. Every job supports a family.</p>
+      <div class="cta"><div class="qr-wrap"><img class="qr" src="assets/qr/directory-olive.svg" alt="QR code to sjwg.org/directory"></div><div><div class="url">sjwg.org/directory</div><div class="hint">Scan to find a member.</div></div></div>
+    </div>
+    <div class="panel dark" data-name="Inside center">
+      <div class="eyebrow">Why a guild</div>
+      <h2>A local Catholic economy.</h2>
+      <ul class="check">
+        <li><b>Homeowners and parishes:</b> a tradesman who values honest work and the dignity of labor.</li>
+        <li><b>Tradesmen:</b> customers who want to support Catholic-owned businesses.</li>
+        <li><b>Unions:</b> we want to work with them. Some of our members are proud union men.</li>
+      </ul>
+      <blockquote style="margin-top:auto"><p>“History attests what excellent results were brought about by the artificers' guilds of olden times.”</p><footer>Pope Leo XIII, Rerum Novarum, 1891</footer></blockquote>
+    </div>
+    <div class="panel" data-name="Inside right (flap)">
+      <div class="eyebrow">Tradesmen</div>
+      <h2>Become a Guild brother.</h2>
+      <p>For practicing Catholic men in the skilled trades. Members get:</p>
+      <ul class="check">
+        <li>Referral network and directory listing</li>
+        <li>Spiritual formation and brotherhood</li>
+        <li>Mutual aid in a rough season</li>
+        <li>Masses, Holy Hours, and retreats for the trades</li>
+        <li>Business ethics and networking</li>
+      </ul>
+      <div class="cta"><div class="qr-wrap"><img class="qr" src="assets/qr/join-olive.svg" alt="QR code to sjwg.org/get-involved"></div><div><div class="url">Join the Guild</div><div class="hint">sjwg.org/get-involved<br>hello@sjwg.org</div></div></div>
+    </div>
+  </div>
+</section>
+</body></html>

@@ -61,6 +61,12 @@
     Cache-Control = "private, no-store"
     X-Robots-Tag = "noindex"
 
+# Hidden print-proof review page for Greg: not linked anywhere, not indexed.
+[[headers]]
+  for = "/print-proofs-7k3q/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
 [[headers]]
   for = "/_astro/*"
   [headers.values]

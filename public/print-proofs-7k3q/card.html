@@ -1,0 +1,38 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>SJWG business card</title>
+<link rel="stylesheet" href="assets/print.css">
+<style>
+@page { size: 3.75in 2.25in; margin: 0; }
+.sheet { --w: 3.5in; --h: 2in; --safe: 0.16in; }
+.front .safe { display: grid; grid-template-columns: 0.95in 1fr 0.86in; gap: 0.12in; align-items: center; }
+.front img.seal { width: 0.95in; height: 0.95in; }
+.front h1 { font: 700 12pt/1.08 var(--serif); margin-bottom: 0.07in; }
+.front p { font: 400 8pt/1.35 var(--sans); }
+.back .safe { display: grid; grid-template-columns: 1fr 0.9in; grid-template-rows: 1fr auto; gap: 0.06in 0.14in; align-items: center; }
+.back h1 { font: 700 15pt/1.08 var(--serif); margin-bottom: 0.08in; }
+.back p { font: 400 8pt/1.35 var(--sans); }
+.back .eyebrow { font-size: 8pt; margin-bottom: 0.04in; }
+.back .foot { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; gap: 0.1in; border-top: 1px solid rgba(243,234,213,.35); padding-top: 0.06in; }
+.back .fine { font-size: 6.5pt; }
+.url { font-size: 6.6pt; font-weight: 600; white-space: nowrap; letter-spacing: 0; }
+.back img.mark { height: 0.26in; width: auto; }
+</style></head>
+<body class="guides">
+<section class="sheet front" aria-label="Front">
+  <div class="trim"><span class="label">Front · 3.5 × 2 in · olive on ivory</span>
+    <div class="safe">
+      <img class="seal" src="assets/logo/seal.svg" alt="St. Joseph the Worker Guild seal">
+      <div><h1>Need a Catholic tradesman?</h1><p>Scan for our directory. Local men. Honest work.</p></div>
+      <div><div class="qr-wrap"><img class="qr" src="assets/qr/directory-olive.svg" alt="QR code to sjwg.org/directory"></div><div class="url">sjwg.org/directory</div></div>
+    </div>
+  </div>
+</section>
+<section class="sheet earth back" aria-label="Back">
+  <div class="trim"><span class="label">Back · 3.5 × 2 in · ivory on earth brown</span>
+    <div class="safe">
+      <div><div class="eyebrow">Tradesmen</div><h1>Join the brotherhood.</h1><p>Faith. Referrals. Side work.<br>Brothers who show up.</p></div>
+      <div><div class="qr-wrap"><img class="qr" src="assets/qr/join-brown.svg" alt="QR code to sjwg.org/get-involved"></div><div class="url">sjwg.org/get-involved</div></div>
+      <div class="foot"><img class="mark" src="assets/logo/wordmark-ivory.svg" alt="St. Joseph the Worker Guild"><span class="fine">St. Mary of Victories, St. Louis · hello@sjwg.org</span></div>
+    </div>
+  </div>
+</section>
+</body></html>

@@ -1,0 +1,129 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>SJWG print proofs</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/favicon.svg">
+<link rel="stylesheet" href="assets/print.css">
+<style>
+html { background: #e9e4d8; }
+body { max-width: 1180px; margin: 0 auto; padding: 24px 16px 80px; color: #2b2624; }
+header { display: flex; justify-content: space-between; align-items: end; gap: 24px; flex-wrap: wrap; border-bottom: 2px solid var(--mustard); padding-bottom: 16px; margin-bottom: 8px; }
+header h1 { font: 700 28px/1.1 var(--serif); }
+header p { font: 15px/1.5 var(--sans); color: #555; max-width: 60ch; margin-top: 10px; }
+nav { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+nav a { font: 600 14px var(--sans); color: var(--earth); }
+.piece { margin-top: 40px; display: grid; grid-template-columns: 300px 1fr; gap: 28px; align-items: start; }
+.piece h2 { font: 700 22px/1.2 var(--serif); margin-bottom: 6px; }
+.meta { font: 13px/1.5 var(--sans); color: #444; margin: 0; }
+.meta dt { font-weight: 600; margin-top: 10px; color: #222; }
+.meta dd { margin: 2px 0 0; }
+.meta ul { padding-left: 18px; margin: 4px 0; }
+.flag { background: #fff4d6; border-left: 3px solid var(--mustard); padding: 8px 10px; margin-top: 8px; font-size: 12.5px; }
+.open { display: inline-block; margin-top: 12px; font: 600 13px var(--sans); color: var(--earth); }
+.frame { background: #d8d3c8; border-radius: 6px; overflow: hidden; position: relative; min-height: 120px; }
+.frame iframe { border: 0; display: block; background: transparent; transform-origin: top left; }
+.tools { position: sticky; top: 0; z-index: 5; background: #e9e4d8; padding: 10px 0; display: flex; gap: 12px 16px; align-items: center; flex-wrap: wrap; font: 14px var(--sans); }
+.tools button { font: 600 13px var(--sans); padding: 6px 12px; border: 1px solid var(--earth); background: var(--paper); color: var(--earth); border-radius: 4px; cursor: pointer; }
+@media (max-width: 900px) { .piece { grid-template-columns: 1fr; } }
+</style></head>
+<body>
+<header>
+  <div><h1>St. Joseph the Worker Guild print proofs</h1>
+  <p>Built from Greg's "Promotional Content" doc (Oct 19), cut down to core points and features in the trimmed site voice. Red dashed line is the cut, blue dotted is the safe area, the ivory or olive beyond the red line is bleed (0.125 in). Every proof is shown at its real print size (scaled down to fit narrow screens). To get a PDF: open the proof on its own page, print, Save as PDF, margins None.</p></div>
+  <nav><a href="#card">Business card</a><a href="#magnet">Magnet</a><a href="#flyer">Flyer</a><a href="#brochure">Brochure</a></nav>
+</header>
+<div class="tools"><button id="toggle" type="button">Hide guides</button><span>Each proof on its own page: <a href="card.html">card</a>, <a href="magnet.html">magnet</a>, <a href="flyer.html">flyer</a>, <a href="brochure.html">brochure</a>.</span></div>
+
+<section class="piece" id="card">
+  <div><h2>Business card</h2>
+    <dl class="meta">
+      <dt>Size</dt><dd>3.5 × 2 in, two sides, 0.125 in bleed (Vistaprint standard).</dd>
+      <dt>Greg's spec</dt><dd>Front: directory, olive and cream, directory QR. Back: recruitment, brown and cream, membership QR. Logo both sides.</dd>
+      <dt>Wording</dt><dd>One question, one line, one QR per side. Front: "Need a Catholic tradesman? Scan for our directory. Local men. Honest work." Back: "Join the brotherhood. Faith. Referrals. Side work. Brothers who show up."</dd>
+    </dl>
+    <div class="flag">There is no separate membership application page. The back QR goes to sjwg.org/get-involved, which has the "Ask About Membership" form.</div>
+    <a class="open" href="card.html">Open the card on its own page</a>
+  </div>
+  <div class="frame" data-src="card.html" data-width="360" title="Business card proof"></div>
+</section>
+
+<section class="piece" id="magnet">
+  <div><h2>Fridge magnet</h2>
+    <dl class="meta">
+      <dt>Size</dt><dd>6 × 4 in, one side, olive on ivory. Vistaprint also does 3.5 × 2 and 4 × 3; the layout needs the larger size to hold both messages and two QR codes.</dd>
+      <dt>Greg's spec</dt><dd>All the card content on one side, one color scheme (olive and cream).</dd>
+      <dt>Wording</dt><dd>Card content plus the trades list and the Guild phone and email.</dd>
+    </dl>
+    <div class="flag">The phone number (636) 288-7002 is the one hard-coded on the site's Contact page. Confirm it is the number Greg wants on fridges.</div>
+    <a class="open" href="magnet.html">Open the magnet on its own page</a>
+  </div>
+  <div class="frame" data-src="magnet.html" data-width="600" title="Magnet proof"></div>
+</section>
+
+<section class="piece" id="flyer">
+  <div><h2>Flyer</h2>
+    <dl class="meta">
+      <dt>Size</dt><dd>8.5 × 11 in, one side, olive on ivory.</dd>
+      <dt>Greg's spec</dt><dd>Magnet content, larger, with the fine print: "The Guild does not directly employ and is not responsible for its member's business affairs."</dd>
+      <dt>Wording</dt><dd><ul><li>Four bullets per side instead of paragraphs.</li><li>Meeting and Holy Hour times in the footer for parish bulletin boards.</li><li>Fine print: "The Guild does not employ its members and is not responsible for their business affairs."</li></ul></dd>
+    </dl>
+    <a class="open" href="flyer.html">Open the flyer on its own page</a>
+  </div>
+  <div class="frame" data-src="flyer.html" data-width="840" title="Flyer proof"></div>
+</section>
+
+<section class="piece" id="brochure">
+  <div><h2>Tri-fold brochure</h2>
+    <dl class="meta">
+      <dt>Size</dt><dd>8.5 × 11 in landscape, two sides, letter tri-fold. Panels 3.6875 in, fold-in flap 3.625 in.</dd>
+      <dt>Panel map</dt><dd>Outside sheet: flap (Sirach 38, Greg's "panel 5 when fully open") | back cover | front cover. Inside sheet: left (homeowners) | center (why a guild) | right flap (become a brother).</dd>
+      <dt>Wording</dt><dd><ul><li>Front cover shares the flyer headline. Back cover is one sentence plus contact.</li><li>"Vetted" and "devout" dropped; "practicing Catholic men" matches the site.</li><li>Center panel is three audience bullets (homeowners, tradesmen, unions) and a one-line Leo XIII quote.</li><li>Greg's seven member benefits cut to five.</li></ul></dd>
+    </dl>
+    <div class="flag">The union line still needs confirming as true before anything prints (same open item as the site).</div>
+    <a class="open" href="brochure.html">Open the brochure on its own page</a>
+  </div>
+  <div class="frame" data-src="brochure.html" data-width="1080" title="Brochure proof"></div>
+</section>
+
+<script>
+// The site sends X-Frame-Options: DENY, which also blocks same-origin <iframe src>.
+// So each proof is fetched and loaded through srcdoc instead (relative URLs still
+// resolve against this folder), then scaled to fit the column.
+const frames = [...document.querySelectorAll('.frame[data-src]')];
+let guides = true;
+const PAD = 16; // breathing room around the sheet
+function fit(frame) {
+  const f = frame.querySelector('iframe'); if (!f) return;
+  const natural = Number(frame.dataset.width) + PAD * 2;
+  const k = Math.min(1, frame.clientWidth / natural);
+  f.style.width = natural + 'px';
+  f.style.transform = 'scale(' + k + ')';
+  const doc = f.contentDocument;
+  const h = doc && doc.documentElement ? doc.documentElement.scrollHeight : 600;
+  f.style.height = h + 'px';
+  frame.style.height = Math.ceil(h * k) + 'px';
+}
+frames.forEach(async frame => {
+  const f = document.createElement('iframe');
+  f.title = frame.title;
+  frame.appendChild(f);
+  try {
+    const html = await (await fetch(frame.dataset.src, { cache: 'no-cache' })).text();
+    f.addEventListener('load', () => {
+      const body = f.contentDocument.body;
+      body.style.padding = PAD + 'px';
+      body.classList.toggle('guides', guides);
+      fit(frame);
+      f.contentDocument.fonts && f.contentDocument.fonts.ready.then(() => fit(frame));
+      setTimeout(() => fit(frame), 800);
+    });
+    f.srcdoc = html;
+  } catch (e) {
+    frame.innerHTML = '<p style="padding:16px;font:14px sans-serif">Could not load ' + frame.dataset.src + '. <a href="' + frame.dataset.src + '">Open it directly.</a></p>';
+  }
+});
+addEventListener('resize', () => frames.forEach(fit));
+const btn = document.getElementById('toggle');
+btn.onclick = () => { guides = !guides; btn.textContent = guides ? 'Hide guides' : 'Show guides';
+  frames.forEach(fr => { const f = fr.querySelector('iframe'); f && f.contentDocument && f.contentDocument.body.classList.toggle('guides', guides); }); };
+</script>
+</body></html>
