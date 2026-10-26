@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { Member } from '@/lib/types';
 import { me, members as membersApi } from '@/lib/api';
 import MemberCard from '@/components/members/MemberCard';
+import ServiceHours from './ServiceHours';
 import { btnPrimary, ErrorStrip, inputCls, Loading, msg, rebuildNote, Status } from '../ui';
 
 type Draft = Omit<Member, 'id' | 'photo' | 'featured'> & { public: boolean };
@@ -118,134 +119,139 @@ export default function ProfileEditor({ areas }: { areas: string[] }) {
   }
 
   return (
-    <div className="grid gap-12 lg:grid-cols-[1fr_1fr] lg:gap-16">
-      <form onSubmit={save} className="flex flex-col gap-6 font-sans">
-        <h2 className="text-h2 font-serif">Your directory entry</h2>
-        <p className="text-ash text-[0.95rem]">
-          What appears publicly is your call. Nothing goes on the public directory until you tick
-          the box at the bottom.
-        </p>
-        <label className="flex flex-col gap-1">
-          <span className="font-semibold">Name as listed</span>
-          <input
-            value={draft.name}
-            onChange={(e) => setDraft({ ...draft, name: e.target.value })}
-            className={inputCls}
-          />
-        </label>
-        <label className="flex flex-col gap-1">
-          <span className="font-semibold">Trade</span>
-          <input
-            value={draft.trade}
-            onChange={(e) => setDraft({ ...draft, trade: e.target.value })}
-            className={inputCls}
-          />
-        </label>
-        <label className="flex flex-col gap-1">
-          <span className="font-semibold">Years in the trade</span>
-          <input
-            type="number"
-            min={0}
-            inputMode="numeric"
-            value={draft.yearsInTrade}
-            onChange={(e) => setDraft({ ...draft, yearsInTrade: Number(e.target.value) || 0 })}
-            className={`${inputCls} w-32`}
-          />
-        </label>
-        <fieldset>
-          <legend className="font-semibold">Areas you serve</legend>
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            {allAreas.map((a) => (
-              <label key={a} className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  className="accent-brick h-5 w-5"
-                  checked={draft.areas.includes(a)}
-                  onChange={() => toggleArea(a)}
-                />
-                {a}
-              </label>
-            ))}
-          </div>
-          <AddArea onAdd={(a) => setDraft({ ...draft, areas: [...draft.areas, a] })} />
-        </fieldset>
-        <label className="flex flex-col gap-1">
-          <span className="font-semibold">Availability</span>
-          <select
-            value={draft.availability}
-            onChange={(e) =>
-              setDraft({ ...draft, availability: e.target.value as Member['availability'] })
-            }
-            className={inputCls}
-          >
-            <option value="available">Taking work</option>
-            <option value="limited">Limited availability</option>
-            <option value="unavailable">Not taking work right now</option>
-          </select>
-        </label>
-        <label className="flex flex-col gap-1">
-          <span className="font-semibold">One line in your own words</span>
-          <textarea
-            value={draft.bio}
-            onChange={(e) => setDraft({ ...draft, bio: e.target.value })}
-            rows={3}
-            maxLength={280}
-            className={inputCls}
-          />
-        </label>
-        <label className="border-brass bg-paper flex items-start gap-3 border-l-4 px-4 py-3">
-          <input
-            type="checkbox"
-            className="accent-brick mt-1 h-5 w-5"
-            checked={draft.public}
-            onChange={(e) => setDraft({ ...draft, public: e.target.checked })}
-          />
-          <span>
-            <span className="font-semibold">List me in the public directory.</span>
-            <span className="text-ash block text-[0.9rem]">
-              Your name, trade, areas, years, availability, and the line above. Nothing else. Untick
-              to come off the public list.
-            </span>
-          </span>
-        </label>
-        {error && <ErrorStrip>{error}</ErrorStrip>}
-        <div className="flex flex-wrap items-center gap-4">
-          <button type="submit" disabled={pending} className={btnPrimary}>
-            Save entry
-          </button>
-          <Status>{status}</Status>
-        </div>
-      </form>
-      <div>
-        <h3 className="text-brass-ink font-sans text-[0.95rem] font-semibold">Preview</h3>
-        <div className="border-mortar mt-2 border-b">
-          <MemberCard member={preview} />
-        </div>
-        <div className="mt-4 flex flex-wrap items-center gap-4 font-sans">
-          <label className="border-charcoal hover:bg-charcoal hover:text-stone cursor-pointer border-2 px-4 py-2 font-semibold">
-            {photoBusy ? 'Working' : member.photo ? 'Replace your photo' : 'Add your photo'}
+    <div className="flex flex-col gap-16">
+      <div className="grid gap-12 lg:grid-cols-[1fr_1fr] lg:gap-16">
+        <form onSubmit={save} className="flex flex-col gap-6 font-sans">
+          <h2 className="text-h2 font-serif">Your directory entry</h2>
+          <p className="text-ash text-[0.95rem]">
+            What appears publicly is your call. Nothing goes on the public directory until you tick
+            the box at the bottom.
+          </p>
+          <label className="flex flex-col gap-1">
+            <span className="font-semibold">Name as listed</span>
             <input
-              type="file"
-              accept="image/*"
-              className="sr-only"
-              onChange={(e) => changePhoto(e.target.files?.[0] ?? null)}
-              disabled={photoBusy}
+              value={draft.name}
+              onChange={(e) => setDraft({ ...draft, name: e.target.value })}
+              className={inputCls}
             />
           </label>
-          {member.photo && (
-            <button
-              type="button"
-              onClick={removePhoto}
-              disabled={photoBusy}
-              className="text-ash decoration-mortar font-medium underline decoration-2 underline-offset-4"
+          <label className="flex flex-col gap-1">
+            <span className="font-semibold">Trade</span>
+            <input
+              value={draft.trade}
+              onChange={(e) => setDraft({ ...draft, trade: e.target.value })}
+              className={inputCls}
+            />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="font-semibold">Years in the trade</span>
+            <input
+              type="number"
+              min={0}
+              inputMode="numeric"
+              value={draft.yearsInTrade}
+              onChange={(e) => setDraft({ ...draft, yearsInTrade: Number(e.target.value) || 0 })}
+              className={`${inputCls} w-32`}
+            />
+          </label>
+          <fieldset>
+            <legend className="font-semibold">Areas you serve</legend>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {allAreas.map((a) => (
+                <label key={a} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    className="accent-brick h-5 w-5"
+                    checked={draft.areas.includes(a)}
+                    onChange={() => toggleArea(a)}
+                  />
+                  {a}
+                </label>
+              ))}
+            </div>
+            <AddArea onAdd={(a) => setDraft({ ...draft, areas: [...draft.areas, a] })} />
+          </fieldset>
+          <label className="flex flex-col gap-1">
+            <span className="font-semibold">Availability</span>
+            <select
+              value={draft.availability}
+              onChange={(e) =>
+                setDraft({ ...draft, availability: e.target.value as Member['availability'] })
+              }
+              className={inputCls}
             >
-              Remove photo
+              <option value="available">Taking work</option>
+              <option value="limited">Limited availability</option>
+              <option value="unavailable">Not taking work right now</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="font-semibold">One line in your own words</span>
+            <textarea
+              value={draft.bio}
+              onChange={(e) => setDraft({ ...draft, bio: e.target.value })}
+              rows={3}
+              maxLength={280}
+              className={inputCls}
+            />
+          </label>
+          <label className="border-brass bg-paper flex items-start gap-3 border-l-4 px-4 py-3">
+            <input
+              type="checkbox"
+              className="accent-brick mt-1 h-5 w-5"
+              checked={draft.public}
+              onChange={(e) => setDraft({ ...draft, public: e.target.checked })}
+            />
+            <span>
+              <span className="font-semibold">List me in the public directory.</span>
+              <span className="text-ash block text-[0.9rem]">
+                Your name, trade, areas, years, availability, and the line above. Nothing else.
+                Untick to come off the public list.
+              </span>
+            </span>
+          </label>
+          {error && <ErrorStrip>{error}</ErrorStrip>}
+          <div className="flex flex-wrap items-center gap-4">
+            <button type="submit" disabled={pending} className={btnPrimary}>
+              Save entry
             </button>
-          )}
-          <span className="text-ash text-[0.9rem]">
-            A square headshot works best. Photos are resized before upload.
-          </span>
+            <Status>{status}</Status>
+          </div>
+        </form>
+        <div>
+          <h3 className="text-brass-ink font-sans text-[0.95rem] font-semibold">Preview</h3>
+          <div className="border-mortar mt-2 border-b">
+            <MemberCard member={preview} />
+          </div>
+          <div className="mt-4 flex flex-wrap items-center gap-4 font-sans">
+            <label className="border-charcoal hover:bg-charcoal hover:text-stone cursor-pointer border-2 px-4 py-2 font-semibold">
+              {photoBusy ? 'Working' : member.photo ? 'Replace your photo' : 'Add your photo'}
+              <input
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                onChange={(e) => changePhoto(e.target.files?.[0] ?? null)}
+                disabled={photoBusy}
+              />
+            </label>
+            {member.photo && (
+              <button
+                type="button"
+                onClick={removePhoto}
+                disabled={photoBusy}
+                className="text-ash decoration-mortar font-medium underline decoration-2 underline-offset-4"
+              >
+                Remove photo
+              </button>
+            )}
+            <span className="text-ash text-[0.9rem]">
+              A square headshot works best. Photos are resized before upload.
+            </span>
+          </div>
         </div>
+      </div>
+      <div className="border-mortar border-t pt-10">
+        <ServiceHours />
       </div>
     </div>
   );

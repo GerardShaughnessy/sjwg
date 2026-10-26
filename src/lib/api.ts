@@ -429,6 +429,38 @@ export const members = {
     }),
 };
 
+/* ---------------------------------------------------------- service hours */
+export interface HoursEntry {
+  id: string;
+  memberId: string;
+  workDate: string;
+  hours: number;
+  description: string;
+  loggedByName: string | null;
+  createdAt: string;
+}
+export interface HoursInput {
+  memberId?: string;
+  workDate: string;
+  hours: number;
+  description: string;
+}
+
+export const hours = {
+  /** Without a member id, the caller's own entry. */
+  list: (year: number, memberId?: string) =>
+    call<{ hours: HoursEntry[] }>(
+      `/api/hours?year=${year}${memberId ? `&member=${memberId}` : ''}`,
+    ).then((r) => r.hours),
+  add: (input: HoursInput) =>
+    mutate<{ entry: HoursEntry }>('/api/hours', json('POST', input)).then((r) => r.entry),
+  remove: (id: string) => mutate<{ ok: true }>(`/api/hours/${id}`, { method: 'DELETE' }),
+  totals: (year: number) =>
+    call<{ totals: Record<string, number> }>(`/api/hours/totals?year=${year}`).then(
+      (r) => r.totals,
+    ),
+};
+
 /* ---------------------------------------------------------- announcements */
 export const announcements = {
   send: (input: { subject: string; body: string }) =>

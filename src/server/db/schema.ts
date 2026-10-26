@@ -460,6 +460,28 @@ export const tasks = pgTable(
   ],
 );
 
+/* ---------------------------------------------------------- service hours */
+/**
+ * Designated charity work toward the yearly requirement (16 hours, 6 for Guild
+ * Builders). Private: never shown on the directory. Stored in minutes so
+ * quarter hours add up exactly.
+ */
+export const serviceHours = pgTable(
+  'service_hours',
+  {
+    id: id(),
+    memberId: uuid('member_id')
+      .notNull()
+      .references(() => members.id, { onDelete: 'cascade' }),
+    workDate: date('work_date').notNull(),
+    minutes: integer('minutes').notNull(),
+    description: text('description').notNull().default(''),
+    loggedBy: uuid('logged_by').references(() => appUsers.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('service_hours_member_date_idx').on(t.memberId, t.workDate)],
+);
+
 /* ------------------------------------------------------------ email + misc */
 export const emailLog = pgTable(
   'email_log',

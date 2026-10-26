@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Member } from '@/lib/types';
-import { members as api, type MemberAdmin, type MemberInput } from '@/lib/api';
+import { members as api, hours as hoursApi, type MemberAdmin, type MemberInput } from '@/lib/api';
+import ServiceHours from '../member/ServiceHours';
 import { useResource } from '@/lib/hooks';
 import { byTradeThenName, COMMON_TRADES, OTHER_TRADE } from '@/lib/trades';
 import {
@@ -43,6 +44,12 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
   const [pending, setPending] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+
+  const year = new Date().getFullYear();
+  const totalsRes = useResource(() => hoursApi.totals(year), []);
+  const [totals, setTotals] = useState<Record<string, number>>({});
+  const hoursFor = (m: MemberAdmin) => totals[m.id] ?? totalsRes.data?.[m.id] ?? 0;
+  const [hoursOpen, setHoursOpen] = useState<string | null>(null);
 
   const [sortBy, setSortBy] = useState<'trade' | 'name'>('trade');
   const list = (data ?? [])
@@ -356,7 +363,7 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
                 aria-pressed={sortBy === k}
                 className={
                   sortBy === k
-                    ? 'font-semibold underline decoration-brass decoration-2 underline-offset-4'
+                    ? 'decoration-brass font-semibold underline decoration-2 underline-offset-4'
                     : 'text-ash hover:text-charcoal'
                 }
               >
@@ -401,6 +408,7 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
                     )}
                   </p>
                   <p className="text-ash text-[0.85rem]">
+                    {year} service hours: {Math.round(hoursFor(m) * 100) / 100} of 16 ·{' '}
                     {m.accountEmail ? `Login: ${m.accountEmail}` : 'No login yet'}
                     {m.privateEmail && !m.accountEmail ? ` · ${m.privateEmail}` : ''}
                     {m.privatePhone ? ` · ${m.privatePhone}` : ''}
@@ -408,6 +416,14 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
                   <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-[0.95rem]">
                     <button type="button" onClick={() => edit(m)} className={btnQuiet}>
                       Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setHoursOpen(hoursOpen === m.id ? null : m.id)}
+                      aria-expanded={hoursOpen === m.id}
+                      className={btnQuiet}
+                    >
+                      {hoursOpen === m.id ? 'Close hours' : 'Hours'}
                     </button>
                     <button
                       type="button"
@@ -457,6 +473,15 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
                     )}
                   </div>
                 </div>
+                {hoursOpen === m.id && (
+                  <div className="bg-paper border-mortar col-span-2 border p-4">
+                    <ServiceHours
+                      memberId={m.id}
+                      name={m.name}
+                      onTotal={(h) => setTotals((t) => ({ ...t, [m.id]: h }))}
+                    />
+                  </div>
+                )}
               </li>
             ))}
           </ul>

@@ -306,6 +306,26 @@ export const taskSchema = z.object({
 /** Moving a card or editing part of one. No defaults, so absent fields stay untouched. */
 export const taskPatchSchema = z.object(taskFields).partial();
 
+/* -------------------------------------------------------- service hours */
+export const SERVICE_HOURS_GOAL = 16;
+
+export const serviceHoursSchema = z.object({
+  /** Officers log for any member; a member's own entry is the default. */
+  memberId: z.string().uuid('Pick a member.').optional(),
+  workDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date as YYYY-MM-DD.')
+    .refine((v) => v <= new Date(Date.now() + 36e5 * 14).toISOString().slice(0, 10), {
+      message: 'That date is in the future.',
+    }),
+  hours: z
+    .number({ message: 'How many hours?' })
+    .min(0.25, 'At least a quarter hour.')
+    .max(24, 'At most 24 hours in one day.')
+    .refine((h) => Number.isInteger(h * 4), 'Round to the nearest quarter hour.'),
+  description: trimmed(300).min(1, 'Say what the work was, for example "Parish work day".'),
+});
+
 /* ---------------------------------------------------------- email list */
 export const SUBSCRIBE_SOURCES = ['popup', 'footer', 'contact', 'donate', 'site'] as const;
 
