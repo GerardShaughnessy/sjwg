@@ -129,7 +129,8 @@ export default function ServiceHours({
       </div>
       <p className="text-ash mt-2 max-w-[60ch] text-[0.95rem]">
         Members give at least {GOAL} hours of designated charity work a year (6 for Guild Builders):
-        parish work days and repairs for people in need. Only you and the officers see these.
+        parish work days and repairs for people in need. Only {name ? 'he' : 'you'} and the officers
+        see these.
       </p>
 
       <div className="mt-5">
