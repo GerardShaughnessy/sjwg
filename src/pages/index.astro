@@ -26,7 +26,8 @@ import UnionNote from '@/components/home/UnionNote.astro';
   <ConcreteResults />
   <ThreeSteps />
   <HowToHelp />
-  <UnionNote />
+  {/* Hidden until the union line is confirmed true. */}
+  {false && <UnionNote />}
   <MembersStrip />
   <Section tone="stone" labelledby="events-title">
     <div class="grid gap-12 lg:grid-cols-2 lg:gap-16">
