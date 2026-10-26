@@ -1,0 +1,102 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex, nofollow"><title>SJWG brochure, 3D fold preview</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="assets/print.css">
+<style>
+/* Builds a folding model from the panels in brochure.html (?v=a or ?v=b), so the preview never drifts from the proof. */
+html, body { background: #d8d3c8; }
+body { min-height: 100vh; display: flex; flex-direction: column; align-items: center; font-family: var(--sans); }
+.bar { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; justify-content: center; padding: 18px 16px 6px; font: 600 13px/1.3 var(--sans); }
+.bar label { display: flex; align-items: center; gap: 8px; }
+.bar input[type=range] { width: 200px; accent-color: var(--olive); }
+.bar button, .bar a { font: inherit; padding: 6px 12px; border: 1px solid var(--mortar); border-radius: 999px; background: var(--paper); color: var(--olive); cursor: pointer; text-decoration: none; }
+.bar button[aria-pressed=true] { background: var(--olive); color: var(--ivory); border-color: var(--olive); }
+.hint { font: 400 12px/1.4 var(--sans); color: var(--ash); margin: 0 0 4px; }
+.stage { flex: 1; width: 100%; display: grid; place-items: center; perspective: 2600px; overflow: hidden; cursor: grab; touch-action: none; padding: 20px 0 40px; }
+.stage:active { cursor: grabbing; }
+.scale { transform-style: preserve-3d; }
+.model { --safe: 0.25in; --bleed: 0.125in; position: relative; width: 3.6875in; height: 8.5in; transform-style: preserve-3d; }
+.leaf, .hinge { position: absolute; top: 0; height: 100%; transform-style: preserve-3d; }
+.hinge.left { right: 100%; width: 3.6875in; transform-origin: right center; }
+.hinge.right { left: 100%; width: 3.625in; transform-origin: left center; }
+.leaf { inset: 0; }
+.face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; background: var(--ivory); overflow: hidden; }
+.face.back { transform: rotateY(180deg); }
+.face > div, .face > div > .panel { position: absolute; inset: 0; }
+.face > div > .panel { border-left: 0 !important; }
+.face > div > .panel::before { display: none; }
+/* thin shading so the folds read */
+.face::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: var(--shade, transparent); }
+</style></head>
+<body>
+<div class="bar">
+  <label>Fold <input id="fold" type="range" min="0" max="100" value="55"></label>
+  <label>Turn <input id="turn" type="range" min="-180" max="180" value="-20"></label>
+  <button data-preset="open">Open flat</button>
+  <button data-preset="half">Half folded</button>
+  <button data-preset="closed">Closed, front</button>
+  <button data-preset="backside">Closed, back</button>
+  <span id="vers"></span>
+  <a href="brochure.html">Back to proof</a>
+</div>
+<p class="hint">Drag to turn it. The fold slider tucks the flap in first, then closes the cover over it.</p>
+<div class="stage" id="stage"><div class="scale" id="scale"><div class="model" id="model">
+  <div class="leaf center"><div class="face front" data-from="inside" data-i="1"></div><div class="face back" data-from="outside" data-i="1"></div></div>
+  <div class="hinge left" id="hl"><div class="leaf"><div class="face front" data-from="inside" data-i="0"></div><div class="face back" data-from="outside" data-i="2"></div></div></div>
+  <div class="hinge right" id="hr"><div class="leaf"><div class="face front" data-from="inside" data-i="2"></div><div class="face back" data-from="outside" data-i="0"></div></div></div>
+</div></div></div>
+<script>
+const v = new URLSearchParams(location.search).get('v') === 'b' ? 'b' : 'a';
+document.getElementById('vers').innerHTML = ['a','b'].map(x => x === v ? `<button aria-pressed="true">Version ${x.toUpperCase()}</button>` : `<a href="?v=${x}">Version ${x.toUpperCase()}</a>`).join(' ');
+const fold = document.getElementById('fold'), turn = document.getElementById('turn');
+const model = document.getElementById('model'), hl = document.getElementById('hl'), hr = document.getElementById('hr');
+const clamp = x => Math.max(0, Math.min(1, x));
+
+function render() {
+  const f = fold.value / 100;
+  const r = clamp(f * 2), l = clamp(f * 2 - 1);           // flap first, then the cover
+  hr.style.transform = `translateZ(${r * 2}px) rotateY(${-180 * r}deg)`;
+  hl.style.transform = `translateZ(${l * 5}px) rotateY(${180 * l}deg)`;
+  hr.style.setProperty('--shade', `rgba(0,0,0,${0.12 * Math.sin(Math.PI * r)})`);
+  hl.style.setProperty('--shade', `rgba(0,0,0,${0.12 * Math.sin(Math.PI * l)})`);
+  model.style.transform = `rotateX(8deg) rotateY(${turn.value}deg)`;
+}
+function fit() {
+  const s = 0.86 * Math.min((innerHeight - 170) / (8.5 * 96), (innerWidth - 40) / (11.2 * 96), 1);
+  document.getElementById('scale').style.transform = `scale(${s})`;
+}
+
+fetch('brochure.html').then(r => r.text()).then(html => {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  doc.querySelectorAll('style').forEach(st => document.head.appendChild(st.cloneNode(true)));
+  for (const face of document.querySelectorAll('.face')) {
+    const sheet = doc.querySelector(`.sheet.${face.dataset.from}[data-v="${v}"]`);
+    const panel = sheet.querySelectorAll('.panel')[+face.dataset.i];
+    const wrap = document.createElement('div');
+    wrap.className = face.dataset.from;               // keeps the .inside / .outside panel rules working
+    wrap.appendChild(document.importNode(panel, true));
+    face.appendChild(wrap);
+  }
+  fit(); render();
+});
+
+const qs = new URLSearchParams(location.search);
+if (qs.has('fold')) fold.value = qs.get('fold');
+if (qs.has('turn')) turn.value = qs.get('turn');
+fold.addEventListener('input', render); turn.addEventListener('input', render);
+addEventListener('resize', fit);
+const presets = { open: [0, 0], half: [55, -20], closed: [100, -14], backside: [100, 166] };
+document.querySelectorAll('[data-preset]').forEach(b => b.addEventListener('click', () => {
+  const [a, t] = presets[b.dataset.preset]; fold.value = a; turn.value = t; render();
+}));
+let drag = null;
+const stage = document.getElementById('stage');
+stage.addEventListener('pointerdown', e => { drag = { x: e.clientX, t: +turn.value }; stage.setPointerCapture(e.pointerId); });
+stage.addEventListener('pointermove', e => {
+  if (!drag) return;
+  let t = drag.t + (e.clientX - drag.x) * 0.5;
+  t = ((t + 180) % 360 + 360) % 360 - 180;
+  turn.value = t; render();
+});
+stage.addEventListener('pointerup', () => drag = null);
+</script>
+</body></html>

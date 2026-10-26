@@ -59,11 +59,23 @@ blockquote footer { font: 600 9pt/1.3 var(--sans); font-style: normal; margin-to
 .inside .cta .hint { font-size: 10.5pt; }
 .cover img.seal { width: 2.6in; height: 2.6in; }
 .cover h1 { font-size: 21pt; }
+/* Version B: the "why a guild" panel moves to the flap, the saint and both quotes take the dark center. */
+.flap.why { justify-content: center; text-align: left; align-items: stretch; gap: 0.22in; }
+.flap.why ul.check li { font-size: 14pt; margin-bottom: .6em; }
+.flap.why h2 { font-size: 26pt; }
+.saints { justify-content: space-between; align-items: center; text-align: center; }
+.saints img { width: 2.2in; height: auto; }
+.saints blockquote { font-size: 12.5pt !important; }
+.saints blockquote + blockquote { border-top: 1px solid rgba(243,234,213,.3); padding-top: 0.18in; }
+.views { text-align: center; margin: 0 auto 0.3in; font: 600 13px/1.4 var(--sans); }
+.views a { color: var(--olive); }
+@media print { .views { display: none; } }
 </style></head>
 <body class="guides">
+<p class="views">3D fold preview: <a href="brochure-3d.html?v=a">version A</a> · <a href="brochure-3d.html?v=b">version B</a></p>
 
-<section class="sheet outside" aria-label="Outside">
-  <div class="trim"><span class="label">Outside · 11 × 8.5 in · flap | back cover | front cover</span></div>
+<section class="sheet outside" data-v="a" aria-label="Version A, outside">
+  <div class="trim"><span class="label">Version A · Outside · 11 × 8.5 in · flap | back cover | front cover</span></div>
   <div class="panels">
     <div class="panel flap dark" data-name="Fold-in flap (outside)">
       <img src="assets/logo/sjwg-joseph-green-white.svg" alt="St. Joseph with hammer and chisel, NONNE HIC EST FABER">
@@ -87,8 +99,8 @@ blockquote footer { font: 600 9pt/1.3 var(--sans); font-style: normal; margin-to
   </div>
 </section>
 
-<section class="sheet inside" aria-label="Inside">
-  <div class="trim"><span class="label">Inside · 11 × 8.5 in · left | center | right (flap)</span></div>
+<section class="sheet inside" data-v="a" aria-label="Version A, inside">
+  <div class="trim"><span class="label">Version A · Inside · 11 × 8.5 in · left | center | right (flap)</span></div>
   <div class="panels">
     <div class="panel" data-name="Inside left">
       <div class="eyebrow">Homeowners and parishes</div>
@@ -106,6 +118,67 @@ blockquote footer { font: 600 9pt/1.3 var(--sans); font-style: normal; margin-to
         <li><b>Community:</b> charity work, educational resources, and mutual aid.</li>
       </ul>
       <blockquote style="margin-top:auto"><p>“We greatly wish, for the salvation of the people, that … these guilds may be generally restored … to help the honest workman, to protect and guard his children and family, and to promote in them piety, Christian knowledge, and a moral life.”</p><footer>Pope Leo XIII, Humanum Genus, 1884</footer></blockquote>
+    </div>
+    <div class="panel" data-name="Inside right (flap)">
+      <div class="eyebrow">Tradesmen</div>
+      <h2>Become a Guild brother.</h2>
+      <p>For practicing Catholic men in the skilled trades. Members get:</p>
+      <ul class="check">
+        <li>Referral network and directory listing</li>
+        <li>Spiritual formation and brotherhood</li>
+        <li>Mutual aid in a rough season</li>
+        <li>Masses, Holy Hours, and retreats for the trades</li>
+        <li>Business ethics and networking</li>
+      </ul>
+      <div class="cta"><div class="qr-wrap"><img class="qr" src="assets/qr/join-olive.svg" alt="QR code to sjwg.org/get-involved"></div><div><div class="url">Join the Guild</div><div class="hint">sjwg.org/get-involved<br>hello@sjwg.org</div></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="sheet outside" data-v="b" aria-label="Version B, outside">
+  <div class="trim"><span class="label">Version B · Outside · 11 × 8.5 in · flap | back cover | front cover</span></div>
+  <div class="panels">
+    <div class="panel flap why dark" data-name="Fold-in flap (outside)">
+      <div class="eyebrow">Why a guild</div>
+      <h2>A local Catholic economy.</h2>
+      <ul class="check">
+        <li><b>Homeowners and parishes:</b> a tradesman who values honest work and the dignity of labor.</li>
+        <li><b>Tradesmen:</b> customers who want to support Catholic-owned businesses.</li>
+        <li><b>Community:</b> charity work, educational resources, and mutual aid.</li>
+      </ul>
+    </div>
+    <div class="panel back" data-name="Back cover">
+      <img class="mark" src="assets/logo/wordmark-olive.svg" alt="St. Joseph the Worker Guild">
+      <h2>Rooted in St. Joseph. Built for the trades.</h2>
+      <p>A Catholic brotherhood of skilled tradesmen in greater St. Louis, based at the historic St. Mary of Victories.</p>
+      <hr class="rule">
+      <div class="contact"><b>Web</b> sjwg.org<br><b>Email</b> hello@sjwg.org<br><b>Phone</b> (636) 288-7002<br><b>Church</b> 744 S Third St, St. Louis, MO 63102</div>
+      <div class="cta"><div class="qr-wrap"><img class="qr" src="assets/qr/site-olive.svg" alt="QR code to sjwg.org"></div><div><div class="url">sjwg.org</div><div class="hint">Directory, membership, events, giving.</div></div></div>
+      <div class="tiny">St. Joseph the Worker Guild • A Catholic brotherhood of tradesmen</div>
+    </div>
+    <div class="panel cover" data-name="Front cover">
+      <img class="wordmark" src="assets/logo/wordmark-olive.svg" alt="St. Joseph the Worker Guild">
+      <img class="seal" src="assets/logo/seal.svg" alt="St. Joseph the Worker Guild seal">
+      <h1>Hire a Catholic tradesman.<br>Join a brotherhood of Catholic tradesmen.</h1>
+      <div class="foot">Local tradesmen • Faith • Mutual support</div>
+    </div>
+  </div>
+</section>
+
+<section class="sheet inside" data-v="b" aria-label="Version B, inside">
+  <div class="trim"><span class="label">Version B · Inside · 11 × 8.5 in · left | center | right (flap)</span></div>
+  <div class="panels">
+    <div class="panel" data-name="Inside left">
+      <div class="eyebrow">Homeowners and parishes</div>
+      <h2>Need a Catholic tradesman?</h2>
+      <ul class="check"><li>Plumbers</li><li>Electricians</li><li>Carpenters</li><li>Handymen</li><li>Painting, flooring, and more</li></ul>
+      <p>Local Catholic men. Honest work at a fair price. Every job supports a family.</p>
+      <div class="cta"><div class="qr-wrap"><img class="qr" src="assets/qr/directory-olive.svg" alt="QR code to sjwg.org/directory"></div><div><div class="url">sjwg.org/directory</div><div class="hint">Scan to find a member.</div></div></div>
+    </div>
+    <div class="panel dark saints" data-name="Inside center">
+      <img src="assets/logo/sjwg-joseph-green-white.svg" alt="St. Joseph with hammer and chisel, NONNE HIC EST FABER">
+      <blockquote><p>“All these are skilled with their hands… Without them no city could be lived in. Yet they maintain the fabric of the world.”</p><footer>Sirach 38:31–34</footer></blockquote>
+      <blockquote><p>“We greatly wish, for the salvation of the people, that … these guilds may be generally restored … to help the honest workman, to protect and guard his children and family, and to promote in them piety, Christian knowledge, and a moral life.”</p><footer>Pope Leo XIII, Humanum Genus, 1884</footer></blockquote>
     </div>
     <div class="panel" data-name="Inside right (flap)">
       <div class="eyebrow">Tradesmen</div>

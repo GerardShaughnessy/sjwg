@@ -20,7 +20,8 @@ h1, h2, h3, p, ul { margin: 0; }
 .sheet.olive { background: var(--olive); color: var(--ivory); }
 .sheet.earth { background: var(--earth); color: var(--ivory); }
 .trim { position: absolute; inset: var(--bleed); }
-.safe { position: absolute; inset: calc(var(--bleed) + var(--safe)); }
+/* .safe sits inside .trim, so its inset is the safe margin alone (it used to add the bleed again). */
+.safe { position: absolute; inset: var(--safe); }
 
 /* Guides: dashed trim line and dotted safe area. Hidden when printing. */
 .guides .trim::after { content: ""; position: absolute; inset: 0; border: 1px dashed rgba(255,0,0,.75); pointer-events: none; z-index: 9; }

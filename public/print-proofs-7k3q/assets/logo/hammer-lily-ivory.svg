@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="8 6 84 88">
+<title>St. Joseph the Worker Guild, hammer and lily crossed</title>
+<defs>
+  <g id="leaf"><path d="M0 0 C2 -8 8 -13 16 -14 C14 -6 8 -1 0 0 Z"/></g>
+  <g id="bloom">
+    <path d="M0 0 C-7 0 -14 -2 -19 2 C-15 -5 -8 -6 0 0 Z"/>
+    <path d="M0 0 C7 0 14 -2 19 2 C15 -5 8 -6 0 0 Z"/>
+    <path d="M0 2 C-9 -5 -15 -15 -15 -26 C-8 -19 -3 -10 0 2 Z"/>
+    <path d="M0 2 C9 -5 15 -15 15 -26 C8 -19 3 -10 0 2 Z"/>
+    <path d="M0 2 C-4.5 -9 -4.5 -22 0 -33 C4.5 -22 4.5 -9 0 2 Z"/>
+    <path d="M0 -6 L-7 -22 M0 -6 L0 -25 M0 -6 L7 -22" stroke="#D9AE52" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <circle cx="-7.3" cy="-23" r="1.6" fill="#D9AE52"/><circle cx="0" cy="-26" r="1.6" fill="#D9AE52"/><circle cx="7.3" cy="-23" r="1.6" fill="#D9AE52"/>
+  </g>
+</defs>
+<g fill="#F3EAD5">
+  <g transform="translate(52 52) rotate(42)">
+    <path d="M-18 -40 H14 L21 -33 V-24 H-18 Z"/>
+    <path d="M-4 -24 H4 V36 C4 39 -4 39 -4 36 Z"/>
+    <path d="M-4 -24 H4" stroke="#483223" stroke-width="1.2"/>
+  </g>
+  <g transform="translate(48 52) rotate(-42)">
+    <path d="M0 40 V-8" stroke="#F3EAD5" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <use xlink:href="#leaf" href="#leaf" transform="translate(0 20) rotate(-100) scale(-1 1)"/>
+    <use xlink:href="#bloom" href="#bloom" transform="translate(0 -8)"/>
+  </g>
+</g>
+</svg>

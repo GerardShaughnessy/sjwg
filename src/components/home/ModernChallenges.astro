@@ -1,29 +1,34 @@
 ---
 /**
- * The stakes: why tradesmen need a guild (StoryBrand "stakes"). Condensed from
- * the Case for Support. The hardship story is kept to one sentence, without
- * figures, until both members have given written consent.
+ * The stakes: why tradesmen need a guild (StoryBrand "stakes"). Condensed prose
+ * from the Case for Support above the four facts, laid out two by two. The
+ * hardship story is kept to one sentence, without figures, until both members
+ * have given written consent.
  */
 import Section from '@/components/ui/Section.astro';
 
 const facts = [
   {
-    term: 'Dangerous Work',
-    text: 'Construction and extraction has the second-highest rate of fatal workplace injury in the nation, nearly four times the average across all occupations.',
+    term: 'Highest Suicide Rate',
+    text: 'The CDC identifies construction and extraction as the occupational group with the highest suicide rate in the nation.',
   },
   {
-    term: 'Lonely Work',
-    text: 'Long days alone in a van or on a job site. Research points to isolation and a lack of support as serious concerns across the trades.',
+    term: 'Second in Fatal Injury',
+    text: 'Construction and extraction ranks second in fatal workplace injury, with 12.6 deaths per 100,000 workers in 2024, nearly four times the rate across all occupations. This is the Bureau of Labor Statistics figure by occupation group, not by industry.',
+  },
+  {
+    term: 'Isolating Work',
+    text: 'Construction ranks among the industries with the highest rates of substance-use disorder, and research increasingly points to loneliness and lack of social support as serious concerns for the trades.',
   },
   {
     term: 'No Safety Net',
-    text: 'Most Guild members have no employer-sponsored health insurance. Some have no coverage at all.',
+    text: "Among the Guild's own members, more than 90% have no employer-sponsored health insurance, and at least 20% have no health coverage at all.",
   },
 ];
 ---
 
 <Section tone="paper" labelledby="need-title">
-  <div class="grid gap-10 lg:grid-cols-[3fr_2fr] lg:gap-16">
+  <div>
     <div>
       <h2 id="need-title" class="text-h2">
         Why Tradesmen Need a Guild
@@ -47,19 +52,17 @@ const facts = [
         </p>
       </div>
     </div>
-    <div class="flex flex-col gap-6 lg:sticky lg:top-8 lg:self-start">
-      <dl class="border-t border-mortar">
-        {facts.map((f) => (
-          <div class="grid gap-1 border-b border-mortar py-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-8">
-            <dt class="font-sans font-semibold">{f.term}</dt>
-            <dd>{f.text}</dd>
-          </div>
-        ))}
-      </dl>
-      <p class="font-sans text-[0.85rem] leading-snug text-ash">
-        Source: U.S. Bureau of Labor Statistics, Census of Fatal Occupational Injuries, 2024.
-        Membership figures are the Guild's own.
-      </p>
-    </div>
+    <dl class="mt-10 grid gap-px overflow-hidden border border-mortar bg-mortar sm:grid-cols-2">
+      {facts.map((f) => (
+        <div class="flex flex-col gap-2 bg-paper p-6 md:p-8">
+          <dt class="font-sans text-[1.1rem] font-semibold">{f.term}</dt>
+          <dd class="leading-relaxed">{f.text}</dd>
+        </div>
+      ))}
+    </dl>
+    <p class="mt-4 font-sans text-[0.85rem] leading-snug text-ash">
+      Sources: CDC, suicide rates by occupational group; U.S. Bureau of Labor Statistics, Census
+      of Fatal Occupational Injuries, 2024. Membership figures are the Guild's own.
+    </p>
   </div>
 </Section>
