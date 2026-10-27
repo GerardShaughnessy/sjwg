@@ -51,7 +51,7 @@ const memberSchema = z.object({
   id: z.string(),
   name: z.string(),
   trade: z.string(),
-  areas: z.array(z.string()).min(1),
+  areas: z.array(z.string()).default([]),
   yearsInTrade: z.number().int().nonnegative(),
   bio: z.string(),
   availability: z.enum(['available', 'limited', 'unavailable']),
