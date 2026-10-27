@@ -2,7 +2,11 @@
 @font-face { font-display: swap; font-family: 'Libre Caslon Text'; font-weight: 400; src: url(fonts/libre-caslon-text-latin-400-normal.woff2) format('woff2'); }
 @font-face { font-display: swap; font-family: 'Libre Caslon Text'; font-weight: 400; font-style: italic; src: url(fonts/libre-caslon-text-latin-400-italic.woff2) format('woff2'); }
 @font-face { font-display: swap; font-family: 'Libre Caslon Text'; font-weight: 700; src: url(fonts/libre-caslon-text-latin-700-normal.woff2) format('woff2'); }
-@font-face { font-display: swap; font-family: 'Archivo'; font-weight: 100 900; src: url(fonts/archivo-latin-wght-normal.woff2) format('woff2'); }
+/* Static Archivo weights: a variable font embeds as Type 3 in Chrome's PDFs, which Vistaprint rejects. */
+@font-face { font-display: swap; font-family: 'Archivo'; font-weight: 400; src: url(fonts/archivo-latin-400-normal.woff2) format('woff2'); }
+@font-face { font-display: swap; font-family: 'Archivo'; font-weight: 500; src: url(fonts/archivo-latin-500-normal.woff2) format('woff2'); }
+@font-face { font-display: swap; font-family: 'Archivo'; font-weight: 600; src: url(fonts/archivo-latin-600-normal.woff2) format('woff2'); }
+@font-face { font-display: swap; font-family: 'Archivo'; font-weight: 700; src: url(fonts/archivo-latin-700-normal.woff2) format('woff2'); }
 
 :root {
   --olive: #43402A; --earth: #483223; --mustard: #A37820; --mustard-glow: #D9AE52;
@@ -40,7 +44,8 @@ h1, h2, h3, p, ul { margin: 0; }
 .olive .fine, .earth .fine { color: var(--mortar); }
 ul.check { list-style: none; padding: 0; }
 ul.check li { position: relative; padding-left: 1.1em; margin-bottom: .25em; }
-ul.check li::before { content: "✦"; position: absolute; left: 0; top: 0; color: var(--mustard); font-size: .8em; line-height: 1.6; }
+/* Drawn star, not the ✦ glyph: that glyph comes from a system font that embeds as Type 3, which Vistaprint rejects. */
+ul.check li::before { content: ""; position: absolute; left: 0; top: .3em; width: .62em; height: .62em; background: var(--mustard); -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M5 0Q5.6 4.4 10 5Q5.6 5.6 5 10Q4.4 5.6 0 5Q4.4 4.4 5 0Z'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M5 0Q5.6 4.4 10 5Q5.6 5.6 5 10Q4.4 5.6 0 5Q4.4 4.4 5 0Z'/%3E%3C/svg%3E") center / contain no-repeat; }
 
 @media print {
   html { background: none; }

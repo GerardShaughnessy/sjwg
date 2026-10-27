@@ -1,10 +1,16 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><title>SJWG tri-fold brochure</title>
 <link rel="stylesheet" href="assets/print.css">
 <style>
-@page { size: 11.25in 8.75in; margin: 0; }
-.sheet { --w: 11in; --h: 8.5in; --safe: 0.25in; }
+@page { size: 11.11in 8.63in; margin: 0; }
+/* Vistaprint's tri-fold canvas is 11.11 x 8.63 in: 0.055in bleed left/right, 0.065in top/bottom. */
+.sheet { --w: 11in; --h: 8.5in; --safe: 0.25in; --bleed-x: 0.055in; --bleed-y: 0.065in; width: 11.11in; height: 8.63in; isolation: isolate; }
+.sheet .trim { inset: var(--bleed-y) var(--bleed-x); }
 /* Tri-fold: the flap panel is 3.625in, the other two 3.6875in. */
-.panels { position: absolute; inset: var(--bleed); display: grid; }
+.panels { position: absolute; inset: var(--bleed-y) var(--bleed-x); display: grid; }
+/* Dark panels run out through the bleed (top, bottom, and the sheet edge when they sit at one) so no ivory shows at the cut. */
+.panel.dark::after { content: ""; position: absolute; inset: calc(-1 * var(--bleed-y)) 0; background: var(--olive); z-index: -1; }
+.panel.dark:first-child::after { left: calc(-1 * var(--bleed-x)); }
+.panel.dark:last-child::after { right: calc(-1 * var(--bleed-x)); }
 .outside .panels { grid-template-columns: 3.625in 3.6875in 3.6875in; }
 .inside .panels { grid-template-columns: 3.6875in 3.6875in 3.625in; }
 .panel { position: relative; padding: var(--safe); display: flex; flex-direction: column; gap: 0.2in; }

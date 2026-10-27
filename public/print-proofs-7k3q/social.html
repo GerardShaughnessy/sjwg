@@ -1,0 +1,216 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>SJWG social posts</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="assets/print.css">
+<style>
+/* Ready-made 1080 × 1080 posts (Instagram and Facebook square). Each .post is drawn at its real pixel size and scaled down to show here; export-social.mjs saves each one as a PNG. */
+html { background: #e9e4d8; }
+body { max-width: 1180px; margin: 0 auto; padding: 24px 16px 80px; color: #2b2624; }
+header { border-bottom: 2px solid var(--mustard); padding-bottom: 16px; margin-bottom: 8px; }
+header h1 { font: 700 28px/1.1 var(--serif); }
+header p { font: 15px/1.5 var(--sans); color: #555; max-width: 70ch; margin-top: 10px; }
+.item { margin-top: 36px; display: grid; grid-template-columns: 432px 1fr; gap: 28px; align-items: start; }
+.view { width: 432px; height: 432px; overflow: hidden; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,.2); }
+.view .post { transform: scale(.4); transform-origin: top left; }
+.item h2 { font: 700 20px/1.2 var(--serif); }
+.item .when { font: 13px/1.5 var(--sans); color: var(--ash); margin-top: 4px; }
+.caption { margin-top: 12px; white-space: pre-wrap; font: 14.5px/1.55 var(--sans); background: var(--paper); border: 1px solid var(--mortar); border-radius: 4px; padding: 12px 14px; }
+.item button, .item a.dl { margin-top: 10px; margin-right: 10px; display: inline-block; font: 600 13px var(--sans); padding: 6px 12px; border: 1px solid var(--earth); background: var(--paper); color: var(--earth); border-radius: 4px; cursor: pointer; text-decoration: none; }
+@media (max-width: 760px) { .item { grid-template-columns: 1fr; } .view { width: min(432px, 100%); height: auto; aspect-ratio: 1; } }
+
+/* The post itself, in real pixels. */
+.post { position: relative; width: 1080px; height: 1080px; overflow: hidden; background: var(--ivory); color: var(--olive); font-family: var(--sans); display: flex; flex-direction: column; padding: 88px; }
+.post.olive { background: var(--olive); color: var(--ivory); }
+.post.earth { background: var(--earth); color: var(--ivory); }
+.post .eyebrow { font: 600 26px/1.2 var(--sans); letter-spacing: .16em; }
+.post h3 { font: 700 92px/1.04 var(--serif); margin-top: 28px; }
+.post h3.md { font-size: 76px; }
+.post p { font: 400 36px/1.45 var(--sans); }
+.post .rule { border-top-width: 4px; width: 140px; margin: 44px 0; }
+.post .foot { margin-top: auto; display: flex; justify-content: space-between; align-items: end; gap: 40px; font: 700 34px/1.3 var(--sans); }
+.post .foot img { height: 170px; width: auto; }
+.post .foot .wm { height: auto; width: 430px; }
+.post .mute { color: var(--ash); }
+.post.olive .mute, .post.earth .mute { color: var(--mortar); }
+.post ul.check li { font: 400 40px/1.35 var(--sans); margin-bottom: .45em; padding-left: 1.3em; }
+.post blockquote { margin: 0; font: 400 58px/1.32 var(--serif); font-style: italic; }
+.post cite { display: block; margin-top: 40px; font: 600 28px/1.3 var(--sans); font-style: normal; letter-spacing: .12em; text-transform: uppercase; color: var(--mustard-glow); }
+.post .big-mark { position: absolute; right: -120px; bottom: -110px; width: 640px; opacity: .14; }
+.post .when-big { font: 700 64px/1.2 var(--serif); }
+.post .pillars { font: 700 70px/1.25 var(--serif); }
+.post .pillars span { display: block; }
+.post .pillars span:nth-child(odd) { color: var(--mustard-glow); }
+.center { text-align: center; align-items: center; justify-content: center; }
+</style></head>
+<body>
+<header>
+  <h1>St. Joseph the Worker Guild social posts</h1>
+  <p>Nine ready posts, 1080 × 1080 (square works on Facebook and Instagram). Copy the caption, download the picture, post. Wording comes from the print pieces Greg signed off on. Nothing here mentions unions.</p>
+</header>
+
+<!-- 1 -->
+<section class="item">
+  <div class="view"><div class="post olive" id="p1-directory">
+    <div class="eyebrow">Homeowners and parishes</div>
+    <h3>Need a Catholic tradesman?</h3>
+    <hr class="rule">
+    <p>Plumbers, electricians, carpenters, painters, and more. Local Catholic tradesmen who share your values.</p>
+    <div class="foot"><div>Find one at<br><span style="color:var(--mustard-glow)">sjwg.org/directory</span></div><img src="assets/logo/seal.svg" alt=""></div>
+  </div></div>
+  <div><h2>1. The directory</h2><div class="when">Post first. Good to repeat every month or two.</div>
+    <div class="caption">Need a plumber, electrician, carpenter, or painter? The St. Joseph the Worker Guild keeps a directory of local Catholic tradesmen who share your values.
+
+Find one at sjwg.org/directory
+
+#StLouis #CatholicStL #ShopLocal #Tradesmen</div></div>
+</section>
+
+<!-- 2 -->
+<section class="item">
+  <div class="view"><div class="post earth" id="p2-join">
+    <div class="eyebrow" style="color:var(--mustard-glow)">Tradesmen</div>
+    <h3>Are you one? Join a brotherhood.</h3>
+    <hr class="rule">
+    <ul class="check"><li>Referrals and a directory listing</li><li>Masses, Holy Hours, and retreats</li><li>Mutual aid</li><li>Spiritual and business formation</li></ul>
+    <div class="foot"><div>sjwg.org/get-involved</div><img src="assets/logo/seal.svg" alt=""></div>
+  </div></div>
+  <div><h2>2. Recruiting tradesmen</h2><div class="when">Post the same week as the directory post.</div>
+    <div class="caption">Are you a Catholic tradesman? The St. Joseph the Worker Guild is a brotherhood of tradesmen based at St. Mary of Victories in St. Louis.
+
+Referrals. Masses, Holy Hours, and retreats. Mutual aid. Spiritual and business formation.
+
+Ask about membership at sjwg.org/get-involved
+
+#CatholicMen #Tradesmen #StLouis #StJosephTheWorker</div></div>
+</section>
+
+<!-- 3 -->
+<section class="item">
+  <div class="view"><div class="post" id="p3-meeting">
+    <div class="eyebrow">Every month</div>
+    <h3>Guild Meeting</h3>
+    <hr class="rule">
+    <div class="when-big">First Thursday, 7 PM</div>
+    <p style="margin-top:28px">St. Mary of Victories<br>744 S Third St, St. Louis</p>
+    <div class="foot"><div class="mute" style="font-weight:500;font-size:30px">Catholic tradesmen welcome.<br>sjwg.org/events</div><img src="assets/logo/seal.svg" alt=""></div>
+  </div></div>
+  <div><h2>3. Monthly meeting</h2><div class="when">Post the Monday before each first Thursday.</div>
+    <div class="caption">Guild Meeting this Thursday at 7 PM at St. Mary of Victories, 744 S Third St.
+
+Catholic tradesmen are welcome. Come meet the brothers.
+
+Up-to-date schedule: sjwg.org/events</div></div>
+</section>
+
+<!-- 4 -->
+<section class="item">
+  <div class="view"><div class="post olive" id="p4-holy-hour">
+    <div class="eyebrow">Every month</div>
+    <h3>Holy Hour for tradesmen</h3>
+    <hr class="rule">
+    <div class="when-big">Third Thursday, 7 PM</div>
+    <p style="margin-top:28px">St. Mary of Victories<br>744 S Third St, St. Louis</p>
+    <img class="big-mark" src="assets/logo/joseph-white.svg" alt="">
+    <div class="foot"><div style="font-weight:500;font-size:30px;color:var(--mortar)">sjwg.org/events</div></div>
+  </div></div>
+  <div><h2>4. Monthly Holy Hour</h2><div class="when">Post the Monday before each third Thursday.</div>
+    <div class="caption">Holy Hour for tradesmen this Thursday at 7 PM at St. Mary of Victories.
+
+Bring a brother. Bring your work, your family, and your business before the Lord.
+
+Schedule: sjwg.org/events</div></div>
+</section>
+
+<!-- 5 -->
+<section class="item">
+  <div class="view"><div class="post olive" id="p5-sirach">
+    <img src="assets/logo/seal.svg" alt="" style="width:150px">
+    <blockquote style="margin-top:70px">“All these are skilled with their hands… Without them no city could be lived in. Yet they maintain the fabric of the world.”</blockquote>
+    <cite>Sirach 38:31–34</cite>
+    <div class="foot" style="font-size:30px;color:var(--mortar)"><div>St. Joseph the Worker Guild</div><div>sjwg.org</div></div>
+  </div></div>
+  <div><h2>5. Scripture</h2><div class="when">Any week. Good for a quiet stretch.</div>
+    <div class="caption">"Without them no city could be lived in. Yet they maintain the fabric of the world." (Sirach 38)
+
+A prayer today for every tradesman keeping the world standing.
+
+#StJosephTheWorker #Catholic #Tradesmen</div></div>
+</section>
+
+<!-- 6 -->
+<section class="item">
+  <div class="view"><div class="post" id="p6-leo">
+    <div class="eyebrow">Why a guild</div>
+    <blockquote style="margin-top:50px;font-size:50px;color:var(--olive)">“We greatly wish … that these guilds may be generally restored … to help the honest workman, to protect and guard his children and family, and to promote in them piety, Christian knowledge, and a moral life.”</blockquote>
+    <cite style="color:var(--mustard)">Pope Leo XIII, Humanum Genus, 1884</cite>
+    <div class="foot" style="font-size:30px"><div class="mute">sjwg.org</div><img src="assets/logo/seal.svg" alt=""></div>
+  </div></div>
+  <div><h2>6. Leo XIII</h2><div class="when">Any week. Pairs well with the recruiting post.</div>
+    <div class="caption">In 1884 Pope Leo XIII asked for the guilds to be restored: "to help the honest workman, to protect and guard his children and family, and to promote in them piety, Christian knowledge, and a moral life."
+
+That is what the St. Joseph the Worker Guild is for. sjwg.org
+
+#Catholic #StJosephTheWorker #CatholicMen</div></div>
+</section>
+
+<!-- 7 -->
+<section class="item">
+  <div class="view"><div class="post earth center" id="p7-pillars">
+    <img src="assets/logo/seal.svg" alt="" style="width:190px;margin-bottom:60px">
+    <div class="pillars"><span>Faith.</span><span>Formation.</span><span>Fraternity.</span><span>Referrals.</span><span>Mutual Aid.</span></div>
+    <p style="margin-top:56px;color:var(--mortar);font-size:32px">St. Joseph the Worker Guild · sjwg.org</p>
+  </div></div>
+  <div><h2>7. What the Guild gives</h2><div class="when">Any week.</div>
+    <div class="caption">Faith. Formation. Fraternity. Referrals. Mutual aid.
+
+Five things every Catholic tradesman needs, and what the St. Joseph the Worker Guild gives its brothers.
+
+Learn more: sjwg.org/get-involved</div></div>
+</section>
+
+<!-- 8 -->
+<section class="item">
+  <div class="view"><div class="post olive center" id="p8-joseph">
+    <img src="assets/logo/joseph-white.svg" alt="" style="width:560px;opacity:.95">
+    <p style="margin-top:56px;font:400 italic 52px/1.3 var(--serif)">“Is not this the carpenter's son?”</p>
+    <cite>Matthew 13:55</cite>
+    <p style="margin-top:44px;color:var(--mortar);font-size:30px">St. Joseph the Worker, pray for us.</p>
+  </div></div>
+  <div><h2>8. St. Joseph</h2><div class="when">Wednesdays (St. Joseph's day of the week), March 19, and May 1.</div>
+    <div class="caption">"Is not this the carpenter's son?" (Matthew 13:55)
+
+Our Lord grew up in a workshop, learning a trade from St. Joseph. St. Joseph the Worker, pray for us and for all who work with their hands.
+
+#StJoseph #StJosephTheWorker #Catholic</div></div>
+</section>
+
+<!-- 9 -->
+<section class="item">
+  <div class="view"><div class="post" id="p9-hire-local">
+    <div class="eyebrow">Shop local</div>
+    <h3 class="md">Hire a Catholic tradesman. Support a Catholic family.</h3>
+    <hr class="rule">
+    <p>When you hire through the Guild directory, you keep work in the parish and help a father provide for his family.</p>
+    <div class="foot"><div>sjwg.org/directory</div><img src="assets/logo/seal.svg" alt=""></div>
+  </div></div>
+  <div><h2>9. Why hire through the Guild</h2><div class="when">Any week. Good before spring and fall project season.</div>
+    <div class="caption">Got a project coming up? Hire a Catholic tradesman and support a Catholic family.
+
+Browse the Guild directory: sjwg.org/directory
+
+#StLouis #ShopLocal #CatholicStL</div></div>
+</section>
+
+<script>
+// Copy and download buttons for each post.
+document.querySelectorAll('.item').forEach(item => {
+  const post = item.querySelector('.post'), cap = item.querySelector('.caption');
+  const box = cap.parentElement;
+  const copy = document.createElement('button'); copy.type = 'button'; copy.textContent = 'Copy caption';
+  copy.onclick = async () => { await navigator.clipboard.writeText(cap.innerText); copy.textContent = 'Copied'; setTimeout(() => copy.textContent = 'Copy caption', 1500); };
+  const dl = document.createElement('a'); dl.className = 'dl'; dl.textContent = 'Download picture';
+  dl.href = 'social/' + post.id + '.png'; dl.download = 'SJWG-' + post.id + '.png';
+  box.append(copy, dl);
+});
+</script>
+</body></html>
