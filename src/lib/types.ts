@@ -43,6 +43,8 @@ export interface RequestContact {
 export interface RequestAnswers {
   trade: string;
   tradeSlug: string;
+  /** Set when the requester came from a member's card: the request goes to him. */
+  memberId: string;
   description: string;
   photoName: string;
   urgency: Urgency | '';

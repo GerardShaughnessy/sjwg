@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { intakeAlert, requestConfirmation } from './templates/request';
+import { intakeAlert, referralNotice, requestConfirmation } from './templates/request';
 import { formNotification, memberInvitation } from './templates/account';
 
 const r = {
@@ -29,6 +29,22 @@ describe('email templates', () => {
     const e = intakeAlert(r, 'req-1');
     expect(e.subject).toMatch(/^Urgent:/);
     expect(intakeAlert({ ...r, urgency: 'can-wait' }, 'req-1').subject).not.toMatch(/Urgent/);
+  });
+  it('a direct request names the requester, not a referrer', () => {
+    const request = { ...r, id: 'req-1' };
+    const e = referralNotice({
+      memberName: 'Joe',
+      referredBy: 'Sam',
+      note: '',
+      direct: true,
+      request,
+    });
+    expect(e.subject).toBe('Urgent: Asked for you by name: SJWG-ABC234, Plumbing');
+    expect(e.text).toContain('Sam asked for you by name');
+    expect(e.text).not.toContain('referred');
+    expect(e.text).toContain('/portal?tab=jobs&request=req-1');
+    const ref = referralNotice({ memberName: 'Joe', referredBy: 'Greg', note: '', request });
+    expect(ref.subject).toBe('Referred to you: SJWG-ABC234, Plumbing');
   });
   it('invitation links to the invite page', () => {
     const e = memberInvitation({ name: 'Pat', invitedBy: 'Gerard', role: 'member', token: 'abc' });

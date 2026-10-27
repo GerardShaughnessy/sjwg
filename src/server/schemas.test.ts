@@ -28,6 +28,12 @@ describe('requestAnswersSchema', () => {
     });
     expect(ok.success).toBe(true);
   });
+  it('takes an optional member id, and only a real id', () => {
+    const id = '7e658453-8c96-4c68-a3e3-d1e6a9e8747c';
+    expect(requestAnswersSchema.parse(good).memberId).toBe('');
+    expect(requestAnswersSchema.parse({ ...good, memberId: id }).memberId).toBe(id);
+    expect(requestAnswersSchema.safeParse({ ...good, memberId: 'nope' }).success).toBe(false);
+  });
   it('says what to fix for a bad zip', () => {
     const r = requestAnswersSchema.safeParse({ ...good, zip: '631' });
     expect(r.success).toBe(false);

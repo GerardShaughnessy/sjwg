@@ -31,6 +31,7 @@ const STEPS = [
 const EMPTY: RequestAnswers = {
   trade: '',
   tradeSlug: '',
+  memberId: '',
   description: '',
   photoName: '',
   urgency: '',
@@ -74,13 +75,20 @@ function Sample({ tk }: { tk: TkValue }) {
   );
 }
 
+interface RequestableMember {
+  id: string;
+  name: string;
+  trade: string;
+}
+
 interface Props {
   trades: string[];
+  members: RequestableMember[];
   responseTk: TkValue;
   serviceAreaTk: TkValue;
 }
 
-export default function RequestWizard({ trades, responseTk, serviceAreaTk }: Props) {
+export default function RequestWizard({ trades, members, responseTk, serviceAreaTk }: Props) {
   const [step, setStep] = useState(0);
   const [a, setA] = useState<RequestAnswers>(EMPTY);
   const [errors, setErrors] = useState<Errors>({});
@@ -94,22 +102,26 @@ export default function RequestWizard({ trades, responseTk, serviceAreaTk }: Pro
   const formRef = useRef<HTMLFormElement>(null);
   const firstRender = useRef(true);
 
-  /* Restore the draft, then let ?trade= win for the first answer. */
+  /* Restore the draft, then let ?member= and ?trade= win for the first answer. */
   useEffect(() => {
     const draft = requestDraft.get();
     let next: RequestAnswers = draft
       ? { ...EMPTY, ...draft.answers, contact: { ...EMPTY.contact, ...draft.answers.contact } }
       : EMPTY;
     let nextStep = draft ? Math.min(draft.step, STEPS.length - 1) : 0;
-    const q = tradeFromSlug(trades, new URLSearchParams(window.location.search).get('trade'));
+    const params = new URLSearchParams(window.location.search);
+    const asked = members.find((m) => m.id === params.get('member'));
+    const q = asked ? asked.trade : tradeFromSlug(trades, params.get('trade'));
     if (q) {
-      next = { ...next, trade: q, tradeSlug: slugify(q) };
+      next = { ...next, trade: q, tradeSlug: slugify(q), memberId: asked?.id ?? '' };
       nextStep = 0;
+    } else if (!members.some((m) => m.id === next.memberId)) {
+      next = { ...next, memberId: '' };
     }
     setA(next);
     setStep(nextStep);
     setRestored(true);
-  }, [trades]);
+  }, [trades, members]);
 
   /* Persist on every change after restore. Photo bytes never leave memory. */
   useEffect(() => {
@@ -132,6 +144,8 @@ export default function RequestWizard({ trades, responseTk, serviceAreaTk }: Pro
     },
     [photoUrl],
   );
+
+  const askedFor = members.find((m) => m.id === a.memberId) ?? null;
 
   const update = (patch: Partial<RequestAnswers>) => setA((prev) => ({ ...prev, ...patch }));
   const updateContact = (patch: Partial<RequestAnswers['contact']>) =>
@@ -232,6 +246,7 @@ export default function RequestWizard({ trades, responseTk, serviceAreaTk }: Pro
   }
 
   if (done) {
+    const doneAskedFor = members.find((m) => m.id === done.answers.memberId) ?? null;
     return (
       <section aria-labelledby="done-title" className="max-w-[64ch]">
         <h2 id="done-title" ref={headingRef} tabIndex={-1} className="text-h2 outline-none">
@@ -279,6 +294,12 @@ export default function RequestWizard({ trades, responseTk, serviceAreaTk }: Pro
         <dl className="border-mortar mt-3 grid grid-cols-[minmax(7rem,auto)_1fr] gap-x-6 gap-y-3 border-t pt-4 font-sans text-[1rem]">
           <dt className="text-ash">Need</dt>
           <dd>{done.answers.trade}</dd>
+          {doneAskedFor && (
+            <>
+              <dt className="text-ash">Sent to</dt>
+              <dd>{doneAskedFor.name}</dd>
+            </>
+          )}
           <dt className="text-ash">Situation</dt>
           <dd className="whitespace-pre-wrap">{done.answers.description}</dd>
           {done.photoCount > 0 && (
@@ -359,6 +380,20 @@ export default function RequestWizard({ trades, responseTk, serviceAreaTk }: Pro
       </h2>
 
       <div className="mt-8 flex flex-col gap-8">
+        {step === 0 && askedFor && (
+          <div className="border-brass bg-paper border-l-4 px-4 py-3 font-sans">
+            <p className="leading-relaxed">
+              This request goes straight to <strong>{askedFor.name}</strong>, {askedFor.trade}.
+            </p>
+            <button
+              type="button"
+              onClick={() => update({ memberId: '' })}
+              className="decoration-brass hover:decoration-charcoal mt-2 font-semibold underline decoration-2 underline-offset-4"
+            >
+              Send it to the whole Guild instead
+            </button>
+          </div>
+        )}
         {step === 0 && (
           <RadioGroup
             name="trade"
@@ -366,7 +401,13 @@ export default function RequestWizard({ trades, responseTk, serviceAreaTk }: Pro
             hint="Not sure is fine. Describe the problem on the next screen and the Guild will figure out who should call."
             error={errors.trade}
             value={a.trade}
-            onChange={(v) => update({ trade: v, tradeSlug: slugify(v) })}
+            onChange={(v) =>
+              update({
+                trade: v,
+                tradeSlug: slugify(v),
+                memberId: askedFor && askedFor.trade === v ? askedFor.id : '',
+              })
+            }
             options={[
               ...trades.map((t) => ({ value: t, label: t })),
               {

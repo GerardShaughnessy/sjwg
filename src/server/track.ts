@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm';
 import { db } from './db/client';
 import { requestEvents, requestNotes, requestPhotos, requests } from './db/schema';
 import { listNotes } from './db/queries/requests';
+import { memberContactEmail } from './db/queries/members';
 import { sendEmail } from './email/send';
 import { memberNoteAlert } from './email/templates/request';
 import { env } from './env';
@@ -68,7 +69,9 @@ export async function addRequesterNote(req: typeof requests.$inferSelect, body: 
     actorName: req.contactName,
     action: 'note_added',
   });
-  const to = env('GUILD_INTAKE_EMAIL');
+  /* Notes on a request for a named member go to him, like the request did. */
+  const to =
+    (req.referredTo ? await memberContactEmail(req.referredTo) : null) ?? env('GUILD_INTAKE_EMAIL');
   if (to) {
     await sendEmail({
       to,

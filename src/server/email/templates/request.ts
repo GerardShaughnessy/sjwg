@@ -62,6 +62,8 @@ Keep this email. The link is the only way to see your request, so do not forward
   return { subject: `Your request to the Guild, ${r.ref}`, text, html };
 }
 
+const urgentPrefix = (urgency: string) => (urgency === 'no-heat-or-water' ? 'Urgent: ' : '');
+
 export function intakeAlert(r: RequestSummary, requestId: string): Email {
   const urgent = r.urgency === 'no-heat-or-water';
   const link = `${siteUrl()}/portal?tab=jobs&request=${requestId}`;
@@ -140,11 +142,15 @@ Open it: ${link}${textFooter()}`;
   return { subject: `New note on ${r.ref} from ${r.contactName}`, text, html };
 }
 
-/** To the member an officer referred a request to. */
+/**
+ * To the member an officer referred a request to, or (with `direct`) the member
+ * the requester picked from the directory.
+ */
 export function referralNotice(o: {
   memberName: string;
   referredBy: string;
   note: string;
+  direct?: boolean;
   request: {
     id: string;
     ref: string;
@@ -170,9 +176,12 @@ export function referralNotice(o: {
   ]
     .filter(Boolean)
     .join(' / ');
+  const intro = o.direct
+    ? `${r.contactName} asked for you by name on the Guild website.`
+    : `${o.referredBy} referred a help request to you${o.note ? `: ${o.note}` : '.'}`;
   const text = `${o.memberName},
 
-${o.referredBy} referred a help request to you${o.note ? `: ${o.note}` : '.'}
+${intro}
 
 Reference: ${r.ref}
 Help with: ${r.trade}
@@ -184,8 +193,8 @@ ${r.description}
 
 Open it on the job board and claim it if you can take it: ${link}${textFooter()}`;
   const html = shell({
-    title: `A request was referred to you: ${r.ref}`,
-    bodyHtml: `${paragraphs(`${o.memberName},\n\n${o.referredBy} referred a help request to you${o.note ? `: ${o.note}` : '.'}`)}
+    title: o.direct ? `Someone asked for you: ${r.ref}` : `A request was referred to you: ${r.ref}`,
+    bodyHtml: `${paragraphs(`${o.memberName},\n\n${intro}`)}
       <table role="presentation" cellpadding="0" cellspacing="0" style="font-size:16px;line-height:1.5;color:#43402a">
         <tr><td style="padding:2px 16px 2px 0;color:#6b6450">Help with</td><td>${escapeHtml(r.trade)}</td></tr>
         <tr><td style="padding:2px 16px 2px 0;color:#6b6450">How urgent</td><td>${escapeHtml(URGENCY_LABEL[r.urgency] ?? r.urgency)}</td></tr>
@@ -195,7 +204,10 @@ Open it on the job board and claim it if you can take it: ${link}${textFooter()}
       <div style="margin:16px 0;padding:12px 16px;border-left:4px solid #a37820;background:#f3ead5">${paragraphs(r.description)}</div>
       ${button(link, 'Open on the job board')}`,
   });
-  return { subject: `Referred to you: ${r.ref}, ${r.trade}`, text, html };
+  const subject = o.direct
+    ? `${urgentPrefix(r.urgency)}Asked for you by name: ${r.ref}, ${r.trade}`
+    : `Referred to you: ${r.ref}, ${r.trade}`;
+  return { subject, text, html };
 }
 
 /** Officer announcement to every member with an account. */

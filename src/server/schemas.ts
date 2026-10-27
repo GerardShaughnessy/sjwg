@@ -19,6 +19,7 @@ export const requestAnswersSchema = z
   .object({
     trade: trimmed(80).min(1, 'Pick the kind of help you need. "Not sure" is fine.'),
     tradeSlug: trimmed(80).default(''),
+    memberId: z.union([z.string().uuid(), z.literal('')]).default(''),
     description: trimmed(4000, 'Keep the description under 4000 characters.').min(
       10,
       'Tell us a little more, even one more sentence helps.',

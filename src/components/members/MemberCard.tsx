@@ -23,7 +23,7 @@ export default function MemberCard({
 }) {
   const Heading = headingLevel === 2 ? 'h2' : 'h3';
   const a = AVAILABILITY[member.availability];
-  const requestHref = `/request?trade=${slugify(member.trade)}`;
+  const requestHref = `/request?trade=${slugify(member.trade)}&member=${member.id}`;
   return (
     <article
       className="border-mortar grid grid-cols-[4.5rem_1fr] gap-x-4 gap-y-2 border-t py-5 sm:grid-cols-[6rem_1fr] sm:gap-x-6"

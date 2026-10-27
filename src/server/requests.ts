@@ -1,15 +1,21 @@
 import type { APIContext } from 'astro';
 import { db } from './db/client';
-import { requestEvents, requestPhotos, requests } from './db/schema';
+import { members, requestEvents, requestPhotos, requests } from './db/schema';
+import { memberContactEmail } from './db/queries/members';
 import { sendEmail } from './email/send';
-import { intakeAlert, requestConfirmation, type RequestSummary } from './email/templates/request';
+import {
+  intakeAlert,
+  referralNotice,
+  requestConfirmation,
+  type RequestSummary,
+} from './email/templates/request';
 import { env, requireEnv } from './env';
 import { badRequest, clientIp, rateLimit } from './http';
 import { encryptToken, hashIp, makeRef, makeToken, sha256, withUniqueRetry } from './refs';
 import { parseOrThrow, requestAnswersSchema, type RequestAnswers } from './schemas';
 import { PHOTO_MAX_BYTES, putRequestPhoto, validateImage } from './uploads';
 import { slugify } from '@/lib/trades';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 export interface IncomingPhoto {
   name: string;
@@ -61,8 +67,17 @@ export async function createRequest(
     if ('error' in validated) throw badRequest(validated.error, { photo: validated.error });
   }
 
-  const token = makeToken();
   const d = db();
+  /* Asked for by name from the directory. Only a public member can be picked. */
+  const [askedFor] = answers.memberId
+    ? await d
+        .select({ id: members.id, name: members.name })
+        .from(members)
+        .where(and(eq(members.id, answers.memberId), eq(members.public, true)))
+        .limit(1)
+    : [];
+
+  const token = makeToken();
   const row = await withUniqueRetry(async () => {
     const [r] = await d
       .insert(requests)
@@ -80,6 +95,8 @@ export async function createRequest(
         bestTime: answers.contact.bestTime,
         trackingTokenHash: sha256(token),
         trackingTokenEnc: encryptToken(token, requireEnv('NEON_AUTH_COOKIE_SECRET')),
+        referredTo: askedFor?.id ?? null,
+        referralNote: askedFor ? `Asked for ${askedFor.name} by name` : null,
         source: 'web',
         ipHash: hashIp(ip),
       })
@@ -105,7 +122,7 @@ export async function createRequest(
     actorName: answers.contact.name,
     action: 'created',
     toStatus: 'open',
-    detail: { photoCount },
+    detail: askedFor ? { photoCount, askedFor: askedFor.name } : { photoCount },
   });
 
   const summary: RequestSummary = {
@@ -138,8 +155,28 @@ export async function createRequest(
         .set({ confirmationSentAt: new Date() })
         .where(eq(requests.id, row.id));
   }
+  /* A request for a named member goes to him alone. The intake inbox only
+     hears about it if he has no email on file or the send fails. */
+  let notified = false;
+  const memberTo = askedFor ? await memberContactEmail(askedFor.id) : null;
+  if (askedFor && memberTo) {
+    const res = await sendEmail({
+      to: memberTo,
+      email: referralNotice({
+        memberName: askedFor.name,
+        referredBy: row.contactName,
+        note: '',
+        direct: true,
+        request: row,
+      }),
+      template: 'direct-request',
+      replyTo: row.contactEmail || undefined,
+      related: { type: 'request', id: row.id },
+    });
+    notified = res.status === 'sent';
+  }
   const intakeTo = env('GUILD_INTAKE_EMAIL');
-  if (intakeTo) {
+  if (!notified && intakeTo) {
     const res = await sendEmail({
       to: intakeTo,
       email: intakeAlert(summary, row.id),
@@ -147,9 +184,10 @@ export async function createRequest(
       replyTo: row.contactEmail || undefined,
       related: { type: 'request', id: row.id },
     });
-    if (res.status === 'sent')
-      await d.update(requests).set({ intakeNotifiedAt: new Date() }).where(eq(requests.id, row.id));
+    notified = res.status === 'sent';
   }
+  if (notified)
+    await d.update(requests).set({ intakeNotifiedAt: new Date() }).where(eq(requests.id, row.id));
 
   return { row, token, confirmationSent, photoCount };
 }

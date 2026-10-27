@@ -23,6 +23,7 @@ const trades = getTrades(members);
     <RequestWizard
       client:load
       trades={trades}
+      members={members.map(({ id, name, trade }) => ({ id, name, trade }))}
       responseTk={TK.responseCommitment}
       serviceAreaTk={TK.serviceArea}
     />
