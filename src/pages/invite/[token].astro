@@ -8,6 +8,7 @@ export const prerender = false;
 
 const token = Astro.params.token ?? '';
 const result = await markOpened(token);
+const needsEntry = result.state === 'open' && !result.row.memberId && result.row.role === 'member';
 const ROLE_LINE = { admin: 'as a Guild officer', member: 'as a Guild member' } as const;
 ---
 
@@ -16,7 +17,7 @@ const ROLE_LINE = { admin: 'as a Guild officer', member: 'as a Guild member' } a
     <>
       <PageHeader
         title="Welcome to the Guild Portal"
-        lede={`You were invited ${ROLE_LINE[result.row.role]}. Set a password and you are in.`}
+        lede={`You were invited ${ROLE_LINE[result.row.role]}. ${needsEntry ? 'Set up your account here. Your directory entry stays private until you choose to list it.' : 'Set a password and you are in.'}`}
       />
       <div class="wrap py-12 md:py-16">
         <AcceptInviteForm
@@ -24,6 +25,7 @@ const ROLE_LINE = { admin: 'as a Guild officer', member: 'as a Guild member' } a
           token={token}
           email={result.row.email}
           name={result.row.name ?? ''}
+          needsEntry={needsEntry}
         />
       </div>
     </>

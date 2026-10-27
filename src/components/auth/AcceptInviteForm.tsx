@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { signUpWithInvite } from '@/lib/auth-client';
 import { invitations } from '@/lib/api';
-import { PrimaryButton, TextInput } from '@/components/forms/fields';
+import { PrimaryButton, Select, TextInput } from '@/components/forms/fields';
+import { COMMON_TRADES, OTHER_TRADE } from '@/lib/trades';
 import { authMessage } from './authErrors';
 import { MIN_PASSWORD } from './ResetPasswordForm';
 
@@ -9,14 +10,21 @@ interface Props {
   token: string;
   email: string;
   name: string;
+  /** No directory entry yet: he sets one up here (trade and phone), and finishes it in My entry. */
+  needsEntry: boolean;
 }
 
-export default function AcceptInviteForm({ token, email, name: initialName }: Props) {
+export default function AcceptInviteForm({ token, email, name: initialName, needsEntry }: Props) {
   const [name, setName] = useState(initialName);
+  const [tradeChoice, setTradeChoice] = useState('');
+  const [otherTrade, setOtherTrade] = useState('');
+  const [phone, setPhone] = useState('');
+  const trade = tradeChoice === OTHER_TRADE ? otherTrade.trim() : tradeChoice;
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [errors, setErrors] = useState<{
     name?: string;
+    trade?: string;
     password?: string;
     confirm?: string;
     form?: string;
@@ -27,6 +35,7 @@ export default function AcceptInviteForm({ token, email, name: initialName }: Pr
     e.preventDefault();
     const next: typeof errors = {};
     if (!name.trim()) next.name = 'Tell us your name as other members should see it.';
+    if (needsEntry && !trade) next.trade = 'Pick your trade.';
     if (password.length < MIN_PASSWORD) next.password = `Use at least ${MIN_PASSWORD} characters.`;
     if (confirm !== password) next.confirm = 'The two passwords do not match.';
     setErrors(next);
@@ -44,7 +53,7 @@ export default function AcceptInviteForm({ token, email, name: initialName }: Pr
       return;
     }
     try {
-      await invitations.complete(token);
+      await invitations.complete(token, { trade, phone: phone.trim() });
     } catch (err) {
       setErrors({
         form:
@@ -55,7 +64,7 @@ export default function AcceptInviteForm({ token, email, name: initialName }: Pr
       setPending(false);
       return;
     }
-    window.location.assign('/portal');
+    window.location.assign(needsEntry ? '/portal?tab=profile' : '/portal');
   }
 
   return (
@@ -78,6 +87,46 @@ export default function AcceptInviteForm({ token, email, name: initialName }: Pr
         autoComplete="name"
         autoFocus={!initialName}
       />
+      {needsEntry && (
+        <>
+          <Select
+            id="trade"
+            label="Your trade"
+            value={tradeChoice}
+            error={errors.trade}
+            onChange={(e) => setTradeChoice(e.target.value)}
+          >
+            <option value="">Pick a trade</option>
+            {COMMON_TRADES.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+            <option value={OTHER_TRADE}>Other (type it in)</option>
+          </Select>
+          {tradeChoice === OTHER_TRADE && (
+            <TextInput
+              id="other-trade"
+              label="Which trade?"
+              value={otherTrade}
+              error={errors.trade}
+              onChange={(e) => setOtherTrade(e.target.value)}
+              placeholder="For example, Stained Glass"
+            />
+          )}
+          <TextInput
+            id="phone"
+            label="Phone"
+            optional
+            hint="Officers only, for referrals. Never shown publicly."
+            type="tel"
+            inputMode="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            autoComplete="tel"
+          />
+        </>
+      )}
       <TextInput
         id="password"
         label="Choose a password"
@@ -108,7 +157,7 @@ export default function AcceptInviteForm({ token, email, name: initialName }: Pr
       )}
       <div>
         <PrimaryButton pending={pending} pendingLabel="Setting up your account">
-          Set password and log in
+          {needsEntry ? 'Create my account' : 'Set password and log in'}
         </PrimaryButton>
       </div>
     </form>

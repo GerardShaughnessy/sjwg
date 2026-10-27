@@ -61,10 +61,18 @@ export default function MemberCard({
           </Heading>
           <p className="text-brick font-sans text-[0.95rem] font-semibold">{member.trade}</p>
         </div>
-        <p className="text-ash mt-1 font-sans text-[0.95rem]">
-          {member.areas.join(', ')}. {member.yearsInTrade} years in the trade.
-        </p>
-        {!compact && (
+        {(member.areas.length > 0 || member.yearsInTrade > 0) && (
+          <p className="text-ash mt-1 font-sans text-[0.95rem]">
+            {[
+              member.areas.join(', '),
+              member.yearsInTrade > 0 && `${member.yearsInTrade} years in the trade`,
+            ]
+              .filter(Boolean)
+              .join('. ')}
+            .
+          </p>
+        )}
+        {!compact && member.bio && (
           <p className="mt-2 max-w-[60ch] font-serif leading-relaxed italic">“{member.bio}”</p>
         )}
         <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">

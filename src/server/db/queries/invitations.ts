@@ -6,6 +6,7 @@ import { sendEmail } from '../../email/send';
 import { memberInvitation } from '../../email/templates/account';
 import { HttpError } from '../../http';
 import type { AppSession } from '../../auth/server';
+import { createMember } from './members';
 
 export const INVITE_TTL_MS = 7 * 24 * 3600 * 1000;
 
@@ -113,10 +114,15 @@ export async function markOpened(token: string) {
   return { state: 'open' as const, row };
 }
 
-/** After sign-up: link the fresh Better Auth user to a Guild account. */
+/**
+ * After sign-up: link the fresh Better Auth user to a Guild account. An
+ * invitation that is not tied to an existing entry gets a new private entry,
+ * so the man lands in My entry ready to finish it himself.
+ */
 export async function complete(
   token: string,
   authUser: { id: string; email: string; name?: string | null },
+  setup: { trade: string; phone: string } = { trade: '', phone: '' },
 ) {
   const d = db();
   const [row] = await d
@@ -128,6 +134,24 @@ export async function complete(
     throw new HttpError(410, 'That invitation link has expired or was already used.');
   if (row.email.toLowerCase() !== authUser.email.toLowerCase())
     throw new HttpError(403, 'This invitation was sent to a different email address.');
+  let memberId = row.memberId;
+  if (!memberId && (row.role === 'member' || setup.trade)) {
+    if (!setup.trade) throw new HttpError(400, 'Pick your trade.', { trade: 'Pick your trade.' });
+    const entry = await createMember({
+      name: authUser.name || row.name || row.email,
+      trade: setup.trade,
+      areas: [],
+      yearsInTrade: 0,
+      bio: '',
+      availability: 'available',
+      public: false,
+      featured: false,
+      sortOrder: 0,
+      privatePhone: setup.phone,
+      privateEmail: row.email,
+    });
+    memberId = entry.id;
+  }
   const [user] = await d
     .insert(appUsers)
     .values({
@@ -135,11 +159,11 @@ export async function complete(
       email: row.email,
       name: authUser.name ?? row.name,
       role: row.role,
-      memberId: row.memberId,
+      memberId,
     })
     .onConflictDoUpdate({
       target: appUsers.authUserId,
-      set: { role: row.role, memberId: row.memberId, disabled: false },
+      set: { role: row.role, memberId, disabled: false },
     })
     .returning();
   await d

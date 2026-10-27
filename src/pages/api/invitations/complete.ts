@@ -12,17 +12,17 @@ export const prerender = false;
  * the app-session gate; it checks the upstream session itself.
  */
 export const POST: APIRoute = route(async (ctx) => {
-  const { token } = parseOrThrow(acceptInviteSchema, await readJson(ctx));
+  const { token, trade, phone } = parseOrThrow(acceptInviteSchema, await readJson(ctx));
   const upstream = await getAuthSession(ctx);
   if (!upstream?.user)
     throw new HttpError(
       401,
       'Your sign-up did not finish. Reload the invitation link and try again.',
     );
-  const user = await complete(token, {
-    id: upstream.user.id,
-    email: upstream.user.email,
-    name: upstream.user.name,
-  });
+  const user = await complete(
+    token,
+    { id: upstream.user.id, email: upstream.user.email, name: upstream.user.name },
+    { trade, phone },
+  );
   return json({ ok: true, role: user.role });
 });

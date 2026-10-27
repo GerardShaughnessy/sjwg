@@ -385,8 +385,11 @@ export const invitations = {
   resend: (id: string) =>
     mutate<InvitationResult>(`/api/invitations/${id}/resend`, json('POST', {})),
   revoke: (id: string) => mutate<{ ok: true }>(`/api/invitations/${id}`, { method: 'DELETE' }),
-  complete: (token: string) =>
-    call<{ ok: true; role: string }>('/api/invitations/complete', json('POST', { token })),
+  complete: (token: string, setup: { trade: string; phone: string }) =>
+    call<{ ok: true; role: string }>(
+      '/api/invitations/complete',
+      json('POST', { token, ...setup }),
+    ),
 };
 
 /* ---------------------------------------------------------------- members */

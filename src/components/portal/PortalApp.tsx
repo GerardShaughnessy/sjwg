@@ -9,7 +9,6 @@ import PostEditor from './member/PostEditor';
 import DonorRecords from './member/DonorRecords';
 import EventsEditor from './admin/EventsEditor';
 import SponsorsEditor from './admin/SponsorsEditor';
-import InvitationsPanel from './admin/InvitationsPanel';
 import MembersAdmin from './admin/MembersAdmin';
 import EmailListPanel from './admin/EmailListPanel';
 import AnnouncementsPanel from './admin/AnnouncementsPanel';
@@ -27,7 +26,7 @@ interface Props {
  * runs on demand and only reaches here with a verified session, so there is
  * no client-side gate. Officers get the admin tabs.
  */
-export default function PortalApp({ session, members, events, areas }: Props) {
+export default function PortalApp({ session, events, areas }: Props) {
   const [tab, setTab] = useState('');
 
   useEffect(() => {
@@ -55,11 +54,6 @@ export default function PortalApp({ session, members, events, areas }: Props) {
           { id: 'events', label: 'Events', content: <EventsEditor /> },
           { id: 'sponsors', label: 'Sponsors', content: <SponsorsEditor /> },
           { id: 'donors', label: 'Donor records', content: <DonorRecords /> },
-          {
-            id: 'invitations',
-            label: 'Invitations',
-            content: <InvitationsPanel members={members} />,
-          },
           { id: 'members', label: 'Members', content: <MembersAdmin areas={areas} /> },
           { id: 'announce', label: 'Email members', content: <AnnouncementsPanel /> },
           { id: 'emaillist', label: 'Email list', content: <EmailListPanel /> },
@@ -67,7 +61,9 @@ export default function PortalApp({ session, members, events, areas }: Props) {
       : []),
   ];
 
-  const active = tabs.some((t) => t.id === tab) ? tab : tabs[0].id;
+  // Invitations folded into Members; old links still land there.
+  const wanted = tab === 'invitations' ? 'members' : tab;
+  const active = tabs.some((t) => t.id === wanted) ? wanted : tabs[0].id;
 
   return (
     <PortalShell

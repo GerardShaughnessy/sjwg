@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Member } from '@/lib/types';
 import { members as api, hours as hoursApi, type MemberAdmin, type MemberInput } from '@/lib/api';
 import ServiceHours from '../member/ServiceHours';
+import InvitationsPanel, { type InvitePrefill } from './InvitationsPanel';
 import { useResource } from '@/lib/hooks';
 import { byTradeThenName, COMMON_TRADES, OTHER_TRADE } from '@/lib/trades';
 import {
@@ -32,7 +33,10 @@ const EMPTY: MemberInput = {
   privateEmail: '',
 };
 
-/** Officers manage every directory entry, including the fictional seed rows. */
+/**
+ * Officers invite men and manage every directory entry. Inviting is the way in:
+ * the man sets up his own entry from the link, then it shows in the list here.
+ */
 export default function MembersAdmin({ areas }: { areas: string[] }) {
   const { data, loading, error } = useResource(() => api.list() as Promise<MemberAdmin[]>, []);
   const [id, setId] = useState<string | null>(null);
@@ -50,6 +54,12 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
   const [totals, setTotals] = useState<Record<string, number>>({});
   const hoursFor = (m: MemberAdmin) => totals[m.id] ?? totalsRes.data?.[m.id] ?? 0;
   const [hoursOpen, setHoursOpen] = useState<string | null>(null);
+  const [prefill, setPrefill] = useState<InvitePrefill | null>(null);
+  function invite(m: MemberAdmin) {
+    reset();
+    setPrefill({ email: m.privateEmail, name: m.name, phone: m.privatePhone, memberId: m.id });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   const [sortBy, setSortBy] = useState<'trade' | 'name'>('trade');
   const list = (data ?? [])
@@ -77,6 +87,7 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
       privatePhone: m.privatePhone,
       privateEmail: m.privateEmail,
     });
+    setPrefill(null);
     setStatus(`Editing ${m.name}.`);
     setFormError('');
     setFields({});
@@ -91,15 +102,15 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
   }
   async function save(e: React.FormEvent) {
     e.preventDefault();
+    if (!id) return;
     setFormError('');
     setFields({});
     setPending(true);
     try {
-      const { member, rebuild } = id ? await api.update(id, form) : await api.create(form);
+      const { member, rebuild } = await api.update(id, form);
       setStatus(
-        `${id ? 'Saved' : 'Added'} ${member.name}. ${member.public ? rebuildNote(rebuild) : 'Not public yet.'}`,
+        `Saved ${member.name}. ${member.public ? rebuildNote(rebuild) : 'Not public yet.'}`,
       );
-      if (!id) reset();
     } catch (err) {
       setFields((err as { fields?: Record<string, string> }).fields ?? {});
       setFormError(msg(err, 'Could not save.'));
@@ -163,184 +174,189 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
 
   return (
     <div className="grid gap-12 lg:grid-cols-[1fr_1fr] lg:gap-16">
-      <form onSubmit={save} className="flex flex-col gap-5 font-sans">
-        <h2 className="text-h2 font-serif">{id ? 'Edit member' : 'Add a member'}</h2>
-        <p className="text-ash text-[0.95rem]">
-          A directory entry is not the same as a login. Invite the man from the Invitations tab and
-          link the invitation to his entry; then he can edit it and claim jobs himself.
-        </p>
-        <Labeled label="Name as listed" error={fields.name}>
-          <input
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className={inputCls}
-          />
-        </Labeled>
-        <Labeled label="Trade" error={fields.trade}>
-          <select
-            value={tradeChoice}
-            onChange={(e) => {
-              const v = e.target.value;
-              setOtherTrade(v === OTHER_TRADE);
-              setForm({ ...form, trade: v === OTHER_TRADE ? '' : v });
-            }}
-            className={inputCls}
-          >
-            <option value="">Pick a trade</option>
-            {COMMON_TRADES.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-            <option value={OTHER_TRADE}>Other (type it in)</option>
-          </select>
-        </Labeled>
-        {tradeChoice === OTHER_TRADE && (
-          <Labeled label="His trade" error={fields.trade}>
+      {!id ? (
+        <InvitationsPanel
+          key={prefill?.memberId ?? 'new'}
+          prefill={prefill}
+          onClearPrefill={() => setPrefill(null)}
+        />
+      ) : (
+        <form onSubmit={save} className="flex flex-col gap-5 font-sans">
+          <h2 className="text-h2 font-serif">Edit {form.name || 'member'}</h2>
+          <p className="text-ash text-[0.95rem]">
+            He can edit most of this himself in My entry once he has a login.
+          </p>
+          <Labeled label="Name as listed" error={fields.name}>
             <input
-              value={form.trade}
-              onChange={(e) => setForm({ ...form, trade: e.target.value })}
-              placeholder="For example, Stained Glass"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
               className={inputCls}
-              autoFocus
             />
           </Labeled>
-        )}
-        <Labeled label="Years in the trade" error={fields.yearsInTrade}>
-          <input
-            type="number"
-            min={0}
-            value={form.yearsInTrade}
-            onChange={(e) => setForm({ ...form, yearsInTrade: Number(e.target.value) || 0 })}
-            className={`${inputCls} w-28`}
-          />
-        </Labeled>
-        <fieldset>
-          <legend className="font-semibold">Areas served</legend>
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            {allAreas.map((a) => (
-              <label key={a} className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  className="accent-brick h-5 w-5"
-                  checked={form.areas.includes(a)}
-                  onChange={() => toggleArea(a)}
-                />
-                {a}
-              </label>
-            ))}
-          </div>
-          <div className="mt-3 flex gap-2">
-            <input
-              value={newArea}
-              onChange={(e) => setNewArea(e.target.value)}
-              placeholder="Another area"
-              className={`${inputCls} w-48`}
-              aria-label="Another area"
-            />
-            <button
-              type="button"
-              onClick={() => {
-                if (newArea.trim()) setForm({ ...form, areas: [...form.areas, newArea.trim()] });
-                setNewArea('');
+          <Labeled label="Trade" error={fields.trade}>
+            <select
+              value={tradeChoice}
+              onChange={(e) => {
+                const v = e.target.value;
+                setOtherTrade(v === OTHER_TRADE);
+                setForm({ ...form, trade: v === OTHER_TRADE ? '' : v });
               }}
-              className={btnSecondary}
+              className={inputCls}
             >
-              Add
-            </button>
+              <option value="">Pick a trade</option>
+              {COMMON_TRADES.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+              <option value={OTHER_TRADE}>Other (type it in)</option>
+            </select>
+          </Labeled>
+          {tradeChoice === OTHER_TRADE && (
+            <Labeled label="His trade" error={fields.trade}>
+              <input
+                value={form.trade}
+                onChange={(e) => setForm({ ...form, trade: e.target.value })}
+                placeholder="For example, Stained Glass"
+                className={inputCls}
+                autoFocus
+              />
+            </Labeled>
+          )}
+          <Labeled label="Years in the trade" error={fields.yearsInTrade}>
+            <input
+              type="number"
+              min={0}
+              value={form.yearsInTrade}
+              onChange={(e) => setForm({ ...form, yearsInTrade: Number(e.target.value) || 0 })}
+              className={`${inputCls} w-28`}
+            />
+          </Labeled>
+          <fieldset>
+            <legend className="font-semibold">Areas served</legend>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {allAreas.map((a) => (
+                <label key={a} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    className="accent-brick h-5 w-5"
+                    checked={form.areas.includes(a)}
+                    onChange={() => toggleArea(a)}
+                  />
+                  {a}
+                </label>
+              ))}
+            </div>
+            <div className="mt-3 flex gap-2">
+              <input
+                value={newArea}
+                onChange={(e) => setNewArea(e.target.value)}
+                placeholder="Another area"
+                className={`${inputCls} w-48`}
+                aria-label="Another area"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (newArea.trim()) setForm({ ...form, areas: [...form.areas, newArea.trim()] });
+                  setNewArea('');
+                }}
+                className={btnSecondary}
+              >
+                Add
+              </button>
+            </div>
+            {fields.areas && (
+              <p className="text-brick mt-1 text-[0.95rem] font-semibold">{fields.areas}</p>
+            )}
+          </fieldset>
+          <Labeled label="Availability">
+            <select
+              value={form.availability}
+              onChange={(e) =>
+                setForm({ ...form, availability: e.target.value as Member['availability'] })
+              }
+              className={inputCls}
+            >
+              <option value="available">Taking work</option>
+              <option value="limited">Limited availability</option>
+              <option value="unavailable">Not taking work right now</option>
+            </select>
+          </Labeled>
+          <Labeled label="One line in his own words" error={fields.bio}>
+            <textarea
+              value={form.bio}
+              onChange={(e) => setForm({ ...form, bio: e.target.value })}
+              rows={3}
+              maxLength={280}
+              className={inputCls}
+            />
+          </Labeled>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Labeled
+              label="Phone (private)"
+              hint="Officers only. Never shown publicly."
+              error={fields.privatePhone}
+            >
+              <input
+                type="tel"
+                value={form.privatePhone}
+                onChange={(e) => setForm({ ...form, privatePhone: e.target.value })}
+                className={inputCls}
+              />
+            </Labeled>
+            <Labeled
+              label="Email (private)"
+              hint="Used for referrals if he has no login yet."
+              error={fields.privateEmail}
+            >
+              <input
+                type="email"
+                value={form.privateEmail}
+                onChange={(e) => setForm({ ...form, privateEmail: e.target.value })}
+                className={inputCls}
+              />
+            </Labeled>
           </div>
-          {fields.areas && (
-            <p className="text-brick mt-1 text-[0.95rem] font-semibold">{fields.areas}</p>
-          )}
-        </fieldset>
-        <Labeled label="Availability">
-          <select
-            value={form.availability}
-            onChange={(e) =>
-              setForm({ ...form, availability: e.target.value as Member['availability'] })
-            }
-            className={inputCls}
-          >
-            <option value="available">Taking work</option>
-            <option value="limited">Limited availability</option>
-            <option value="unavailable">Not taking work right now</option>
-          </select>
-        </Labeled>
-        <Labeled label="One line in his own words" error={fields.bio}>
-          <textarea
-            value={form.bio}
-            onChange={(e) => setForm({ ...form, bio: e.target.value })}
-            rows={3}
-            maxLength={280}
-            className={inputCls}
-          />
-        </Labeled>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Labeled
-            label="Phone (private)"
-            hint="Officers only. Never shown publicly."
-            error={fields.privatePhone}
-          >
+          <label className="flex items-center gap-2">
             <input
-              type="tel"
-              value={form.privatePhone}
-              onChange={(e) => setForm({ ...form, privatePhone: e.target.value })}
-              className={inputCls}
+              type="checkbox"
+              className="accent-brick h-5 w-5"
+              checked={form.featured}
+              onChange={(e) => setForm({ ...form, featured: e.target.checked })}
             />
-          </Labeled>
-          <Labeled
-            label="Email (private)"
-            hint="Used for referrals if he has no login yet."
-            error={fields.privateEmail}
-          >
+            Show on the home page strip
+          </label>
+          <label className="border-brass bg-paper flex items-start gap-3 border-l-4 px-4 py-3">
             <input
-              type="email"
-              value={form.privateEmail}
-              onChange={(e) => setForm({ ...form, privateEmail: e.target.value })}
-              className={inputCls}
+              type="checkbox"
+              className="accent-brick mt-1 h-5 w-5"
+              checked={form.public}
+              onChange={(e) => setForm({ ...form, public: e.target.checked })}
             />
-          </Labeled>
-        </div>
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            className="accent-brick h-5 w-5"
-            checked={form.featured}
-            onChange={(e) => setForm({ ...form, featured: e.target.checked })}
-          />
-          Show on the home page strip
-        </label>
-        <label className="border-brass bg-paper flex items-start gap-3 border-l-4 px-4 py-3">
-          <input
-            type="checkbox"
-            className="accent-brick mt-1 h-5 w-5"
-            checked={form.public}
-            onChange={(e) => setForm({ ...form, public: e.target.checked })}
-          />
-          <span>
-            <span className="font-semibold">Listed in the public directory.</span>
-            <span className="text-ash block text-[0.9rem]">
-              Only with his consent. Name, trade, areas, years, availability, and the line above are
-              shown; the phone and email above never are.
+            <span>
+              <span className="font-semibold">Listed in the public directory.</span>
+              <span className="text-ash block text-[0.9rem]">
+                Only with his consent. Name, trade, areas, years, availability, and the line above
+                are shown; the phone and email above never are.
+              </span>
             </span>
-          </span>
-        </label>
-        {formError && <ErrorStrip>{formError}</ErrorStrip>}
-        <div className="flex flex-wrap items-center gap-4">
-          <button type="submit" disabled={pending} className={btnPrimary}>
-            {pending ? 'Saving' : id ? 'Save changes' : 'Add member'}
-          </button>
-          {id && (
-            <button type="button" onClick={reset} className={btnQuiet}>
-              Add another instead
+          </label>
+          {formError && <ErrorStrip>{formError}</ErrorStrip>}
+          <div className="flex flex-wrap items-center gap-4">
+            <button type="submit" disabled={pending} className={btnPrimary}>
+              {pending ? 'Saving' : 'Save changes'}
             </button>
-          )}
-          <Status>{status}</Status>
-        </div>
-      </form>
+            <button type="button" onClick={reset} className={btnQuiet}>
+              Done, back to inviting
+            </button>
+            <Status>{status}</Status>
+          </div>
+        </form>
+      )}
       <div>
         <h3 className="text-brass-ink font-sans text-[0.95rem] font-semibold">
-          All entries ({list.length})
+          Members ({list.length})
         </h3>
         {error && (
           <div className="mt-2">
@@ -417,6 +433,11 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
                     <button type="button" onClick={() => edit(m)} className={btnQuiet}>
                       Edit
                     </button>
+                    {!m.accountEmail && !m.sample && (
+                      <button type="button" onClick={() => invite(m)} className={btnQuiet}>
+                        Invite
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => setHoursOpen(hoursOpen === m.id ? null : m.id)}

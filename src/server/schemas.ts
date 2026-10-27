@@ -145,7 +145,12 @@ export const invitationSchema = z.object({
   memberId: z.string().uuid().nullable().optional(),
 });
 
-export const acceptInviteSchema = z.object({ token: z.string().min(20) });
+/** The invitee sets up his own entry: a trade (members) and an optional private phone. */
+export const acceptInviteSchema = z.object({
+  token: z.string().min(20),
+  trade: trimmed(80).default(''),
+  phone: trimmed(40).default(''),
+});
 
 /** Flatten zod issues into `{ fields, message }` for HttpError. */
 export function issuesToFields(issues: z.ZodIssue[]): {
