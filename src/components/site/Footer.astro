@@ -1,8 +1,7 @@
 ---
 import Wordmark from '@/components/brand/Wordmark.astro';
-import Tk from '@/components/ui/Tk.astro';
 import SubscribeForm from '@/components/forms/SubscribeForm';
-import { PARISH_NAME, PARISH_CITY, TK, PARISH_STREET, PARISH_ZIP } from '@/config/site';
+import { PARISH_NAME, PARISH_CITY, PARISH_STREET, PARISH_ZIP, TAX_STATUS, MAILING_ADDRESS } from '@/config/site';
 
 const year = new Date().getFullYear();
 const cols = [
@@ -81,7 +80,7 @@ const cols = [
   <div class="border-t border-stone/15">
     <div class="wrap flex flex-col gap-3 py-6 font-sans text-[0.9rem] text-stone/70 md:flex-row md:items-center md:justify-between">
       <p>
-        &copy; {year} St. Joseph the Worker Guild. <Tk {...TK.taxStatus} />
+        &copy; {year} St. Joseph the Worker Guild, {MAILING_ADDRESS}. {TAX_STATUS}
       </p>
       <p>
         <a href="/login" class="no-underline hover:underline">

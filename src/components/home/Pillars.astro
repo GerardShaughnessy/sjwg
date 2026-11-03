@@ -1,33 +1,33 @@
 ---
 /**
- * Four aspects, not a sequence: a ledger with hairline rules, no numbers, no icons.
- * Spiritual formation is first because the Guild's own material lists it first.
+ * Four programs, not a sequence: a ledger with hairline rules, no numbers, no icons.
+ * They match the charity's programs in the Articles and the Form 1023.
  */
 import Section from '@/components/ui/Section.astro';
 
 const pillars = [
   {
-    term: 'Spiritual Formation',
-    text: 'A monthly holy hour, adoration, and spiritual direction, an annual retreat, and the St. Joseph the Worker procession each May.',
+    term: 'Home Repairs',
+    text: 'Free and reduced-cost repairs for low-income, elderly, and disabled neighbors, and donated work for struggling parishes, chapels, schools, and shrines.',
   },
   {
-    term: 'Mutual Assistance',
-    text: 'When a brother or his family is in need, the Guild shoulders his burden: mentorship, career guidance, work shared among brothers, and men at the door.',
+    term: 'Hardship Help',
+    text: "Help with rent, utilities, medical bills, and funerals for tradesmen's families facing injury, illness, or loss, decided fairly by need through a committee with no ties to the family.",
   },
   {
-    term: 'Networking',
-    text: 'A member directory for referrals, a public directory of vetted Catholic tradesmen, and monthly formation meetings in Catholic business ethics and Catholic social teaching.',
+    term: 'Formation',
+    text: 'A monthly holy hour, talks on the dignity of work and Catholic social teaching, an annual retreat, and the St. Joseph the Worker procession each May. All are welcome.',
   },
   {
-    term: 'Practical Resources',
-    text: 'A shared workshop and tool library, discounted materials for work that serves disadvantaged clients, and healthcare cost advocacy for underinsured tradesmen, with the wider community rallying around those facing a hard season.',
+    term: 'Training the Next Generation',
+    text: 'Mentoring and come-and-see visits for young people discerning the trades, and a public directory of practicing Catholic tradesmen who serve the Guild’s charity work.',
   },
 ];
 ---
 
 <Section tone="stone" labelledby="pillars-title">
   <h2 id="pillars-title" class="text-h2">
-    How the Guild Carries a Man
+    What the Guild Does
   </h2>
   <dl class="mt-8 border-t border-mortar">
     {pillars.map((p) => (

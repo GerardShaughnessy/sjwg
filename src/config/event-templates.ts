@@ -39,8 +39,8 @@ export const EVENT_TEMPLATES: EventTemplate[] = [
     endTime: '20:30',
     location: GUILD_LOCATION,
     summary:
-      'The monthly Guild meeting: formation, prayer, and Guild business. Men interested in joining are welcome.',
-    body: 'The Guild meets the first Thursday of every month. Formation in the Catholic faith and the dignity of work, prayer, and Guild business. Men discerning membership are welcome to come and see.',
+      'The monthly Guild meeting: formation, prayer, and Guild business. All are welcome.',
+    body: 'The Guild meets the first Thursday of every month. Formation in the Catholic faith and the dignity of work, prayer, and Guild business. All are welcome to come and see.',
     membersOnly: false,
   },
   {
@@ -67,7 +67,7 @@ export const EVENT_TEMPLATES: EventTemplate[] = [
     endTime: '12:00',
     location: GUILD_LOCATION,
     summary: 'Sunday Mass at St. Mary of Victories, offered the third Sunday of each month.',
-    body: 'St. Mary of Victories offers Sunday Mass at 11:00 AM on the third Sunday of each month, with elements of Latin and Hungarian. Guild members and families are encouraged to attend together.',
+    body: 'St. Mary of Victories offers Sunday Mass at 11:00 AM on the third Sunday of each month, with elements of Latin and Hungarian. Guild volunteers and families are encouraged to attend together.',
     membersOnly: false,
   },
   {
@@ -80,7 +80,7 @@ export const EVENT_TEMPLATES: EventTemplate[] = [
     endTime: '14:00',
     location: GUILD_LOCATION,
     summary: 'A day of donated labor for the parish. Tradesmen and helpers welcome.',
-    body: 'Guild members and volunteers give a day of work to the parish. Bring gloves and your tools if you have a trade; there is work for helpers too. Counts toward members’ service hours.',
+    body: 'Guild volunteers give a day of work to the parish. Bring gloves and your tools if you have a trade; there is work for helpers too.',
     membersOnly: false,
   },
   {
@@ -92,7 +92,7 @@ export const EVENT_TEMPLATES: EventTemplate[] = [
     startTime: '12:15',
     endTime: '14:30',
     location: GUILD_LOCATION,
-    summary: 'After the 11:00 AM Mass at St. Mary of Victories. Guild members, families, and friends.',
+    summary: 'After the 11:00 AM Mass at St. Mary of Victories. Volunteers, families, and friends. All are welcome.',
     body: 'Join the Guild after the 11:00 AM Sunday Mass for the Christmas party. Members, families, and friends are welcome.',
     membersOnly: false,
   },
@@ -119,8 +119,8 @@ export const EVENT_TEMPLATES: EventTemplate[] = [
     endTime: '12:00',
     location: '',
     summary: 'The Guild’s annual retreat for tradesmen.',
-    body: 'A weekend of prayer, talks, and fraternity for Guild members. Details to follow.',
-    membersOnly: true,
+    body: 'A weekend of prayer and talks on the dignity of work, open to all. Details to follow.',
+    membersOnly: false,
   },
 ];
 

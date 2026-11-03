@@ -44,15 +44,20 @@ function writeUrl(f: Filters) {
 export default function DirectoryExplorer({ members, trades, areas }: Props) {
   const [f, setF] = useState<Filters>(DEFAULTS);
   const [ready, setReady] = useState(false);
+  /* Random order, shuffled on each visit after mount (Directory Policy: no ranking). */
+  const [rank, setRank] = useState<Record<string, number> | null>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
     setF(readUrl(trades, areas));
     setReady(true);
+    const r: Record<string, number> = {};
+    for (const m of members) r[m.id] = Math.random();
+    setRank(r);
     const onPop = () => setF(readUrl(trades, areas));
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
-  }, [trades, areas]);
+  }, [trades, areas, members]);
 
   useEffect(() => {
     if (ready) writeUrl(f);
@@ -62,12 +67,9 @@ export default function DirectoryExplorer({ members, trades, areas }: Props) {
     const list = members.filter(
       (m) => (!f.trade || m.trade === f.trade) && (!f.area || m.areas.includes(f.area)),
     );
-    const byName = (a: Member, b: Member) => a.name.localeCompare(b.name);
-    if (f.sort === 'name') return list.sort(byName);
-    if (f.sort === 'years')
-      return list.sort((a, b) => b.yearsInTrade - a.yearsInTrade || byName(a, b));
-    return list.sort((a, b) => a.trade.localeCompare(b.trade) || byName(a, b));
-  }, [members, f]);
+    if (rank) return list.sort((a, b) => rank[a.id] - rank[b.id]);
+    return list;
+  }, [members, f, rank]);
 
   const active = f.trade || f.area;
   const set = (patch: Partial<Filters>) => setF((prev) => ({ ...prev, ...patch }));
@@ -82,7 +84,7 @@ export default function DirectoryExplorer({ members, trades, areas }: Props) {
       <form
         role="search"
         aria-label="Filter the directory"
-        className="border-mortar grid gap-4 border-y py-6 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-end"
+        className="border-mortar grid gap-4 border-y py-6 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto] lg:items-end"
         onSubmit={(e) => e.preventDefault()}
       >
         <div>
@@ -121,21 +123,6 @@ export default function DirectoryExplorer({ members, trades, areas }: Props) {
             ))}
           </select>
         </div>
-        <div>
-          <label htmlFor="f-sort" className={labelCls}>
-            Sort by
-          </label>
-          <select
-            id="f-sort"
-            className={selectCls}
-            value={f.sort}
-            onChange={(e) => set({ sort: e.target.value as Sort })}
-          >
-            <option value="trade">Trade</option>
-            <option value="name">Name</option>
-            <option value="years">Years in the trade</option>
-          </select>
-        </div>
         <button
           type="button"
           onClick={clear}
@@ -148,8 +135,8 @@ export default function DirectoryExplorer({ members, trades, areas }: Props) {
 
       <p className="text-ash mt-5 font-sans text-[0.95rem]" aria-live="polite">
         {results.length === members.length
-          ? `${members.length} members listed.`
-          : `${results.length} of ${members.length} members match.`}
+          ? `${members.length} tradesmen listed, in random order.`
+          : `${results.length} of ${members.length} tradesmen match.`}
         {f.trade ? ` Trade: ${f.trade}.` : ''}
         {f.area ? ` Area: ${f.area}.` : ''}
       </p>
@@ -163,11 +150,11 @@ export default function DirectoryExplorer({ members, trades, areas }: Props) {
       ) : (
         <div className="border-brass bg-paper mt-6 border-t-4 p-6 md:p-8">
           <h2 ref={headingRef} tabIndex={-1} className="text-h3">
-            No {f.trade ? f.trade.toLowerCase() : 'members'} listed{f.area ? ` in ${f.area}` : ''}{' '}
+            No {f.trade ? f.trade.toLowerCase() : 'tradesmen'} listed{f.area ? ` in ${f.area}` : ''}{' '}
             yet.
           </h2>
           <p className="mt-3 max-w-[56ch] leading-relaxed">
-            The Guild still wants to hear about the job. Send a request and a member will see it,
+            The Guild still wants to hear about the job. Send a request and the Guild will see it,
             and the Guild refers work outside its own trades when it can.
           </p>
           <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">

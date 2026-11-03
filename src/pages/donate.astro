@@ -16,7 +16,10 @@ const uses = [
     amount: '$20,000',
     text: 'Materials, tools, and Guild repair days at Saint Mary of Victories.',
   },
-  { amount: '$20,000', text: 'Urgent medical care for two underinsured tradesmen.' },
+  {
+    amount: '$20,000',
+    text: "Hardship help for tradesmen's families facing injury, illness, or loss, decided by need.",
+  },
   {
     amount: '$15,000',
     text: 'Emergency home repairs for families in need.',
@@ -34,9 +37,8 @@ const tiers = [
     benefits: [
       'Named, with a special intention, at our Masses and holy hours.',
       'A copy of Fr. Calloway’s Consecration to St. Joseph.',
-      'A hand-crafted wooden crucifix and a customized rosary made by Guild members.',
-      'One small repair under $600 at your home, and up to five hours of plumbing inspection or consultation, pro bono.',
-      'A paid place at the annual retreat, and invitations to all public Guild events.',
+      'A handmade token of thanks from Guild volunteers; your receipt states its value.',
+      'Invitations to all public Guild events.',
     ],
   },
   {
@@ -45,9 +47,8 @@ const tiers = [
     benefits: [
       'Named, with a special intention, at our Masses and holy hours.',
       'A copy of Consecration to St. Joseph.',
-      'A hand-crafted wooden key holder made by a Guild member.',
-      'One small repair under $200 at your home, and up to two hours of plumbing inspection or consultation, pro bono.',
-      'An invitation to the annual retreat, and to all public Guild events.',
+      'A handmade token of thanks from Guild volunteers; your receipt states its value.',
+      'Invitations to all public Guild events.',
     ],
   },
   {
@@ -56,7 +57,6 @@ const tiers = [
     benefits: [
       'Named, with a special intention, at our Masses and holy hours.',
       'A copy of Consecration to St. Joseph.',
-      'A hand-crafted wooden key holder made by a Guild member.',
       'Invitations to all public Guild events.',
     ],
   },
@@ -83,7 +83,7 @@ const giveHref = DONATE_URL;
 >
   <PageHeader
     title="Support the Guild"
-    lede="Members carry the Guild's ordinary costs. Donors carry the work that cannot wait: parish repairs, medical costs for underinsured tradesmen, and emergency work for families with no one else to call."
+    lede="Gifts carry the work that cannot wait: repairs for neighbors with no one else to call, work for struggling parishes, and hardship help for tradesmen's families."
   >
     <div class="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
       <Button href={giveHref} variant="inverse" size="lg">
@@ -105,8 +105,8 @@ const giveHref = DONATE_URL;
           Where a Gift Goes
         </h2>
         <p class="mt-4 max-w-[44ch] leading-relaxed">
-          The Guild's <Tk {...TK.fundingGoalPeriod} /> funding goal is $60,000, allocated in full to
-          four lines. No overhead line.
+          The Guild's <Tk {...TK.fundingGoalPeriod} /> funding goal is $60,000, allocated to four
+          lines of work.
         </p>
       </div>
       <dl class="border-t border-mortar">
@@ -130,7 +130,7 @@ const giveHref = DONATE_URL;
     </h2>
     <p class="mt-3 max-w-[60ch] leading-relaxed">
       Every donor is named in the prayer intentions at our holy hours, on request. Larger gifts
-      carry the thanks of working men: things made by hand, and work done at your home.
+      carry a token of thanks made by hand.
     </p>
     <div class="mt-8 border-t border-mortar">
       {tiers.map((t) => (
@@ -149,7 +149,24 @@ const giveHref = DONATE_URL;
     </div>
   </Section>
 
-  <Section tone="stone" labelledby="how-title" id="donate-placeholder">
+  <Section tone="stone" labelledby="society-title">
+    <div class="measure flex flex-col gap-4 leading-relaxed">
+      <h2 id="society-title" class="text-h2">
+        Brothers and Auxiliary Sisters of St. Joseph
+      </h2>
+      <p>
+        Catholic tradesmen and tradeswomen who give at least $25 a month, or $250 once a year, are
+        recognized as Brothers and Auxiliary Sisters of St. Joseph. They are remembered in our
+        prayer intentions and receive the Guild's newsletter.
+      </p>
+      <p class="font-sans text-[0.95rem] text-ash">
+        These are donations, not dues. Being a Brother or Auxiliary Sister carries no vote and no
+        priority for the Guild's help, directory, or paid work.
+      </p>
+    </div>
+  </Section>
+
+  <Section tone="paper" labelledby="how-title" id="donate-placeholder">
     <div class="grid gap-10 md:grid-cols-2 lg:gap-16">
       <div>
         <h2 id="how-title" class="text-h2">
@@ -163,6 +180,7 @@ const giveHref = DONATE_URL;
           </p>
           <p class="mt-3 font-sans text-[0.95rem] text-ash">
             Note "St. Joseph the Worker Guild" with your gift so the parish directs it to the Guild.
+            Gifts can't be designated for a particular person or family.
           </p>
           <a
             href="https://www.zeffy.com/en-US/donation-form/6eafe8fc-b9f4-4014-a65c-7c529f9f994e"
@@ -202,8 +220,8 @@ const giveHref = DONATE_URL;
         <h2 class="text-h2">By the Numbers</h2>
         <dl class="mt-5 border-t border-mortar font-sans">
           <div class="flex items-baseline justify-between gap-4 border-b border-mortar py-3">
-            <dt>Members targeted by 2029</dt>
-            <dd class="font-serif text-[1.35rem]">100</dd>
+            <dt>Households we aim to help each year</dt>
+            <dd class="font-serif text-[1.35rem]">20 to 30</dd>
           </div>
           <div class="flex items-baseline justify-between gap-4 border-b border-mortar py-3">
             <dt>First funding goal</dt>

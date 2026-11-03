@@ -5,7 +5,7 @@
 export const SITE_NAME = 'St. Joseph the Worker Guild';
 export const SITE_SHORT = 'SJWG';
 export const SITE_DESCRIPTION =
-  'A Catholic fraternal organization for tradesmen, based at Saint Mary of Victories in St. Louis, Missouri.';
+  'A Catholic charity of St. Louis tradesmen: home repairs for neighbors in need, help for tradesmen\'s families, and formation in the dignity of work.';
 export const PARISH_NAME = 'Saint Mary of Victories Catholic Church';
 export const PARISH_CITY = 'St. Louis, Missouri';
 /** Confirmed 2026-09-22 against the parish listing. */
@@ -93,39 +93,44 @@ export type GivingLevelKey = (typeof GIVING_LEVELS)[number]['key'];
  * through <Tk /> with a dotted underline and data-tk so every one is auditable.
  * All samples are fictional and listed in CONTENT-TODO.md.
  */
+/** Confirmed facts (November 2026). Update TAX_STATUS at incorporation, at Form 1023 filing, and at the IRS letter. */
+export const TAX_STATUS =
+  'St. Joseph the Worker Guild is forming as a Missouri nonprofit corporation and will apply to the IRS for recognition as a 501(c)(3) public charity. Until then, gifts are received by Saint Mary of Victories for the Guild\u2019s charitable work.';
+export const MAILING_ADDRESS = '5732 Mardel Ave, St. Louis, MO 63109';
+
 export const TK = {
   mailingAddress: {
     text: 'mailing address for the Guild',
-    sample: 'P.O. Box 4200, St. Louis, MO 63102',
+    sample: '5732 Mardel Ave, St. Louis, MO 63109',
   },
   taxStatus: {
     text: 'tax status line: update when the EIN arrives and again when the 501(c)(3) determination letter arrives (expected 1 to 5 months from September 2026)',
-    sample: 'A nonprofit whose application for 501(c)(3) recognition is pending with the IRS.',
+    sample: 'St. Joseph the Worker Guild is forming as a Missouri nonprofit corporation and will apply to the IRS for recognition as a 501(c)(3) public charity. Until then, gifts are received by Saint Mary of Victories for the Guild\u2019s charitable work.',
   },
-  phone: { text: 'Guild phone number', sample: '(314) 555-0147' },
+  phone: { text: 'Guild phone number', sample: '(636) 288-7002' },
   email: { text: 'Guild email address', sample: 'hello@sjwg.org' },
   responseCommitment: {
     text: 'what actually happens after a request comes in, and how fast',
     sample:
-      'A Guild member reads new requests every day. You will get a call within two business days. If you said no heat, no water, or not safe, someone calls the same day.',
+      'A Guild volunteer reads new requests every day. You will get a call within two business days. If you said no heat, no water, no power, or not safe, someone calls the same day.',
   },
   serviceArea: {
     text: 'does the Guild have a service area boundary?',
     sample:
-      'The Guild serves the St. Louis area on both sides of the river. If you are farther out, send it anyway and we will try to refer you.',
+      'The Guild serves St. Louis City and County, St. Charles County, the nearby parts of Jefferson and Franklin counties, and the Illinois communities near the river. If you are farther out, send it anyway and we will try to refer you.',
   },
   promoVideo: { text: 'promo video file and poster still', sample: 'Promo video coming soon.' },
   partnershipContact: {
     text: 'who handles partnership inquiries',
-    sample: 'Partnership inquiries go to the Guild secretary, Daniel Kovach.',
+    sample: 'Partnership inquiries go to the Guild president, Greg Miller.',
   },
   legalName: { text: 'legal name for checks', sample: 'St. Joseph the Worker Guild' },
   leadership: {
     text: 'board and officer names, and the chaplain',
-    sample: 'Thomas Reilly, president. Daniel Kovach, secretary. Fr. Michael Novak, chaplain.',
+    sample: 'Greg Miller, president. Sam Naumann, vice president. Angela Miller, secretary. Michael Cross, treasurer.',
   },
   whoReplies: {
-    text: 'who replies to contact and membership messages, and how fast',
+    text: 'who replies to contact and volunteer messages, and how fast',
     sample: 'A Guild officer replies within two business days.',
   },
   volunteerRoles: {

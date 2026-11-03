@@ -14,20 +14,27 @@ const areas = getAreas(members);
 ---
 
 <BaseLayout
-  title="Member directory"
-  description="Catholic tradesmen of the St. Joseph the Worker Guild, by trade and area served. Every member runs his own shop."
+  title="Tradesman directory"
+  description="Practicing Catholic tradesmen in the St. Louis area who have signed the St. Joseph the Worker Guild's Ethical Standards and serve its charity work, by trade and area served."
 >
   <PageHeader
-    title="Member Directory"
-    lede="Every man listed here is a Guild member with his own shop. If one of them handed you a card, this is the rest of the crew. Hire them at their ordinary rates, or ask the Guild if you are not sure who to call."
+    title="Tradesman Directory"
+    lede="Practicing Catholic tradesmen who have signed the Guild's Ethical Standards, shown proof of insurance and any license their trade requires, and serve on the Guild's charity jobs. Listings appear in random order."
   />
   <div class="wrap py-10 md:py-14">
     {allSample && (
       <Banner class="mb-8">
-        <strong>Sample directory.</strong> These names are placeholders. Real members will be listed
-        once each has agreed to what appears publicly.
+        <strong>Sample directory.</strong> These names are placeholders. Real tradesmen will be
+        listed once each has signed the listing agreement and agreed to what appears publicly.
       </Banner>
     )}
+    <p class="mb-8 max-w-[70ch] border-l-4 border-brass bg-paper p-5 font-sans text-[0.95rem] leading-relaxed">
+      <strong>Please read:</strong> St. Joseph the Worker Guild does not employ, supervise, or
+      guarantee the tradesmen listed here, and does not receive any fee or commission from them or
+      from you. You hire a listed tradesman directly, and the price, the work, and responsibility
+      for it are between you and the tradesman. Check licenses, insurance, and references as you
+      would for anyone. Listing is free, and the order is random.
+    </p>
     <DirectoryExplorer client:load members={members} trades={trades} areas={areas} />
     <p class="mt-10 max-w-[60ch] font-sans text-[0.95rem] leading-relaxed text-ash">
       Not sure which trade you need?{' '}
@@ -37,9 +44,8 @@ const areas = getAreas(members);
       and the Guild will figure out who should call you.
     </p>
     <p class="mt-4 max-w-[60ch] font-sans text-[0.85rem] leading-relaxed text-ash">
-      The Guild does not employ tradesmen; business, liability, and responsibility are settled
-      between you and him. Many of our members belong to, or work alongside, the local unions. If
-      you already have a union contractor you trust, keep him. We are glad to work beside the
+      Many of the tradesmen listed belong to, or work alongside, the local unions. If you already
+      have a union contractor you trust, keep him. We are glad to work beside the
       locals, not against them.
     </p>
   </div>

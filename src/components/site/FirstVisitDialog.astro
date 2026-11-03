@@ -6,8 +6,7 @@
  * anyone already signed up, or for 30 days after "No thanks".
  */
 import SubscribeForm from '@/components/forms/SubscribeForm';
-import Tk from '@/components/ui/Tk.astro';
-import { TK } from '@/config/site';
+import { TAX_STATUS } from '@/config/site';
 ---
 
 <dialog
@@ -43,7 +42,7 @@ import { TK } from '@/config/site';
       <SubscribeForm client:idle source="popup" tone="dark" withName submitLabel="Count me in" />
     </div>
     <p class="mt-4 font-sans text-[0.8rem] leading-relaxed text-stone/65">
-      The Guild is a Catholic nonprofit. <Tk {...TK.taxStatus} />
+      {TAX_STATUS}
     </p>
     <button
       type="button"
