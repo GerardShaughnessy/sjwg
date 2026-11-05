@@ -1,0 +1,149 @@
+---
+/**
+ * Christmas party 2026: a temporary RSVP page, linked from Facebook and the
+ * events page. Not in the nav, not indexed. After the party, delete this file,
+ * src/components/forms/RsvpForm.tsx, src/pages/api/rsvp/, src/server/rsvp/,
+ * and the banner on the events page.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import RsvpForm from '@/components/forms/RsvpForm';
+
+const offers = [
+  ['An auction', 'of handmade woodcrafted pieces from our Guild craftsmen'],
+  ['A visit from Santa Claus', 'for the children'],
+  ['Catering and a potluck', 'bring a dish to share if you can'],
+  ['Games and music', ''],
+  ['Cocktails', 'for guests 21 and over'],
+  ['White elephant', 'optional: bring a wrapped present to play'],
+];
+---
+
+<BaseLayout
+  title="Christmas Party RSVP"
+  description="Join the St. Joseph the Worker Guild for its Christmas party after the 11:00 AM Mass on Sunday, December 20, 2026, at St. Mary of Victories. RSVP here."
+  noindex
+  suppressWelcome
+>
+  <section class="xmas-hero relative overflow-hidden text-stone" aria-labelledby="xmas-title">
+    <div class="wrap relative py-14 md:py-20">
+      <div class="xmas-frame mx-auto max-w-[44rem] px-6 py-10 text-center md:px-12 md:py-14">
+        <p class="font-sans text-[0.85rem] font-semibold uppercase tracking-[0.22em] text-brass-glow">
+          You're invited
+        </p>
+        <h1
+          id="xmas-title"
+          class="mt-4 text-[clamp(2.4rem,1.4rem+3.6vw,4rem)] leading-[1] tracking-[-0.01em]"
+        >
+          Christmas Party
+          <em class="mt-3 block font-serif text-[clamp(1.2rem,0.9rem+1.2vw,1.7rem)] font-normal italic text-brass-glow">
+            with the St. Joseph the Worker Guild
+          </em>
+        </h1>
+        <p class="mt-8 font-sans text-[1.15rem] font-semibold md:text-[1.25rem]">
+          Sunday, December 20, 2026
+        </p>
+        <p class="mt-1 font-sans text-[1rem] text-stone/85 md:text-[1.1rem]">
+          Join us after the 11:00 AM Mass, until 7:00 PM
+          <br />
+          St. Mary of Victories Catholic Church
+        </p>
+        <a
+          href="#rsvp"
+          class="mt-8 inline-flex min-h-[3.25rem] items-center bg-brass-glow px-8 font-sans text-[1.0625rem] font-semibold text-[#2F3B2A] no-underline hover:bg-stone"
+        >
+          RSVP
+        </a>
+        <blockquote class="mx-auto mt-10 max-w-[32rem] font-serif text-[1.05rem] italic leading-relaxed text-stone/80">
+          “Behold, I bring you good tidings of great joy, which shall be to all people.”
+          <footer class="mt-2 font-sans text-[0.75rem] font-medium not-italic uppercase tracking-[0.14em] text-brass-glow">
+            Luke 2:10
+          </footer>
+        </blockquote>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-stone" aria-labelledby="details-title">
+    <div class="wrap grid gap-12 py-14 md:py-20 lg:grid-cols-[1fr_1fr] lg:gap-20">
+      <div>
+        <h2 id="details-title" class="text-h2">
+          Join Us After Mass
+          <em class="mt-2 block font-serif text-[1.15rem] font-normal italic text-ash">
+            Sunday, December 20 · until 7:00 PM
+          </em>
+        </h2>
+        <ul class="mt-8 flex flex-col gap-4 border-t-2 border-brass pt-6">
+          {offers.map(([what, detail]) => (
+            <li class="flex items-baseline gap-3 leading-relaxed">
+              <span class="text-brass" aria-hidden="true">
+                ✦
+              </span>
+              <span>
+                <strong class="font-semibold">{what}</strong>
+                {detail && <> {detail}</>}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p class="mt-8 font-serif text-[1.25rem] italic leading-snug">
+          All are welcome. Bring your family and friends.
+        </p>
+        <div class="mt-8 grid gap-6 border-t border-mortar pt-6 sm:grid-cols-[auto_1fr] sm:items-start">
+          <img src="/brand/seal.svg" alt="" width="96" height="96" class="h-24 w-24" />
+          <div class="font-sans leading-relaxed">
+            <p class="font-semibold">Where</p>
+            <p>
+              St. Mary of Victories Catholic Church
+              <br />
+              744 S Third St, St. Louis, MO 63102
+            </p>
+            <p class="mt-3 text-[0.95rem] text-ash">
+              Questions? <a href="mailto:hello@sjwg.org">hello@sjwg.org</a> ·
+              <a href="tel:+16362887002">(636) 288-7002</a>
+            </p>
+          </div>
+        </div>
+        <p class="mt-6 font-sans text-[0.8rem] leading-relaxed text-ash">
+          Auction proceeds support the Guild's charitable work. A winning bid is tax-deductible only
+          by the amount it exceeds the item's fair market value.
+        </p>
+      </div>
+
+      <div id="rsvp" class="scroll-mt-24">
+        <div class="border-t-4 border-[#2F3B2A] bg-paper p-6 shadow-sm md:p-9">
+          <h2 class="text-h2">RSVP</h2>
+          <p class="mt-2 mb-6 leading-relaxed text-ash">
+            Please let us know so we can plan food for everyone. Space is limited to 100 guests.
+          </p>
+          <RsvpForm client:load />
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .xmas-hero {
+    background:
+      radial-gradient(ellipse at 50% -20%, rgba(217, 174, 82, 0.18), transparent 60%), #2f3b2a;
+  }
+  .xmas-hero::before {
+    /* A quiet scatter of gold points, like candlelight. */
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(1.5px 1.5px at 12% 22%, rgba(217, 174, 82, 0.55), transparent),
+      radial-gradient(1px 1px at 82% 16%, rgba(217, 174, 82, 0.5), transparent),
+      radial-gradient(1.5px 1.5px at 68% 78%, rgba(217, 174, 82, 0.45), transparent),
+      radial-gradient(1px 1px at 24% 84%, rgba(217, 174, 82, 0.5), transparent),
+      radial-gradient(1px 1px at 92% 58%, rgba(217, 174, 82, 0.4), transparent),
+      radial-gradient(1.5px 1.5px at 6% 60%, rgba(217, 174, 82, 0.4), transparent);
+    pointer-events: none;
+  }
+  .xmas-frame {
+    border: 1.5px solid var(--color-brass-glow);
+    outline: 0.5px solid rgba(217, 174, 82, 0.55);
+    outline-offset: -8px;
+  }
+</style>

@@ -7,6 +7,7 @@ import { env } from '@/server/env';
 import { badRequest, clientIp, json, notFound, rateLimit, readJson, route } from '@/server/http';
 import { hashIp } from '@/server/refs';
 import { formSchemas, parseOrThrow, type FormKind } from '@/server/schemas';
+import { addSubscriber } from '@/server/db/queries/subscribers';
 import { eq } from 'drizzle-orm';
 
 export const prerender = false;
@@ -14,7 +15,8 @@ export const prerender = false;
 /** Contact, partnership, and membership-interest forms. Stored, then emailed to the Guild. */
 export const POST: APIRoute = route(async (ctx) => {
   const kind = ctx.params.kind as FormKind;
-  const schema = formSchemas[kind];
+  // RSVPs have their own endpoint with the head-count cap.
+  const schema = kind === 'rsvp' ? undefined : formSchemas[kind];
   if (!schema) throw notFound();
   const raw = (await readJson<Record<string, unknown>>(ctx)) ?? {};
   // Honeypot: bots fill every field. Pretend it worked and drop it.
@@ -33,6 +35,14 @@ export const POST: APIRoute = route(async (ctx) => {
       ipHash: hashIp(ip),
     })
     .returning({ id: formSubmissions.id });
+  // The home page pop-up also puts him on the monthly email list.
+  if (kind === 'interest' && data.email)
+    await addSubscriber({
+      email: data.email.toLowerCase(),
+      name: data.name,
+      source: 'popup',
+      ipHash: hashIp(ip),
+    });
   const to = env('GUILD_NOTIFY_EMAIL');
   if (to) {
     const res = await sendEmail({

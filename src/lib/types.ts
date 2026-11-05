@@ -64,4 +64,4 @@ export interface Session {
   memberId: string | null;
 }
 
-export type FormKind = 'contact' | 'partner' | 'membership';
+export type FormKind = 'contact' | 'partner' | 'membership' | 'interest' | 'rsvp';

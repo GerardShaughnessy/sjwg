@@ -1,68 +1,97 @@
 ---
 /**
- * Email-list popup. Native <dialog> opened non-modally after the visitor has
- * had a moment with the page (8 seconds or a third of the way down, whichever
- * comes first). Not shown on the request-help, portal, or login pages, to
- * anyone already signed up, or for 30 days after "No thanks".
+ * Home page welcome pop-up. Native <dialog>, opened non-modally once the
+ * visitor has had a moment with the page (6 seconds or a third of the way
+ * down). Home page only, and only once per browser: the flag is written when
+ * it opens, so it never comes back, whatever he does with it. The form goes to
+ * /api/forms/interest, which emails the Guild and adds him to the email list.
  */
-import SubscribeForm from '@/components/forms/SubscribeForm';
+import InquiryForm from '@/components/forms/InquiryForm';
 import { TAX_STATUS } from '@/config/site';
+
+const offers = ['Networking', 'Social Events', 'Spiritual Direction', 'Volunteer Opportunities'];
 ---
 
 <dialog
   id="welcome"
-  class="welcome fixed z-50 m-0 max-h-none w-full max-w-none border-0 bg-charcoal p-0 text-stone shadow-none"
+  class="welcome fixed z-50 m-0 max-h-none w-full max-w-none border-0 bg-transparent p-0 shadow-none"
   aria-labelledby="welcome-title"
-  aria-describedby="welcome-body"
 >
-  <div class="relative border-t-4 border-brass px-5 py-5 md:px-8 md:py-7">
+  <div class="welcome-card relative overflow-y-auto border-t-4 border-brass bg-paper text-charcoal shadow-2xl">
     <button
       type="button"
-      class="absolute top-3 right-3 p-2 font-sans text-[1.4rem] leading-none text-stone/70 hover:text-stone"
+      class="absolute top-3 right-3 p-2 font-sans text-[1.5rem] leading-none text-ash hover:text-charcoal"
       aria-label="Close"
       data-close
     >
       ×
     </button>
-    <h2
-      id="welcome-title"
-      tabindex="-1"
-      class="pr-8 text-[1.4rem] leading-tight outline-none md:text-[1.8rem]"
-    >
-      Stay Close to the Guild
-    </h2>
-    <p
-      id="welcome-body"
-      class="mt-2 max-w-[44ch] font-sans text-[0.95rem] leading-relaxed text-stone/85 md:mt-3 md:text-[1rem]"
-    >
-      Holy hours, work days, and Guild news from Saint Mary of Victories, about once a month. No
-      spam, ever.
-    </p>
-    <div class="mt-4 md:mt-5">
-      <SubscribeForm client:idle source="popup" tone="dark" withName submitLabel="Count me in" />
+    <div class="bg-charcoal px-5 pt-6 pb-5 text-stone md:px-8 md:pt-8">
+      <h2
+        id="welcome-title"
+        tabindex="-1"
+        class="pr-8 text-[1.5rem] leading-tight outline-none md:text-[1.9rem]"
+      >
+        Become the Tradesman St. Joseph Calls You to Be!
+      </h2>
+      <p class="mt-4 font-sans text-[0.95rem] font-semibold text-brass-glow">Join us for</p>
+      <ul class="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5 font-sans text-[0.95rem]">
+        {offers.map((o) => (
+          <li class="flex items-baseline gap-2">
+            <span class="text-brass-glow" aria-hidden="true">
+              ✓
+            </span>
+            {o}
+          </li>
+        ))}
+      </ul>
     </div>
-    <p class="mt-4 font-sans text-[0.8rem] leading-relaxed text-stone/65">
-      {TAX_STATUS}
-    </p>
-    <button
-      type="button"
-      class="mt-3 font-sans text-[0.9rem] font-medium underline decoration-brass decoration-2 underline-offset-4"
-      data-close
-    >
-      No thanks
-    </button>
+    <div class="px-5 py-6 md:px-8">
+      <InquiryForm
+        client:idle
+        kind="interest"
+        idPrefix="welcome"
+        submitLabel="Count me in"
+        successTitle="Welcome to the Guild."
+        successBody="Thank you. One of us will be in touch soon, and you will hear about our next holy hour, work day, and get-together by email."
+        fields={[
+          { id: 'name', label: 'Name', required: true, autoComplete: 'name' },
+          { id: 'email', label: 'Email', type: 'email', required: true, autoComplete: 'email' },
+          { id: 'phone', label: 'Phone number', type: 'tel', optional: true, autoComplete: 'tel' },
+          { id: 'trade', label: 'Trade', required: true, hint: 'Or "none yet". All are welcome.' },
+          { id: 'skills', label: 'Other skills', optional: true },
+          { id: 'comments', label: 'Comments & questions', type: 'textarea', optional: true },
+        ]}
+      />
+      <p class="mt-5 font-sans text-[0.8rem] leading-relaxed text-ash">{TAX_STATUS}</p>
+      <button
+        type="button"
+        class="mt-2 font-sans text-[0.9rem] font-medium underline decoration-brass decoration-2 underline-offset-4"
+        data-close
+      >
+        No thanks
+      </button>
+    </div>
   </div>
 </dialog>
 
 <style>
   .welcome {
-    /* Bottom sheet on small screens, corner panel on larger ones. */
+    /* Bottom sheet on small screens, a centered card on larger ones. */
     inset: auto 0 0 0;
+  }
+  .welcome-card {
+    max-height: 88dvh;
   }
   @media (min-width: 48rem) {
     .welcome {
-      inset: auto 1.5rem 1.5rem auto;
-      width: min(30rem, calc(100% - 3rem));
+      inset: 0;
+      margin: auto;
+      width: min(34rem, calc(100% - 3rem));
+      height: fit-content;
+    }
+    .welcome-card {
+      max-height: calc(100dvh - 3rem);
     }
   }
   .welcome[open] {
@@ -81,89 +110,64 @@ import { TAX_STATUS } from '@/config/site';
 </style>
 
 <script>
-  const DISMISSED = 'sjwg:v2:signup-dismissed';
-  const SUBSCRIBED = 'sjwg:v1:subscribed';
-  const QUIET_DAYS = 30;
+  const SHOWN = 'sjwg:v3:welcome-shown';
   const dialog = document.getElementById('welcome') as HTMLDialogElement | null;
 
-  function read(key: string): { at?: string } | null {
+  function seen(): boolean {
     try {
-      const v = localStorage.getItem(key);
-      return v ? JSON.parse(v) : null;
+      return !!localStorage.getItem(SHOWN);
     } catch {
-      return null;
+      // No storage (private window): don't risk showing it on every visit.
+      return true;
     }
   }
-  function write(key: string) {
+  function markSeen() {
     try {
-      localStorage.setItem(key, JSON.stringify({ at: new Date().toISOString() }));
+      localStorage.setItem(SHOWN, new Date().toISOString());
     } catch {
-      /* storage unavailable: the popup may show again, which is fine */
+      /* storage unavailable */
     }
-  }
-  function shouldShow(): boolean {
-    if (read(SUBSCRIBED)) return false;
-    const d = read(DISMISSED);
-    if (!d?.at) return true;
-    return Date.now() - Date.parse(d.at) > QUIET_DAYS * 24 * 60 * 60 * 1000;
   }
 
-  const skip = ['/request', '/portal', '/login', '/invite', '/forgot-password', '/reset-password'];
-  if (dialog && !skip.some((p) => location.pathname.startsWith(p)) && shouldShow()) {
+  if (dialog && location.pathname === '/' && !seen()) {
     let timer = 0;
-    // Opens at most once per page view; after that only the footer form remains.
     let shown = false;
-    // The footer has its own sign-up; never cover it with this one.
-    const footerSignup = document.getElementById('footer-signup-title')?.closest('section');
-    const footerInView = () => {
-      if (!footerSignup) return false;
-      const r = footerSignup.getBoundingClientRect();
-      return r.top < window.innerHeight && r.bottom > 0;
-    };
     const stop = () => {
       window.clearTimeout(timer);
       window.removeEventListener('scroll', onScroll);
     };
     const open = () => {
-      if (shown || dialog.open || footerInView()) return;
+      if (shown || dialog.open) return;
       shown = true;
-      window.clearTimeout(timer);
+      stop();
+      markSeen();
       // Non-modal on purpose: the page stays usable and nothing is dimmed.
       dialog.show();
       dialog.querySelector<HTMLElement>('#welcome-title')?.focus({ preventScroll: true });
     };
     const onScroll = () => {
       const max = document.documentElement.scrollHeight - window.innerHeight;
-      // While the footer sign-up is on screen, step aside rather than cover it.
-      if (dialog.open) dialog.style.visibility = footerInView() ? 'hidden' : '';
-      else if (!shown && max > 0 && window.scrollY / max > 0.33) open();
+      if (max > 0 && window.scrollY / max > 0.33) open();
     };
-    const dismiss = () => {
-      write(DISMISSED);
+    const close = () => {
       stop();
       dialog.close();
     };
-    // Clicking anywhere outside the popup counts as "no thanks".
-    document.addEventListener('pointerdown', (e) => {
-      if (dialog.open && !dialog.contains(e.target as Node)) dismiss();
-    });
-
     const start = () => {
-      timer = window.setTimeout(open, 8000);
+      timer = window.setTimeout(open, 6000);
       window.addEventListener('scroll', onScroll, { passive: true });
     };
     if (document.readyState === 'complete') start();
     else window.addEventListener('load', start, { once: true });
 
-    dialog.querySelectorAll('[data-close]').forEach((el) => el.addEventListener('click', dismiss));
+    // Clicking anywhere outside the card closes it.
+    document.addEventListener('pointerdown', (e) => {
+      if (dialog.open && !dialog.contains(e.target as Node)) close();
+    });
+    dialog.querySelectorAll('[data-close]').forEach((el) => el.addEventListener('click', close));
     // Non-modal dialogs do not get the cancel event, so handle Escape here.
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && dialog.open) dismiss();
-    });
-    // Signed up anywhere on the page: thank him, then get out of the way.
-    window.addEventListener('sjwg:subscribed', () => {
-      stop();
-      if (dialog.open) window.setTimeout(() => dialog.close(), 2500);
+      if (e.key === 'Escape' && dialog.open) close();
     });
   }
 </script>

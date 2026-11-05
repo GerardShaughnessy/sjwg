@@ -46,7 +46,7 @@ export const postStatus = pgEnum('post_status', ['draft', 'published']);
 export const sponsorTier = pgEnum('sponsor_tier', ['partner', 'sponsor', 'supporter', 'in-kind']);
 export const giftMethod = pgEnum('gift_method', ['card', 'check', 'cash', 'ach', 'other']);
 export const ackStatus = pgEnum('ack_status', ['not_required', 'pending_review', 'sent', 'manual']);
-export const formKind = pgEnum('form_kind', ['contact', 'partner', 'membership']);
+export const formKind = pgEnum('form_kind', ['contact', 'partner', 'membership', 'interest', 'rsvp']);
 export const emailStatus = pgEnum('email_status', ['sent', 'failed', 'skipped']);
 export const taskStatus = pgEnum('task_status', ['todo', 'doing', 'waiting', 'done']);
 

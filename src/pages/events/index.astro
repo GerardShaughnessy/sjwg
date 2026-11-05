@@ -17,6 +17,23 @@ const { upcoming, past } = splitEvents(all);
     title="Events"
     lede="A Guild meeting the first Thursday, a holy hour the third Thursday, parish work days, a retreat each winter, and a procession every May. Most are open to anyone."
   />
+  {/* Temporary: remove after the Christmas party. */}
+  {new Date() < new Date('2026-12-21T06:00:00Z') && (
+    <div class="wrap pt-8">
+      <a
+        href="/christmas"
+        class="flex flex-col gap-1 border-l-4 border-brass-glow bg-[#2F3B2A] px-6 py-5 text-stone no-underline hover:bg-charcoal sm:flex-row sm:items-center sm:justify-between sm:gap-6"
+      >
+        <span>
+          <span class="block font-serif text-[1.35rem]">Christmas Party · Sunday, December 20</span>
+          <span class="font-sans text-[0.95rem] text-stone/85">
+            After the 11:00 AM Mass at St. Mary of Victories, until 7:00 PM
+          </span>
+        </span>
+        <span class="font-sans font-semibold text-brass-glow">RSVP →</span>
+      </a>
+    </div>
+  )}
   <div class="wrap grid gap-14 py-10 md:py-14 lg:grid-cols-[2fr_1fr] lg:gap-20">
     <section aria-labelledby="upcoming-title">
       <h2 id="upcoming-title" class="text-h2">

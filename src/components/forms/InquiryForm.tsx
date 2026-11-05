@@ -17,7 +17,7 @@ export type FieldSpec = {
 };
 
 interface Props {
-  kind: FormKind;
+  kind: Exclude<FormKind, 'rsvp'>;
   fields: FieldSpec[];
   submitLabel: string;
   /** Require at least one of phone and email instead of requiring email. */

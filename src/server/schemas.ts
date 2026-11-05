@@ -136,6 +136,29 @@ export const formSchemas = {
           message: 'A phone number or an email, whichever you check.',
         });
     }),
+  interest: z.object({
+    name: trimmed(120).min(1, 'Tell us your name.'),
+    email: emailField,
+    phone: phoneField,
+    trade: trimmed(120).min(1, 'What trade are you in? "None yet" is fine.'),
+    skills: optionalText,
+    comments: optionalText,
+    website: honeypot,
+  }),
+  rsvp: z
+    .object({
+      name: trimmed(120).min(1, 'Tell us your name.'),
+      email: emailField,
+      phone: phoneField,
+      attending: z.enum(['yes', 'no'], { message: 'Yes or no?' }),
+      adults: z.coerce.number().int().min(0).max(20).default(0),
+      children: z.coerce.number().int().min(0).max(20).default(0),
+      website: honeypot,
+    })
+    .superRefine((v, ctx) => {
+      if (v.attending === 'yes' && v.adults + v.children < 1)
+        ctx.addIssue({ code: 'custom', path: ['adults'], message: 'How many are coming?' });
+    }),
 } as const;
 export type FormKind = keyof typeof formSchemas;
 

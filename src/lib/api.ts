@@ -3,7 +3,7 @@
  * mockup's store had, so portal components change as little as possible.
  * Every function throws an ApiError whose message says what to fix.
  */
-import type { GuildEvent, Member, RequestAnswers, RequestStatus, Urgency } from './types';
+import type { FormKind, GuildEvent, Member, RequestAnswers, RequestStatus, Urgency } from './types';
 import { emit } from './storage';
 export { subscribe, getVersion } from './storage';
 
@@ -212,8 +212,21 @@ export const track = {
 
 /* ------------------------------------------------------------------ forms */
 export const forms = {
-  submit: (kind: 'contact' | 'partner' | 'membership', payload: Record<string, string>) =>
+  submit: (kind: Exclude<FormKind, 'rsvp'>, payload: Record<string, string>) =>
     call<{ id: string }>(`/api/forms/${kind}`, json('POST', payload)),
+};
+
+/* ------------------------------------------------------------------- rsvp */
+export interface RsvpStatus {
+  yes: number;
+  capacity: number;
+  left: number;
+  closed: boolean;
+}
+export const rsvp = {
+  status: () => call<RsvpStatus>('/api/rsvp/christmas'),
+  submit: (payload: Record<string, string | number>) =>
+    call<RsvpStatus>('/api/rsvp/christmas', json('POST', payload)),
 };
 
 /* --------------------------------------------------------------------- me */
