@@ -2,9 +2,9 @@
 import SubscribeForm from '@/components/forms/SubscribeForm';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import PageHeader from '@/components/ui/PageHeader.astro';
-import Tk from '@/components/ui/Tk.astro';
 import InquiryForm from '@/components/forms/InquiryForm';
-import { PARISH_NAME, PARISH_CITY, TK, PARISH_STREET, PARISH_ZIP } from '@/config/site';
+import { CONTACT_TOPIC_LABELS } from '@/config/contact-routing';
+import { PARISH_NAME, PARISH_CITY, PARISH_STREET, PARISH_ZIP } from '@/config/site';
 ---
 
 <BaseLayout
@@ -37,11 +37,19 @@ import { PARISH_NAME, PARISH_CITY, TK, PARISH_STREET, PARISH_ZIP } from '@/confi
             { id: 'name', label: 'Your name', required: true, autoComplete: 'name' },
             { id: 'email', label: 'Email', type: 'email', required: true, autoComplete: 'email' },
             { id: 'phone', label: 'Phone', type: 'tel', optional: true, autoComplete: 'tel' },
+            {
+              id: 'topic',
+              label: 'What is this about?',
+              type: 'select',
+              required: true,
+              hint: 'So it reaches the right Guild officer.',
+              options: [...CONTACT_TOPIC_LABELS],
+            },
             { id: 'message', label: 'What can we help with?', type: 'textarea', required: true },
           ]}
         >
           <p slot="successBody">
-            <Tk {...TK.whoReplies} />
+            It went to the Guild officer who handles that. They will reply by email.
           </p>
         </InquiryForm>
       </div>

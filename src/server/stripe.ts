@@ -14,6 +14,7 @@ import {
 } from './email/templates/donation';
 import { GIVING_LEVELS, SITE_NAME } from '@/config/site';
 import { isUniqueViolation } from './refs';
+import { recipientsFor } from '@/config/contact-routing';
 
 let client: Stripe | null = null;
 export function stripe(): Stripe {
@@ -232,8 +233,7 @@ async function onInvoicePaid(invoice: Stripe.Invoice): Promise<boolean> {
 }
 
 async function onPaymentFailed(event: Stripe.Event) {
-  const to = env('GUILD_NOTIFY_EMAIL');
-  if (!to) return;
+  const to = recipientsFor('donation');
   const obj = event.data.object as {
     customer_email?: string | null;
     amount_due?: number;

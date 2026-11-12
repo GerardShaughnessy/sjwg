@@ -64,5 +64,6 @@ export function formNotification(kind: string, fields: Record<string, string>): 
       )
       .join('')}</table>`,
   });
-  return { subject: `${label}: ${fields.name ?? ''}`.trim(), text, html };
+  const topic = fields.topic ? ` (${fields.topic})` : '';
+  return { subject: `${label}${topic}: ${fields.name ?? ''}`.trim(), text, html };
 }

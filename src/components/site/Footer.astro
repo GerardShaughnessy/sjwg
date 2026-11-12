@@ -1,7 +1,14 @@
 ---
 import Wordmark from '@/components/brand/Wordmark.astro';
 import SubscribeForm from '@/components/forms/SubscribeForm';
-import { PARISH_NAME, PARISH_CITY, PARISH_STREET, PARISH_ZIP, TAX_STATUS, MAILING_ADDRESS } from '@/config/site';
+import {
+  PARISH_NAME,
+  PARISH_CITY,
+  PARISH_STREET,
+  PARISH_ZIP,
+  TAX_STATUS,
+  MAILING_ADDRESS,
+} from '@/config/site';
 
 const year = new Date().getFullYear();
 const cols = [
@@ -58,6 +65,14 @@ const cols = [
         {PARISH_STREET}
         <br />
         {PARISH_CITY} {PARISH_ZIP}
+        <br />
+        <a href="mailto:hello@sjwg.org" class="text-stone no-underline hover:underline">
+          hello@sjwg.org
+        </a>
+        <br />
+        <a href="tel:+16362887002" class="text-stone no-underline hover:underline">
+          (636) 288-7002
+        </a>
       </address>
     </div>
 

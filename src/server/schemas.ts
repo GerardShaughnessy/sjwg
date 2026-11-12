@@ -2,6 +2,7 @@ import { z } from 'astro/zod';
 import { hasPhoneOrEmail, isEmail, isPhone, isZip } from '@/lib/validate';
 import { titleCase } from '@/lib/text';
 import { HttpError } from './http';
+import { CONTACT_TOPIC_LABELS } from '@/config/contact-routing';
 
 /**
  * Request bodies, validated the same way the browser validates them so the two
@@ -101,6 +102,7 @@ export const formSchemas = {
     name: trimmed(120).min(1, 'Tell us your name.'),
     email: emailField,
     phone: phoneField,
+    topic: z.enum(CONTACT_TOPIC_LABELS, { message: 'Pick what your message is about.' }),
     message: trimmed(4000).min(1, 'A sentence or two is enough.'),
     website: honeypot,
   }),

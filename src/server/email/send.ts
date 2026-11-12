@@ -5,7 +5,7 @@ import { env } from '../env';
 import type { Email } from './layout';
 
 export interface SendOptions {
-  to: string;
+  to: string | string[];
   email: Email;
   template: string;
   replyTo?: string;
@@ -26,7 +26,7 @@ export async function sendEmail(opts: SendOptions): Promise<SendResult> {
   let result: SendResult;
   if (!key) {
     result = { status: 'skipped', error: 'RESEND_API_KEY is not set' };
-    console.warn(`[email] skipped ${opts.template} to ${opts.to}: no RESEND_API_KEY`);
+    console.warn(`[email] skipped ${opts.template} to ${[opts.to].flat().join(', ')}: no RESEND_API_KEY`);
   } else {
     try {
       const resend = new Resend(key);
@@ -49,7 +49,7 @@ export async function sendEmail(opts: SendOptions): Promise<SendResult> {
     await db()
       .insert(emailLog)
       .values({
-        toEmail: opts.to,
+        toEmail: [opts.to].flat().join(', '),
         template: opts.template,
         subject: opts.email.subject,
         providerId: result.status === 'sent' ? result.id : null,

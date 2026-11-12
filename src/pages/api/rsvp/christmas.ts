@@ -3,7 +3,7 @@ import { db } from '@/server/db/client';
 import { formSubmissions } from '@/server/db/schema';
 import { sendEmail } from '@/server/email/send';
 import { formNotification } from '@/server/email/templates/account';
-import { env } from '@/server/env';
+import { recipientsFor } from '@/config/contact-routing';
 import { badRequest, clientIp, json, rateLimit, readJson, route } from '@/server/http';
 import { hashIp } from '@/server/refs';
 import { formSchemas, parseOrThrow } from '@/server/schemas';
@@ -53,8 +53,8 @@ export const POST: APIRoute = route(async (ctx) => {
     .values({ kind: 'rsvp', payload, email, name: data.name, ipHash: hashIp(ip) })
     .returning({ id: formSubmissions.id });
   const yes = others + party;
-  const to = env('GUILD_NOTIFY_EMAIL');
-  if (to) {
+  {
+    const to = recipientsFor('rsvp');
     const res = await sendEmail({
       to,
       email: formNotification('rsvp', {

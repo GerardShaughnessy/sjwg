@@ -49,13 +49,32 @@ describe('requestAnswersSchema', () => {
 describe('formSchemas', () => {
   it('drops the honeypot when filled', () => {
     expect(
-      formSchemas.contact.safeParse({ name: 'A', email: 'a@b.co', message: 'hi', website: 'spam' })
-        .success,
+      formSchemas.contact.safeParse({
+        name: 'A',
+        email: 'a@b.co',
+        topic: 'Something else',
+        message: 'hi',
+        website: 'spam',
+      }).success,
     ).toBe(false);
     expect(
-      formSchemas.contact.safeParse({ name: 'A', email: 'a@b.co', message: 'hi', website: '' })
-        .success,
+      formSchemas.contact.safeParse({
+        name: 'A',
+        email: 'a@b.co',
+        topic: 'Something else',
+        message: 'hi',
+        website: '',
+      }).success,
     ).toBe(true);
+  });
+  it('contact needs a known topic', () => {
+    expect(
+      formSchemas.contact.safeParse({ name: 'A', email: 'a@b.co', message: 'hi' }).success,
+    ).toBe(false);
+    expect(
+      formSchemas.contact.safeParse({ name: 'A', email: 'a@b.co', topic: 'Bogus', message: 'hi' })
+        .success,
+    ).toBe(false);
   });
   it('membership needs a phone or an email', () => {
     expect(formSchemas.membership.safeParse({ name: 'A', trade: 'Plumbing' }).success).toBe(false);
