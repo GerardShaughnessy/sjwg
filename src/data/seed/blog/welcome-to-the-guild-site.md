@@ -2,7 +2,7 @@
 title: 'A website for the Guild'
 description: 'Why the Guild now has a public directory, a way to ask for help, and a place to keep members informed.'
 pubDate: 2026-09-13
-author: 'Thomas Reilly, president'
+author: 'St. Joseph the Worker Guild'
 ---
 
 The Guild has been working quietly for the better part of a year. Members have traded labor, prayed together, and given days of work to Saint Mary of Victories. Most of that happened by phone and word of mouth.

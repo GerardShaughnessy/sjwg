@@ -2,7 +2,7 @@
 title: 'Why a guild, and not just a business network'
 description: 'The Church asked for worker guilds to be restored. Here is what that means for a plumber in St. Louis.'
 pubDate: 2026-07-30
-author: 'Thomas Reilly, president'
+author: 'St. Joseph the Worker Guild'
 ---
 
 A Catholic tradesmen's guild is an association of men in the skilled trades who, under the social teaching of the Church, unite their professional, fraternal, and spiritual lives. They seek holiness through their work, mutual assistance through brotherhood, and the flourishing of their families, trades, parishes, and communities.
