@@ -1,10 +1,13 @@
 import { and, desc, eq, or } from 'drizzle-orm';
 import { db } from '../client';
-import { posts } from '../schema';
+import { appUsers, posts } from '../schema';
 import type { AppSession } from '../../auth/server';
 import { HttpError } from '../../http';
 import { isUniqueViolation } from '../../refs';
 import { slugify } from '@/lib/trades';
+import { GUILD_BYLINE, type Byline } from '@/lib/byline';
+
+type PostInput = { title: string; description: string; bodyMd: string; byline?: Byline };
 
 export function postView(p: typeof posts.$inferSelect) {
   return {
@@ -63,15 +66,27 @@ async function uniqueSlug(
   throw new HttpError(409, 'A post with that title already exists. Change the title a little.');
 }
 
-export async function createPost(
-  input: { title: string; description: string; bodyMd: string },
-  session: AppSession,
-) {
+/** The writer's own name: the stored one, else their account name, else whoever is editing. */
+async function writerName(p: typeof posts.$inferSelect, session: AppSession) {
+  if (p.authorName && p.authorName !== GUILD_BYLINE) return p.authorName;
+  if (p.authorUserId) {
+    const [u] = await db()
+      .select({ name: appUsers.name })
+      .from(appUsers)
+      .where(eq(appUsers.id, p.authorUserId))
+      .limit(1);
+    if (u?.name) return u.name;
+  }
+  return session.name;
+}
+
+export async function createPost({ byline, ...input }: PostInput, session: AppSession) {
   const d = db();
+  const authorName = byline === 'guild' ? GUILD_BYLINE : session.name;
   return uniqueSlug(input.title, async (slug) => {
     const [row] = await d
       .insert(posts)
-      .values({ ...input, slug, authorName: session.name, authorUserId: session.userId })
+      .values({ ...input, slug, authorName, authorUserId: session.userId })
       .returning();
     return row;
   });
@@ -79,7 +94,7 @@ export async function createPost(
 
 export async function updatePost(
   id: string,
-  input: { title: string; description: string; bodyMd: string },
+  { byline, ...input }: PostInput,
   session: AppSession,
 ) {
   const p = await getPost(id);
@@ -92,6 +107,7 @@ export async function updatePost(
     .update(posts)
     .set({
       ...input,
+      authorName: byline === 'guild' ? GUILD_BYLINE : await writerName(p, session),
       updatedAt: new Date(),
       updatedDate: p.status === 'published' ? new Date() : null,
     })

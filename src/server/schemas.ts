@@ -229,6 +229,8 @@ export const postSchema = z.object({
   title: trimmed(200).min(1, 'Give the post a title first.'),
   description: trimmed(300).default(''),
   bodyMd: trimmed(50_000).default(''),
+  /** Sign the post with the writer's name or as the Guild. */
+  byline: z.enum(['author', 'guild']).default('author'),
 });
 
 const isoDate = z

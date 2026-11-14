@@ -265,13 +265,20 @@ export interface PostView {
 
 export const posts = {
   list: () => call<{ posts: PostView[] }>('/api/posts').then((r) => r.posts),
-  save: (draft: { id?: string; title: string; description?: string; body: string }) =>
+  save: (draft: {
+    id?: string;
+    title: string;
+    description?: string;
+    body: string;
+    byline?: 'author' | 'guild';
+  }) =>
     mutate<{ post: PostView; rebuild?: Rebuild }>(
       draft.id ? `/api/posts/${draft.id}` : '/api/posts',
       json(draft.id ? 'PUT' : 'POST', {
         title: draft.title,
         description: draft.description ?? '',
         bodyMd: draft.body,
+        byline: draft.byline,
       }),
     ).then((r) => r.post),
   remove: (id: string) => mutate<{ ok: true }>(`/api/posts/${id}`, { method: 'DELETE' }),

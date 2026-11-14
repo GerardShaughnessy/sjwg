@@ -3,6 +3,7 @@ import type { Session } from '@/lib/types';
 import { posts, type PostView } from '@/lib/api';
 import { useResource } from '@/lib/hooks';
 import { formatShortDate } from '@/lib/events';
+import { GUILD_BYLINE, bylineOf, type Byline } from '@/lib/byline';
 import {
   btnMuted,
   btnPrimary,
@@ -22,6 +23,9 @@ export default function PostEditor({ session }: { session: Session }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [body, setBody] = useState('');
+  const [byline, setByline] = useState<Byline>('author');
+  /** The writer's name for the byline choice; blank when the post is signed as the Guild. */
+  const [writer, setWriter] = useState(session.name);
   const [status, setStatus] = useState('');
   const [formError, setFormError] = useState('');
   const [pending, setPending] = useState(false);
@@ -32,6 +36,14 @@ export default function PostEditor({ session }: { session: Session }) {
     setTitle(p.title);
     setDescription(p.description);
     setBody(p.body);
+    setByline(bylineOf(p.authorName));
+    setWriter(
+      bylineOf(p.authorName) === 'author'
+        ? p.authorName
+        : p.authorUserId === session.userId
+          ? session.name
+          : '',
+    );
     setStatus(`Editing "${p.title}".`);
     setFormError('');
   }
@@ -40,6 +52,8 @@ export default function PostEditor({ session }: { session: Session }) {
     setTitle('');
     setDescription('');
     setBody('');
+    setByline('author');
+    setWriter(session.name);
     setStatus('');
   }
   async function save(e: React.FormEvent) {
@@ -53,8 +67,10 @@ export default function PostEditor({ session }: { session: Session }) {
         title: title.trim(),
         description: description.trim(),
         body,
+        byline,
       });
       setId(saved.id);
+      if (byline === 'author') setWriter(saved.authorName);
       setStatus(
         saved.status === 'published'
           ? 'Saved. The public site will update shortly.'
@@ -124,6 +140,32 @@ export default function PostEditor({ session }: { session: Session }) {
             className={`${inputCls} font-serif text-[1.05rem] leading-relaxed`}
           />
         </label>
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-1 font-semibold">Sign it as</legend>
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="byline"
+              value="author"
+              checked={byline === 'author'}
+              onChange={() => setByline('author')}
+            />
+            <span>
+              {id ? "The writer's name" : 'Your name'}
+              {writer ? ` (${writer})` : ''}
+            </span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="byline"
+              value="guild"
+              checked={byline === 'guild'}
+              onChange={() => setByline('guild')}
+            />
+            <span>The Guild ({GUILD_BYLINE})</span>
+          </label>
+        </fieldset>
         {formError && <ErrorStrip>{formError}</ErrorStrip>}
         <div className="flex flex-wrap items-center gap-4">
           <button type="submit" disabled={pending} className={btnPrimary}>
