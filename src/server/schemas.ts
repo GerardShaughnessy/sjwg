@@ -151,7 +151,17 @@ export const formSchemas = {
     .object({
       name: trimmed(120).min(1, 'Tell us your name.'),
       email: emailField,
-      phone: phoneField,
+      phone: trimmed(40)
+        .default('')
+        .superRefine((v, ctx) => {
+          if (!isPhone(v))
+            ctx.addIssue({
+              code: 'custom',
+              message: v
+                ? 'Ten digits with area code.'
+                : 'Give a phone number in case plans change.',
+            });
+        }),
       attending: z.enum(['yes', 'no'], { message: 'Yes or no?' }),
       adults: z.coerce.number().int().min(0).max(20).default(0),
       children: z.coerce.number().int().min(0).max(20).default(0),

@@ -34,7 +34,8 @@ export default function RsvpForm() {
     const e: Record<string, string> = {};
     if (!required(v.name)) e.name = 'Tell us your name.';
     if (!isEmail(v.email)) e.email = 'That email does not look right, like name@example.com.';
-    if (v.phone.trim() && !isPhone(v.phone)) e.phone = 'Ten digits with area code.';
+    if (!required(v.phone)) e.phone = 'Give a phone number in case plans change.';
+    else if (!isPhone(v.phone)) e.phone = 'Ten digits with area code.';
     if (!attending) e.attending = 'Yes or no?';
     if (attending === 'yes' && total < 1) e.adults = 'How many are coming?';
     return e;
@@ -170,7 +171,6 @@ export default function RsvpForm() {
         type="tel"
         inputMode="tel"
         autoComplete="tel"
-        optional
         value={v.phone}
         error={errors.phone}
         onChange={(e) => set('phone', e.target.value)}
@@ -223,6 +223,10 @@ export default function RsvpForm() {
           {submitError}
         </p>
       )}
+      <p className="text-ash font-sans text-[0.95rem]">
+        We&rsquo;ll also add you to the Guild&rsquo;s email list for news and invitations, a few
+        emails a year. No spam, and you can reply to any of them to be taken off.
+      </p>
       <div className="flex items-center gap-4">
         <PrimaryButton pending={pending}>Send RSVP</PrimaryButton>
         {pending && <FormStatus>Sending.</FormStatus>}

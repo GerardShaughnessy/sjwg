@@ -7,6 +7,7 @@ import { recipientsFor } from '@/config/contact-routing';
 import { badRequest, clientIp, json, rateLimit, readJson, route } from '@/server/http';
 import { hashIp } from '@/server/refs';
 import { formSchemas, parseOrThrow } from '@/server/schemas';
+import { addSubscriber } from '@/server/db/queries/subscribers';
 import { CHRISTMAS, christmasRsvps, headCount } from '@/server/rsvp/christmas';
 import { eq } from 'drizzle-orm';
 
@@ -52,6 +53,8 @@ export const POST: APIRoute = route(async (ctx) => {
     .insert(formSubmissions)
     .values({ kind: 'rsvp', payload, email, name: data.name, ipHash: hashIp(ip) })
     .returning({ id: formSubmissions.id });
+  // Every RSVP, Yes or No, joins the Guild email list; the form says so.
+  await addSubscriber({ email, name: data.name, source: 'christmas-rsvp', ipHash: hashIp(ip) });
   const yes = others + party;
   {
     const to = recipientsFor('rsvp');

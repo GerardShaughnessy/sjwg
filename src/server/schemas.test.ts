@@ -96,3 +96,12 @@ describe('membership form', () => {
     expect(v.status).toBe('Retired from the trades');
   });
 });
+
+describe('christmas rsvp', () => {
+  const base = { name: 'Ann', email: 'ann@example.com', attending: 'yes', adults: 2, children: 1 };
+  it('needs a phone number', () => {
+    expect(formSchemas.rsvp.safeParse(base).success).toBe(false);
+    expect(formSchemas.rsvp.safeParse({ ...base, phone: '12' }).success).toBe(false);
+    expect(formSchemas.rsvp.safeParse({ ...base, phone: '(314) 555-0147' }).success).toBe(true);
+  });
+});
