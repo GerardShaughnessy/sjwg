@@ -7,7 +7,6 @@ export interface Member {
   areas: string[];
   yearsInTrade: number;
   bio: string;
-  availability: Availability;
   featured: boolean;
   photo: string | null;
 }

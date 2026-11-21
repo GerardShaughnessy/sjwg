@@ -6,7 +6,8 @@ import {
   listMembersBrief,
   memberView,
 } from '@/server/db/queries/members';
-import { memberAdminSchema, parseOrThrow } from '@/server/schemas';
+import { parseOrThrow } from '@/server/schemas';
+import { memberUpdateSchema } from '@/server/directory';
 import { requestRebuild } from '@/server/build-hook';
 
 export const prerender = false;
@@ -20,7 +21,7 @@ export const GET: APIRoute = route(async (ctx) => {
 
 export const POST: APIRoute = route(async (ctx) => {
   requireRole(ctx, 'admin');
-  const input = parseOrThrow(memberAdminSchema, await readJson(ctx));
+  const input = parseOrThrow(memberUpdateSchema, await readJson(ctx));
   const row = await createMember(input);
   const rebuild = row.public ? await requestRebuild(`member added: ${row.name}`) : null;
   return json({ member: memberView(row), rebuild }, 201);

@@ -4,10 +4,10 @@ import { appUsers, members } from '../schema';
 import { HttpError } from '../../http';
 import { isUniqueViolation } from '../../refs';
 import { slugify } from '@/lib/trades';
-import type { z } from 'astro/zod';
-import type { memberAdminSchema } from '../../schemas';
+import type { MemberUpdate } from '../../directory';
 
-type MemberInput = z.output<typeof memberAdminSchema>;
+/** `availability` is no longer used; older callers may still pass it and it is ignored. */
+type MemberInput = MemberUpdate & { availability?: string };
 
 export function photoUrl(key: string | null) {
   return key ? `/api/files/members/${key.replace(/^members\//, '')}` : null;
@@ -21,13 +21,13 @@ export function memberView(m: typeof members.$inferSelect, accountEmail: string 
     areas: m.areas,
     yearsInTrade: m.yearsInTrade,
     bio: m.bio,
-    availability: m.availability,
     featured: m.featured,
     photo: photoUrl(m.photoKey),
     public: m.public,
     sortOrder: m.sortOrder,
     privatePhone: m.privatePhone ?? '',
     privateEmail: m.privateEmail ?? '',
+    showContact: m.showContact,
     sample: Boolean(m.legacyId),
     accountEmail,
   };
@@ -65,12 +65,12 @@ function toRow(input: MemberInput) {
     areas: input.areas,
     yearsInTrade: input.yearsInTrade,
     bio: input.bio,
-    availability: input.availability,
     public: input.public,
     featured: input.featured,
     sortOrder: input.sortOrder,
     privatePhone: input.privatePhone || null,
     privateEmail: input.privateEmail || null,
+    ...(input.showContact === undefined ? {} : { showContact: input.showContact }),
   };
 }
 

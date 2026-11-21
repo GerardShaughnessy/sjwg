@@ -5,13 +5,18 @@ import MemberCard from '@/components/members/MemberCard';
 import ServiceHours from './ServiceHours';
 import { btnPrimary, ErrorStrip, inputCls, Loading, msg, rebuildNote, Status } from '../ui';
 
-type Draft = Omit<Member, 'id' | 'photo' | 'featured'> & { public: boolean };
+type Draft = Omit<Member, 'id' | 'photo' | 'featured'> & { public: boolean; showContact: boolean };
+/** /api/me returns the whole row; these are the private fields the editor reads. */
+type MeMember = Member & {
+  public?: boolean;
+  showContact?: boolean;
+  privatePhone?: string | null;
+  privateEmail?: string | null;
+};
 
 /** A member edits his own directory row. Nothing is public until he says so. */
 export default function ProfileEditor({ areas }: { areas: string[] }) {
-  const [member, setMember] = useState<(Member & { public?: boolean }) | null | undefined>(
-    undefined,
-  );
+  const [member, setMember] = useState<MeMember | null | undefined>(undefined);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
@@ -20,7 +25,8 @@ export default function ProfileEditor({ areas }: { areas: string[] }) {
 
   useEffect(() => {
     me.get()
-      .then(({ member: m }) => {
+      .then(({ member }) => {
+        const m = member as MeMember | null;
         setMember(m);
         if (m)
           setDraft({
@@ -29,8 +35,8 @@ export default function ProfileEditor({ areas }: { areas: string[] }) {
             areas: m.areas,
             yearsInTrade: m.yearsInTrade,
             bio: m.bio,
-            availability: m.availability,
-            public: Boolean((m as { public?: boolean }).public),
+            public: Boolean(m.public),
+            showContact: Boolean(m.showContact),
           });
       })
       .catch((err) => {
@@ -70,7 +76,7 @@ export default function ProfileEditor({ areas }: { areas: string[] }) {
     setStatus('Saving.');
     try {
       const { member: saved, rebuild } = await me.updateProfile(draft);
-      setMember(saved);
+      setMember(saved as MeMember);
       setStatus(
         `Saved. ${draft.public ? rebuildNote(rebuild) || 'Your entry is public.' : 'Your entry stays private until you tick the box.'}`,
       );
@@ -86,8 +92,24 @@ export default function ProfileEditor({ areas }: { areas: string[] }) {
     id: member.id,
     photo: member.photo,
     featured: member.featured,
-    ...draft,
+    name: draft.name,
+    trade: draft.trade,
+    areas: draft.areas,
+    yearsInTrade: draft.yearsInTrade,
+    bio: draft.bio,
   };
+  const myPhone = (member.privatePhone ?? '').trim();
+  const myEmail = (member.privateEmail ?? '').trim();
+  const shown = [myPhone, myEmail].filter(Boolean).join(' and ');
+  const missing =
+    !myPhone && !myEmail ? 'phone or email' : !myPhone ? 'phone' : !myEmail ? 'email' : '';
+  const contactHint = [
+    shown && `Visitors would see ${shown}.`,
+    missing && `No ${missing} is on file.`,
+    'To change them, ask an officer.',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   async function changePhoto(file: File | null) {
     if (!file || !member) return;
@@ -172,20 +194,6 @@ export default function ProfileEditor({ areas }: { areas: string[] }) {
             <AddArea onAdd={(a) => setDraft({ ...draft, areas: [...draft.areas, a] })} />
           </fieldset>
           <label className="flex flex-col gap-1">
-            <span className="font-semibold">Availability</span>
-            <select
-              value={draft.availability}
-              onChange={(e) =>
-                setDraft({ ...draft, availability: e.target.value as Member['availability'] })
-              }
-              className={inputCls}
-            >
-              <option value="available">Taking work</option>
-              <option value="limited">Limited availability</option>
-              <option value="unavailable">Not taking work right now</option>
-            </select>
-          </label>
-          <label className="flex flex-col gap-1">
             <span className="font-semibold">One line in your own words</span>
             <textarea
               value={draft.bio}
@@ -205,8 +213,24 @@ export default function ProfileEditor({ areas }: { areas: string[] }) {
             <span>
               <span className="font-semibold">List me in the public directory.</span>
               <span className="text-ash block text-[0.9rem]">
-                Your name, trade, areas, years, availability, and the line above. Nothing else.
-                Untick to come off the public list.
+                Your name, trade, areas, years, and the line above. Untick to come off the public
+                list.
+              </span>
+            </span>
+          </label>
+          <label className="border-mortar flex items-start gap-3 border-l-4 px-4 py-3">
+            <input
+              type="checkbox"
+              className="accent-brick mt-1 h-5 w-5"
+              checked={draft.showContact}
+              onChange={(e) => setDraft({ ...draft, showContact: e.target.checked })}
+            />
+            <span>
+              <span className="font-semibold">
+                Show my phone and email in the directory to visitors who affirm the directory terms
+              </span>
+              <span className="text-ash block text-[0.9rem]">
+                {contactHint} Only shown while your entry is public.
               </span>
             </span>
           </label>
@@ -221,7 +245,10 @@ export default function ProfileEditor({ areas }: { areas: string[] }) {
         <div>
           <h3 className="text-brass-ink font-sans text-[0.95rem] font-semibold">Preview</h3>
           <div className="border-mortar mt-2 border-b">
-            <MemberCard member={preview} />
+            <MemberCard
+              member={preview}
+              contact={draft.showContact ? { phone: myPhone, email: myEmail } : null}
+            />
           </div>
           <div className="mt-4 flex flex-wrap items-center gap-4 font-sans">
             <label className="border-charcoal hover:bg-charcoal hover:text-stone cursor-pointer border-2 px-4 py-2 font-semibold">

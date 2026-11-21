@@ -1,6 +1,10 @@
 import { useState } from 'react';
-import type { Member } from '@/lib/types';
-import { members as api, hours as hoursApi, type MemberAdmin, type MemberInput } from '@/lib/api';
+import {
+  members as api,
+  hours as hoursApi,
+  type MemberAdmin as MemberAdminBase,
+  type MemberInput as MemberInputBase,
+} from '@/lib/api';
 import ServiceHours from '../member/ServiceHours';
 import InvitationsPanel, { type InvitePrefill } from './InvitationsPanel';
 import { useResource } from '@/lib/hooks';
@@ -19,18 +23,22 @@ import {
   Status,
 } from '../ui';
 
+/** The API also returns and accepts the contact opt-in. */
+type MemberAdmin = MemberAdminBase & { showContact?: boolean };
+type MemberInput = MemberInputBase & { showContact: boolean };
+
 const EMPTY: MemberInput = {
   name: '',
   trade: '',
   areas: [],
   yearsInTrade: 0,
   bio: '',
-  availability: 'available',
   featured: false,
   public: false,
   sortOrder: 0,
   privatePhone: '',
   privateEmail: '',
+  showContact: false,
 };
 
 /**
@@ -80,12 +88,12 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
       areas: m.areas,
       yearsInTrade: m.yearsInTrade,
       bio: m.bio,
-      availability: m.availability,
       featured: m.featured,
       public: m.public,
       sortOrder: m.sortOrder,
       privatePhone: m.privatePhone,
       privateEmail: m.privateEmail,
+      showContact: Boolean(m.showContact),
     });
     setPrefill(null);
     setStatus(`Editing ${m.name}.`);
@@ -146,19 +154,20 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
   async function togglePublic(m: MemberAdmin) {
     setBusy(m.id);
     try {
-      const { rebuild } = await api.update(m.id, {
+      const input: MemberInput = {
         name: m.name,
         trade: m.trade,
         areas: m.areas,
         yearsInTrade: m.yearsInTrade,
         bio: m.bio,
-        availability: m.availability,
         featured: m.featured,
         public: !m.public,
         sortOrder: m.sortOrder,
         privatePhone: m.privatePhone,
         privateEmail: m.privateEmail,
-      });
+        showContact: Boolean(m.showContact),
+      };
+      const { rebuild } = await api.update(m.id, input);
       setStatus(`${m.name} is now ${m.public ? 'private' : 'public'}. ${rebuildNote(rebuild)}`);
     } catch (err) {
       setFormError(msg(err, 'Could not change that.'));
@@ -270,19 +279,6 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
               <p className="text-brick mt-1 text-[0.95rem] font-semibold">{fields.areas}</p>
             )}
           </fieldset>
-          <Labeled label="Availability">
-            <select
-              value={form.availability}
-              onChange={(e) =>
-                setForm({ ...form, availability: e.target.value as Member['availability'] })
-              }
-              className={inputCls}
-            >
-              <option value="available">Taking work</option>
-              <option value="limited">Limited availability</option>
-              <option value="unavailable">Not taking work right now</option>
-            </select>
-          </Labeled>
           <Labeled label="One line in his own words" error={fields.bio}>
             <textarea
               value={form.bio}
@@ -295,7 +291,7 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
           <div className="grid gap-4 sm:grid-cols-2">
             <Labeled
               label="Phone (private)"
-              hint="Officers only. Never shown publicly."
+              hint="Officers only. Shown in the directory only if he turns on that setting below."
               error={fields.privatePhone}
             >
               <input
@@ -327,6 +323,24 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
             />
             Show on the home page strip
           </label>
+          <label className="flex items-start gap-2">
+            <input
+              type="checkbox"
+              className="accent-brick mt-1 h-5 w-5"
+              checked={form.showContact}
+              onChange={(e) => setForm({ ...form, showContact: e.target.checked })}
+            />
+            <span>
+              Show his phone and email in the directory to visitors who affirm the directory terms
+              <span className="text-ash block text-[0.9rem]">
+                Only with his consent. Shows{' '}
+                {[form.privatePhone.trim(), form.privateEmail.trim()]
+                  .filter(Boolean)
+                  .join(' and ') || 'nothing yet: add a phone or email above'}
+                , and only while he is listed.
+              </span>
+            </span>
+          </label>
           <label className="border-brass bg-paper flex items-start gap-3 border-l-4 px-4 py-3">
             <input
               type="checkbox"
@@ -337,8 +351,8 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
             <span>
               <span className="font-semibold">Listed in the public directory.</span>
               <span className="text-ash block text-[0.9rem]">
-                Only with his consent. Name, trade, areas, years, availability, and the line above
-                are shown; the phone and email above never are.
+                Only with his consent. Name, trade, areas, years, and the line above are shown. The
+                phone and email are shown only if he turns on that setting.
               </span>
             </span>
           </label>

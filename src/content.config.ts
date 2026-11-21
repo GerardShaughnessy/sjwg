@@ -54,7 +54,6 @@ const memberSchema = z.object({
   areas: z.array(z.string()).default([]),
   yearsInTrade: z.number().int().nonnegative(),
   bio: z.string(),
-  availability: z.enum(['available', 'limited', 'unavailable']),
   featured: z.boolean().default(false),
   photo: z.string().nullable(),
   /** True for the fictional seed rows, so pages can label them. */
@@ -80,7 +79,6 @@ const members = defineCollection({
           areas: m.areas,
           yearsInTrade: m.yearsInTrade,
           bio: m.bio,
-          availability: m.availability,
           featured: m.featured,
           photo: m.photoKey ? `/api/files/members/${m.photoKey.replace(/^members\//, '')}` : null,
           sample: Boolean(m.legacyId),

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Member } from '@/lib/types';
-import { slugify, NOT_SURE } from '@/lib/trades';
-import MemberCard from './MemberCard';
+import { slugify } from '@/lib/trades';
+import MemberCard, { type MemberContact } from './MemberCard';
 
 type Sort = 'trade' | 'name' | 'years';
 type Filters = { trade: string; area: string; sort: Sort };
@@ -11,6 +11,11 @@ interface Props {
   members: Member[];
   trades: string[];
   areas: string[];
+  /**
+   * Opted-in contact details, keyed by member id. Only the gated, server-rendered
+   * directory passes this; it never comes from the content collection.
+   */
+  contacts?: Record<string, MemberContact>;
 }
 
 function readUrl(trades: string[], areas: string[]): Filters {
@@ -41,7 +46,7 @@ function writeUrl(f: Filters) {
  * Client-side filter and sort. The full roster is server-rendered, then the
  * query string is applied after mount so hydration never mismatches.
  */
-export default function DirectoryExplorer({ members, trades, areas }: Props) {
+export default function DirectoryExplorer({ members, trades, areas, contacts = {} }: Props) {
   const [f, setF] = useState<Filters>(DEFAULTS);
   const [ready, setReady] = useState(false);
   /* Random order, shuffled on each visit after mount (Directory Policy: no ranking). */
@@ -144,7 +149,7 @@ export default function DirectoryExplorer({ members, trades, areas }: Props) {
       {results.length > 0 ? (
         <div className="border-mortar mt-4 border-b">
           {results.map((m) => (
-            <MemberCard key={m.id} member={m} headingLevel={2} />
+            <MemberCard key={m.id} member={m} headingLevel={2} contact={contacts[m.id] ?? null} />
           ))}
         </div>
       ) : (
@@ -154,15 +159,14 @@ export default function DirectoryExplorer({ members, trades, areas }: Props) {
             yet.
           </h2>
           <p className="mt-3 max-w-[56ch] leading-relaxed">
-            The Guild still wants to hear about the job. Send a request and the Guild will see it,
-            and the Guild refers work outside its own trades when it can.
+            Get in touch with the Guild. We may know a Catholic tradesman who is not listed yet.
           </p>
           <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
             <a
-              href={`/request?trade=${slugify(f.trade || NOT_SURE)}`}
+              href="/contact"
               className="bg-brick text-paper hover:bg-kiln inline-flex items-center px-5 py-3 font-sans leading-none font-semibold no-underline"
             >
-              Request help{f.trade ? ` with ${f.trade.toLowerCase()}` : ''}
+              Contact the Guild
             </a>
             <button
               type="button"

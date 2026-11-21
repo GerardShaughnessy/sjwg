@@ -118,7 +118,7 @@ export default function AcceptInviteForm({ token, email, name: initialName, need
             id="phone"
             label="Phone"
             optional
-            hint="Officers only, for referrals. Never shown publicly."
+            hint="Officers only. Shown in the directory only if you turn that on in My entry."
             type="tel"
             inputMode="tel"
             value={phone}

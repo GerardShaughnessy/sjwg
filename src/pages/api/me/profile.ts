@@ -3,7 +3,8 @@ import { eq } from 'drizzle-orm';
 import { db } from '@/server/db/client';
 import { members } from '@/server/db/schema';
 import { HttpError, json, readJson, requireSession, route } from '@/server/http';
-import { parseOrThrow, profileSchema } from '@/server/schemas';
+import { parseOrThrow } from '@/server/schemas';
+import { profileUpdateSchema } from '@/server/directory';
 import { requestRebuild } from '@/server/build-hook';
 
 export const prerender = false;
@@ -16,7 +17,7 @@ export const PUT: APIRoute = route(async (ctx) => {
       409,
       'Your account is not linked to a directory entry yet. Ask an officer.',
     );
-  const input = parseOrThrow(profileSchema, await readJson(ctx));
+  const { showContact, ...input } = parseOrThrow(profileUpdateSchema, await readJson(ctx));
   const d = db();
   const [before] = await d
     .select({ public: members.public })
@@ -25,7 +26,11 @@ export const PUT: APIRoute = route(async (ctx) => {
     .limit(1);
   const [row] = await d
     .update(members)
-    .set({ ...input, updatedAt: new Date() })
+    .set({
+      ...input,
+      ...(showContact === undefined ? {} : { showContact }),
+      updatedAt: new Date(),
+    })
     .where(eq(members.id, session.memberId))
     .returning();
   if (!row) throw new HttpError(404, 'Your directory entry was not found.');

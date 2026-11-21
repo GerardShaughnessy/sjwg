@@ -1,11 +1,15 @@
 import type { Member } from '@/lib/types';
-import { slugify } from '@/lib/trades';
 
-const AVAILABILITY: Record<Member['availability'], { label: string; dot: string }> = {
-  available: { label: 'Taking work', dot: 'bg-brass' },
-  limited: { label: 'Limited availability', dot: 'bg-mortar' },
-  unavailable: { label: 'Not taking work right now', dot: 'bg-charcoal/30' },
-};
+/** Phone and email a tradesman chose to show to visitors who affirmed the directory terms. */
+export type MemberContact = { phone: string; email: string };
+
+/** tel: href from a phone typed any which way. US numbers get +1. */
+export function telHref(phone: string): string {
+  const d = phone.replace(/\D/g, '');
+  if (d.length === 10) return `tel:+1${d}`;
+  if (d.length === 11 && d.startsWith('1')) return `tel:+${d}`;
+  return `tel:${d}`;
+}
 
 /**
  * One roster row. Used statically on the home page and inside the directory
@@ -16,14 +20,17 @@ export default function MemberCard({
   member,
   compact = false,
   headingLevel = 3,
+  contact = null,
 }: {
   member: Member;
   compact?: boolean;
   headingLevel?: 2 | 3;
+  /** Only passed in the gated directory, and only for tradesmen who opted in. */
+  contact?: MemberContact | null;
 }) {
   const Heading = headingLevel === 2 ? 'h2' : 'h3';
-  const a = AVAILABILITY[member.availability];
-  const requestHref = `/request?trade=${slugify(member.trade)}&member=${member.id}`;
+  const linkCls =
+    'decoration-brass hover:decoration-charcoal font-sans text-[0.95rem] font-semibold underline decoration-2 underline-offset-4';
   return (
     <article
       className="border-mortar grid grid-cols-[4.5rem_1fr] gap-x-4 gap-y-2 border-t py-5 sm:grid-cols-[6rem_1fr] sm:gap-x-6"
@@ -76,16 +83,32 @@ export default function MemberCard({
           <p className="mt-2 max-w-[60ch] font-serif leading-relaxed italic">“{member.bio}”</p>
         )}
         <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">
-          <p className="text-ash inline-flex items-center gap-2 font-sans text-[0.9rem]">
-            <span className={`inline-block h-2.5 w-2.5 ${a.dot}`} aria-hidden="true" />
-            {a.label}
-          </p>
-          <a
-            href={requestHref}
-            className="decoration-brass hover:decoration-charcoal font-sans text-[0.95rem] font-semibold underline decoration-2 underline-offset-4"
-          >
-            Request help with {member.trade.toLowerCase()}
-          </a>
+          {contact && (contact.phone || contact.email) ? (
+            <>
+              {contact.phone && (
+                <a
+                  href={telHref(contact.phone)}
+                  className={linkCls}
+                  aria-label={`Call ${member.name} at ${contact.phone}`}
+                >
+                  {contact.phone}
+                </a>
+              )}
+              {contact.email && (
+                <a
+                  href={`mailto:${contact.email}`}
+                  className={`${linkCls} break-all`}
+                  aria-label={`Email ${member.name} at ${contact.email}`}
+                >
+                  {contact.email}
+                </a>
+              )}
+            </>
+          ) : (
+            <a href="/contact" className={linkCls}>
+              Contact through the Guild
+            </a>
+          )}
         </div>
       </div>
     </article>

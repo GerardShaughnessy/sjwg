@@ -4,49 +4,216 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import PageHeader from '@/components/ui/PageHeader.astro';
 import Banner from '@/components/ui/Banner.astro';
 import DirectoryExplorer from '@/components/members/DirectoryExplorer';
+import DirectoryGate from '@/components/members/DirectoryGate';
 import { getTrades, getAreas } from '@/lib/trades';
+import {
+  AFFIRMATIONS_FIRST,
+  AFFIRMATIONS_REST,
+  CATHOLIC_STATUS,
+  DIRECTORY_CITATION,
+  DIRECTORY_INTRO,
+  DIRECTORY_INTRO_CLOSING,
+  DIRECTORY_PRINCIPLES,
+  DIRECTORY_TERMS_VERSION,
+  ETHICAL_PLEDGE_URL,
+  GATE_HEADING,
+  GATE_TEXT,
+} from '@/config/directory-terms';
+import { DIR_COOKIE, dirCookieSecret, verifyDirCookie } from '@/server/directory-cookie';
+import { chicagoToday } from '@/server/directory';
+import type { DirectoryContact } from '@/server/db/queries/directory';
+
+/*
+ * Server-rendered on every request: the gate depends on a signed cookie, and
+ * contact details are read from the database only for visitors who affirmed
+ * the current terms. Nothing here is prerendered or cached.
+ */
+export const prerender = false;
+Astro.response.headers.set('cache-control', 'private, no-store');
+
+const affirmed = verifyDirCookie(
+  Astro.cookies.get(DIR_COOKIE)?.value,
+  DIRECTORY_TERMS_VERSION,
+  dirCookieSecret(),
+);
 
 const entries = await getCollection('members');
 const members = entries.map((m) => m.data);
 const allSample = members.length > 0 && members.every((m) => m.sample);
 const trades = getTrades(members);
 const areas = getAreas(members);
+
+let contacts: Record<string, DirectoryContact> = {};
+if (affirmed) {
+  try {
+    const { listDirectoryContacts } = await import('@/server/db/queries/directory');
+    contacts = await listDirectoryContacts();
+  } catch (err) {
+    console.warn('[directory] contacts unavailable', (err as Error).message);
+    contacts = {};
+  }
+}
 ---
 
 <BaseLayout
   title="Tradesman directory"
-  description="Practicing Catholic tradesmen in the St. Louis area who have signed the St. Joseph the Worker Guild's Ethical Standards and serve its charity work, by trade and area served."
+  description="Practising Catholic tradesmen in the St. Louis area who have signed the St. Joseph the Worker Guild's Ethical Pledge and are open to considering charity work, by trade and area served. No fees; you hire directly."
 >
   <PageHeader
     title="Tradesman Directory"
-    lede="Practicing Catholic tradesmen who have signed the Guild's Ethical Standards, shown proof of insurance and any license their trade requires, and serve on the Guild's charity jobs. Listings appear in random order."
+    lede="Practising Catholic tradesmen who have signed the Guild's Ethical Pledge, shown proof of insurance and any license their trade requires, and are open to considering charity work. Listings appear in random order."
   />
   <div class="wrap py-10 md:py-14">
-    {allSample && (
-      <Banner class="mb-8">
-        <strong>Sample directory.</strong> These names are placeholders. Real tradesmen will be
-        listed once each has signed the listing agreement and agreed to what appears publicly.
-      </Banner>
+    {affirmed ? (
+      <details class="dir-intro mb-10 max-w-[72ch]">
+        <summary class="cursor-pointer font-sans font-semibold">
+          Why the Guild keeps this directory
+        </summary>
+        <div class="mt-4">
+          {DIRECTORY_INTRO.map((p) => (
+            <p class="mt-4 leading-relaxed">{p}</p>
+          ))}
+          <ol class="principles mt-6">
+            {DIRECTORY_PRINCIPLES.map((pr) => (
+              <li>
+                <h3 class="font-serif text-[1.25rem]">{pr.title}</h3>
+                {pr.body.map((b) => (
+                  <p class="mt-2 leading-relaxed">{b}</p>
+                ))}
+              </li>
+            ))}
+          </ol>
+          <p class="mt-6 leading-relaxed">{DIRECTORY_INTRO_CLOSING}</p>
+          <p class="text-ash mt-4 font-sans text-[0.9rem]">{DIRECTORY_CITATION}</p>
+        </div>
+      </details>
+    ) : (
+      <section aria-labelledby="dir-intro-heading" class="dir-intro mb-14 max-w-[72ch]">
+        <h2 id="dir-intro-heading" class="sr-only">
+          Why the Guild keeps this directory
+        </h2>
+        {DIRECTORY_INTRO.map((p) => (
+          <p class="mt-4 text-[1.0625rem] leading-relaxed first:mt-0">{p}</p>
+        ))}
+        <ol class="principles mt-8">
+          {DIRECTORY_PRINCIPLES.map((pr) => (
+            <li>
+              <h3 class="font-serif text-[1.35rem]">{pr.title}</h3>
+              {pr.body.map((b) => (
+                <p class="mt-2 leading-relaxed">{b}</p>
+              ))}
+            </li>
+          ))}
+        </ol>
+        <p class="mt-8 leading-relaxed">{DIRECTORY_INTRO_CLOSING}</p>
+        <p class="text-ash mt-4 font-sans text-[0.9rem]">{DIRECTORY_CITATION}</p>
+      </section>
     )}
-    <p class="mb-8 max-w-[70ch] border-l-4 border-brass bg-paper p-5 font-sans text-[0.95rem] leading-relaxed">
-      <strong>Please read:</strong> St. Joseph the Worker Guild does not employ, supervise, or
-      guarantee the tradesmen listed here, and does not receive any fee or commission from them or
-      from you. You hire a listed tradesman directly, and the price, the work, and responsibility
-      for it are between you and the tradesman. Check licenses, insurance, and references as you
-      would for anyone. Listing is free, and the order is random.
-    </p>
-    <DirectoryExplorer client:load members={members} trades={trades} areas={areas} />
+
+    {affirmed ? (
+      <>
+        {allSample && (
+          <Banner class="mb-8">
+            <strong>Sample directory.</strong> These names are placeholders. Real tradesmen will be
+            listed once each has signed the listing agreement and agreed to what appears publicly.
+          </Banner>
+        )}
+        <details class="mb-6 font-sans text-[0.95rem]">
+          <summary class="text-ash cursor-pointer">
+            You affirmed the directory terms.{' '}
+            <span class="decoration-brass text-charcoal font-semibold underline decoration-2 underline-offset-4">
+              Read them again
+            </span>
+          </summary>
+          <div class="bg-paper border-mortar mt-3 max-w-[72ch] border p-5 leading-relaxed">
+            <p class="font-semibold">{GATE_HEADING}</p>
+            {GATE_TEXT.map((t) => (
+              <p class="mt-3">{t}</p>
+            ))}
+            <ul class="mt-4 list-disc space-y-2 pl-5">
+              {AFFIRMATIONS_FIRST.map((a) => (
+                <li>{a.text}</li>
+              ))}
+              <li>
+                {CATHOLIC_STATUS.catholic} Or: {CATHOLIC_STATUS.notCatholic}
+              </li>
+              {AFFIRMATIONS_REST.map((a) => (
+                <li>{a.text}</li>
+              ))}
+            </ul>
+            <p class="mt-4">
+              <a href={ETHICAL_PLEDGE_URL} target="_blank" rel="noopener" class="font-semibold">
+                View the Ethical Pledge
+              </a>
+            </p>
+          </div>
+        </details>
+        <p class="mb-8 max-w-[70ch] border-l-4 border-brass bg-paper p-5 font-sans text-[0.95rem] leading-relaxed">
+          <strong>Please read:</strong> The Guild charges no fees and takes no commission, from the
+          tradesmen or from you. The Guild does not employ, supervise, endorse, or guarantee any
+          tradesman listed here. You hire him directly, and the price, the work, and the terms are
+          between you and the tradesman. Check licenses, insurance, and references as you would for
+          anyone.
+        </p>
+        <DirectoryExplorer
+          client:load
+          members={members}
+          trades={trades}
+          areas={areas}
+          contacts={contacts}
+        />
+      </>
+    ) : (
+      <DirectoryGate
+        client:load
+        heading={GATE_HEADING}
+        gateText={GATE_TEXT}
+        first={AFFIRMATIONS_FIRST}
+        rest={AFFIRMATIONS_REST}
+        catholicLabel={CATHOLIC_STATUS.catholic}
+        notCatholicLabel={CATHOLIC_STATUS.notCatholic}
+        alignmentPrompt={CATHOLIC_STATUS.alignmentPrompt}
+        pledgeUrl={ETHICAL_PLEDGE_URL}
+        today={chicagoToday()}
+      />
+    )}
+
     <p class="mt-10 max-w-[60ch] font-sans text-[0.95rem] leading-relaxed text-ash">
-      Not sure which trade you need?{' '}
-      <a href="/request?trade=not-sure" class="font-semibold text-charcoal">
-        Describe the problem
-      </a>{' '}
-      and the Guild will figure out who should call you.
+      Need help you cannot afford?{' '}
+      <a href="/request" class="font-semibold text-charcoal">
+        The Guild offers financial assistance case by case.
+      </a>
     </p>
     <p class="mt-4 max-w-[60ch] font-sans text-[0.85rem] leading-relaxed text-ash">
       Many of the tradesmen listed belong to, or work alongside, the local unions. If you already
-      have a union contractor you trust, keep him. We are glad to work beside the
-      locals, not against them.
+      have a union contractor you trust, keep him. We are glad to work beside the locals, not
+      against them.
     </p>
   </div>
 </BaseLayout>
+
+<style>
+  .principles {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: 1.25rem;
+    counter-reset: principle;
+  }
+  .principles > li {
+    counter-increment: principle;
+    position: relative;
+    border-left: 4px solid var(--color-brass);
+    padding: 0.25rem 0 0.25rem 3.25rem;
+  }
+  .principles > li::before {
+    content: counter(principle);
+    position: absolute;
+    left: 1rem;
+    top: 0.2rem;
+    font-family: var(--font-serif, serif);
+    font-size: 1.35rem;
+    line-height: 1.4;
+    opacity: 0.6;
+  }
+</style>
