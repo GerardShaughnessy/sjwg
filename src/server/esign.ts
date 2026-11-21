@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNotNull, isNull, gt } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNotNull, isNull, gt, ne } from 'drizzle-orm';
 import { db } from './db/client';
 import { members, signEvents, signRequests } from './db/schema';
 import { composeForSigning, docKindLabel, PACKET_KIND, type SignDocKind } from '@/config/documents';
@@ -50,7 +50,30 @@ export interface SignRequestView {
   hasPdf: boolean;
 }
 
-export function toView(r: SignRow): SignRequestView {
+/**
+ * Only the columns a list view needs: never the frozen document HTML, which
+ * is large and only read when someone opens or signs a request.
+ */
+const VIEW_COLUMNS = {
+  id: signRequests.id,
+  docKind: signRequests.docKind,
+  title: signRequests.title,
+  signerName: signRequests.signerName,
+  signerEmail: signRequests.signerEmail,
+  memberId: signRequests.memberId,
+  status: signRequests.status,
+  sentByName: signRequests.sentByName,
+  sentAt: signRequests.sentAt,
+  viewedAt: signRequests.viewedAt,
+  signedAt: signRequests.signedAt,
+  signedName: signRequests.signedName,
+  voidedAt: signRequests.voidedAt,
+  tokenExpiresAt: signRequests.tokenExpiresAt,
+  signedPdfKey: signRequests.signedPdfKey,
+};
+type ViewRow = Pick<SignRow, keyof typeof VIEW_COLUMNS>;
+
+export function toView(r: ViewRow): SignRequestView {
   return {
     id: r.id,
     docKind: r.docKind,
@@ -217,7 +240,7 @@ export async function voidSignRequest(id: string, by: Pick<AppSession, 'name'>) 
 
 export async function listSignRequests(filter: { memberId?: string } = {}) {
   const rows = await db()
-    .select()
+    .select(VIEW_COLUMNS)
     .from(signRequests)
     .where(filter.memberId ? eq(signRequests.memberId, filter.memberId) : undefined)
     .orderBy(desc(signRequests.sentAt))
@@ -428,11 +451,31 @@ export async function signedPdfResponse(row: SignRow): Promise<Response | null> 
 /** Open and signed requests for one member's row: his "Paperwork to sign". */
 export async function requestsForMember(memberId: string) {
   const rows = await db()
-    .select()
+    .select(VIEW_COLUMNS)
     .from(signRequests)
     .where(and(eq(signRequests.memberId, memberId), isNull(signRequests.voidedAt)))
     .orderBy(desc(signRequests.sentAt))
     .limit(50);
+  return rows.map(toView);
+}
+
+/**
+ * Every live (not voided) request tied to a member, for the officer roster.
+ * No row limit: a cap could drop an older signed packet and make a member
+ * look like their paperwork was never sent. The rows are small (no HTML).
+ */
+export async function memberSignRequests(): Promise<SignRequestView[]> {
+  const rows = await db()
+    .select(VIEW_COLUMNS)
+    .from(signRequests)
+    .where(
+      and(
+        isNotNull(signRequests.memberId),
+        isNull(signRequests.voidedAt),
+        ne(signRequests.status, 'voided'),
+      ),
+    )
+    .orderBy(desc(signRequests.sentAt));
   return rows.map(toView);
 }
 

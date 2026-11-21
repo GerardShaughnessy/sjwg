@@ -44,7 +44,7 @@ export default function Dashboard({
         : 'None sent more than a week ago',
       tone: c.paperworkStale ? 'attention' : c.paperworkOpen ? 'waiting' : 'neutral',
       to: 'tradesmen',
-      query: 'show=action',
+      query: 'sub=paperwork',
     },
     {
       n: c.tasksOpen,

@@ -1,17 +1,4 @@
-import {
-  and,
-  asc,
-  count,
-  desc,
-  eq,
-  gt,
-  gte,
-  inArray,
-  isNotNull,
-  isNull,
-  ne,
-  sql,
-} from 'drizzle-orm';
+import { and, asc, count, desc, eq, gt, gte, isNotNull, isNull, ne, sql } from 'drizzle-orm';
 import { db } from './db/client';
 import {
   aidApplications,
@@ -28,11 +15,12 @@ import {
 import type { AppSession } from './auth/server';
 import { photoUrl } from './db/queries/members';
 import { listMemberDocs, type MemberDocView } from './member-docs';
-import { listSignRequests, requestsForMember, type SignRequestView } from './esign';
+import { memberSignRequests, requestsForMember, type SignRequestView } from './esign';
 import {
   buildActivity,
   doneCount,
   memberTodos,
+  progressTotal,
   STALE_DAYS,
   tradesmanStatus,
   type ActivityItem,
@@ -150,7 +138,7 @@ export async function mySummary(memberId: string, now: Date): Promise<MySummary 
     listed: m.public,
     checklist: status.checklist,
     done: doneCount(status.checklist),
-    total: status.checklist.length,
+    total: progressTotal(status.checklist),
     tone: status.tone,
     todos: memberTodos({ docs, signs, listed: m.public, now }),
   };
@@ -165,7 +153,7 @@ export async function tradesmenRoster(now: Date): Promise<TradesmanRow[]> {
       .leftJoin(appUsers, eq(appUsers.memberId, members.id))
       .orderBy(asc(members.name)),
     listMemberDocs(),
-    listSignRequests(),
+    memberSignRequests(),
     db()
       .selectDistinct({ memberId: invitations.memberId })
       .from(invitations)
@@ -232,7 +220,7 @@ function group<T>(list: T[], key: (t: T) => string): Map<string, T[]> {
 
 async function officerCounts(now: Date, roster: TradesmanRow[]): Promise<OfficerCounts> {
   const weekOut = new Date(now.getTime() + 7 * DAY).toISOString().slice(0, 10);
-  const [aid, docsPending, paper, taskRows] = await Promise.all([
+  const [aid, taskRows] = await Promise.all([
     db()
       .select({
         n: count(),
@@ -241,17 +229,6 @@ async function officerCounts(now: Date, roster: TradesmanRow[]): Promise<Officer
       .from(aidApplications)
       .where(eq(aidApplications.status, 'new')),
     db()
-      .select({ n: count() })
-      .from(documents)
-      .where(and(eq(documents.ownerType, 'member'), eq(documents.status, 'pending'))),
-    db()
-      .select({
-        n: count(),
-        stale: sql<number>`count(*) filter (where ${signRequests.sentAt} < ${new Date(now.getTime() - STALE_DAYS * DAY).toISOString()}::timestamptz)`,
-      })
-      .from(signRequests)
-      .where(and(inArray(signRequests.status, ['sent', 'viewed']), isNull(signRequests.voidedAt))),
-    db()
       .select({
         n: count(),
         due: sql<number>`count(*) filter (where ${tasks.dueDate} is not null and ${tasks.dueDate} <= ${weekOut}::date)`,
@@ -259,6 +236,17 @@ async function officerCounts(now: Date, roster: TradesmanRow[]): Promise<Officer
       .from(tasks)
       .where(ne(tasks.status, 'done')),
   ]);
+  // Counted from the roster, so every counted item is visible where the tile
+  // leads: pending documents put a tradesman under Needs action, and every
+  // open request tied to a member is listed under All paperwork.
+  const docsPending = roster.reduce(
+    (n, t) => n + t.documents.filter((d) => d.status === 'pending').length,
+    0,
+  );
+  const open = roster.flatMap((t) =>
+    t.signRequests.filter((r) => r.status === 'sent' || r.status === 'viewed'),
+  );
+  const staleBefore = now.getTime() - STALE_DAYS * DAY;
   const expiring = roster.reduce(
     (n, t) =>
       n +
@@ -271,10 +259,10 @@ async function officerCounts(now: Date, roster: TradesmanRow[]): Promise<Officer
   return {
     aidNew: Number(aid[0]?.n ?? 0),
     aidEmergency: Number(aid[0]?.emergency ?? 0),
-    docsPending: Number(docsPending[0]?.n ?? 0),
+    docsPending,
     docsExpiring: expiring,
-    paperworkOpen: Number(paper[0]?.n ?? 0),
-    paperworkStale: Number(paper[0]?.stale ?? 0),
+    paperworkOpen: open.length,
+    paperworkStale: open.filter((r) => Date.parse(r.sentAt) < staleBefore).length,
     tasksOpen: Number(taskRows[0]?.n ?? 0),
     tasksDueSoon: Number(taskRows[0]?.due ?? 0),
     tradesmenNeedingAction: roster.filter((t) => t.needsAction).length,

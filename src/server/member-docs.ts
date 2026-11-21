@@ -52,7 +52,9 @@ export async function listMemberDocs(memberId?: string): Promise<MemberDocView[]
     .leftJoin(appUsers, eq(documents.reviewedBy, appUsers.id))
     .where(where)
     .orderBy(desc(documents.createdAt))
-    .limit(1000);
+    // High on purpose: the officer roster reads every member's documents from
+    // this one list, and a low cap would drop a member's older verified copy.
+    .limit(10_000);
   return rows.map((r) => toDocView(r.d, r.reviewer));
 }
 
