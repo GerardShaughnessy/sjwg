@@ -1,37 +1,139 @@
 ---
-import { getCollection } from 'astro:content';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import PageHeader from '@/components/ui/PageHeader.astro';
-import RequestWizard from '@/components/request/RequestWizard';
-import { getTrades } from '@/lib/trades';
-import { TK } from '@/config/site';
+import Section from '@/components/ui/Section.astro';
+import AidApplicationForm from '@/components/request/AidApplicationForm';
 
-const members = (await getCollection('members')).map((m) => m.data);
-const trades = getTrades(members);
+const whoWeHelp = [
+  'Struggling families and individuals',
+  'Catholic tradesmen and their families facing a medical emergency',
+  'Parishes and churches',
+  'Catholic schools',
+  'Shrines, convents, and monasteries',
+  'Catholic businesses',
+  'Other organizations that share our values',
+];
+
+const steps = [
+  'We explain the case to tradesmen we know are open to charity work, and ask whether one would be willing to take the job on for free.',
+  'If not, we advocate for discounted work.',
+  'Depending on the answer, we decide what financial relief, if any, the Guild will award.',
+];
 ---
 
 <BaseLayout
-  title="Request help from the Guild"
-  description="Tell the St. Joseph the Worker Guild what you need fixed and how to reach you. No account, one question at a time."
+  title="Request Help"
+  description="Ask the St. Joseph the Worker Guild for financial help: families, parishes, Catholic schools and institutions, and Catholic tradesmen facing a medical emergency. Reviewed case by case."
   suppressWelcome
 >
   <PageHeader
-    title="Request Help from the Guild"
-    lede="Five short questions. No account. Answer what you can, and a Guild tradesman will call you back."
-  />
-  <div class="wrap py-10 md:py-14">
-    <RequestWizard
-      client:load
-      trades={trades}
-      members={members.map(({ id, name, trade }) => ({ id, name, trade }))}
-      responseTk={TK.responseCommitment}
-      serviceAreaTk={TK.serviceArea}
-    />
-    <noscript>
-      <p class="mt-6 max-w-[64ch] leading-relaxed">
-        This form needs JavaScript to move between steps. If it will not load,{' '}
-        <a href="/contact">contact the Guild</a> instead.
+    title="Request Help"
+    lede="The Guild gives financial help to families, parishes, and Catholic institutions in need, and to Catholic tradesmen's families in a medical crisis. Tell us what you need."
+  >
+    <div class="mt-8">
+      <a
+        href="#apply"
+        class="font-sans font-semibold text-stone underline decoration-brass decoration-2 underline-offset-4"
+      >
+        Go to the application
+      </a>
+    </div>
+  </PageHeader>
+
+  <Section tone="stone" labelledby="why-title">
+    <div class="measure flex flex-col gap-4 leading-relaxed">
+      <h2 id="why-title" class="text-h2">
+        Why the Guild Helps
+      </h2>
+      <p>
+        Charity is not an extra for Christians. The Church has always loved the poor with a
+        preferential love, because Christ made himself poor and named himself in the hungry, the
+        sick, and the stranger. Feeding, sheltering, and caring for those in need are works of
+        mercy, and giving to the poor is a work of justice as much as kindness: what we share was
+        given to us for others too.
       </p>
-    </noscript>
-  </div>
+      <p>
+        We are one Body in Christ. When one member suffers, all suffer with it, and solidarity asks
+        us to carry each other's burdens. The Guild's tradesmen know what a failed roof, a broken
+        furnace, or a hospital stay can do to a family or a parish. Our charity puts that knowledge,
+        and the gifts of our donors, at the service of those who need it.
+      </p>
+      <p class="font-sans text-[0.95rem] text-ash">
+        See the Catechism of the Catholic Church, nos. 2443 to 2449, and the Compendium of the
+        Social Doctrine of the Church, nos. 182 to 184.
+      </p>
+    </div>
+  </Section>
+
+  <Section tone="paper" labelledby="who-title">
+    <div class="grid gap-12 lg:grid-cols-2 lg:gap-16">
+      <div>
+        <h2 id="who-title" class="text-h2">
+          Who We Help
+        </h2>
+        <ul class="mt-6 flex flex-col gap-3 leading-relaxed">
+          {whoWeHelp.map((w) => (
+            <li class="border-l-2 border-brass pl-4">{w}</li>
+          ))}
+        </ul>
+        <p class="mt-6 max-w-[52ch] leading-relaxed">
+          When the Guild helps with a project, it pays on behalf of the person or organization in
+          need, for materials, a tradesman's time, or both. It can also give financial relief
+          directly.
+        </p>
+      </div>
+      <div>
+        <h2 id="how-title" class="text-h2">
+          How It Works
+        </h2>
+        <p class="mt-6 max-w-[52ch] leading-relaxed">
+          An officer reads every request and may contact you to verify it. We do not recruit
+          volunteers at this time. Instead:
+        </p>
+        <ol class="mt-6 border-t border-mortar">
+          {steps.map((s, i) => (
+            <li class="grid grid-cols-[2.5rem_1fr] gap-3 border-b border-mortar py-4">
+              <span class="font-serif text-[1.6rem] leading-none text-brick" aria-hidden="true">
+                {i + 1}
+              </span>
+              <span class="leading-relaxed">{s}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+    <div
+      class="mt-12 max-w-[68ch] border-l-4 border-brass bg-stone p-6 leading-relaxed"
+      role="note"
+    >
+      <p class="font-semibold">
+        Our funds are limited. Every request is reviewed case by case, and we cannot promise help to
+        everyone who applies.
+      </p>
+      <p class="mt-3">
+        The Guild does not employ the tradesmen. It may pay a tradesman or supplier on your behalf.
+      </p>
+    </div>
+  </Section>
+
+  <Section tone="stone" id="apply" labelledby="apply-title">
+    <div class="max-w-[46rem]">
+      <h2 id="apply-title" class="text-h2">
+        Apply for Help
+      </h2>
+      <p class="mt-3 leading-relaxed">
+        One form for everyone. Your first answer decides the rest of the questions. It takes about
+        ten minutes, and no account is needed.
+      </p>
+      <div class="mt-8">
+        <AidApplicationForm client:load />
+      </div>
+      <noscript>
+        <p class="mt-6 max-w-[64ch] leading-relaxed">
+          This form needs JavaScript. If it will not load, <a href="/contact">contact the Guild</a>
+          instead.
+        </p>
+      </noscript>
+    </div>
+  </Section>
 </BaseLayout>

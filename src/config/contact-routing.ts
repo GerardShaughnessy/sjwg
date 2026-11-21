@@ -33,6 +33,8 @@ const BY_KIND: Record<string, readonly string[]> = {
   interest: [INBOX.greg],
   rsvp: [INBOX.michael],
   donation: [INBOX.michael, INBOX.greg, INBOX.secretary],
+  /** Request Help applications for the Guild's charity aid. */
+  aid: [INBOX.greg, INBOX.michael],
 };
 
 /** Recipients for a message: the topic's or kind's people, plus hello@, no duplicates. */

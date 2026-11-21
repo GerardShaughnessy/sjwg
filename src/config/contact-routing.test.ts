@@ -24,4 +24,7 @@ describe('recipientsFor', () => {
     expect(recipientsFor('rsvp')).toEqual(['michael@sjwg.org', 'hello@sjwg.org']);
     expect(recipientsFor('interest')).toEqual(['greg@sjwg.org', 'hello@sjwg.org']);
   });
+  it('sends aid applications to Greg, Michael, and hello@', () => {
+    expect(recipientsFor('aid')).toEqual(['greg@sjwg.org', 'michael@sjwg.org', 'hello@sjwg.org']);
+  });
 });
