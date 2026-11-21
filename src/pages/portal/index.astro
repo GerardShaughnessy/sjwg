@@ -1,7 +1,12 @@
 ---
+import '@fontsource-variable/archivo';
+import '@fontsource/libre-caslon-text/400.css';
+import '@fontsource/libre-caslon-text/400-italic.css';
+import '@fontsource/libre-caslon-text/700.css';
+import '@/styles/global.css';
 import { getCollection } from 'astro:content';
-import BaseLayout from '@/layouts/BaseLayout.astro';
-import PageHeader from '@/components/ui/PageHeader.astro';
+import SeoHead from '@/components/site/SeoHead.astro';
+import SkipLink from '@/components/site/SkipLink.astro';
 import PortalApp from '@/components/portal/PortalApp';
 import { getAreas } from '@/lib/trades';
 
@@ -16,21 +21,31 @@ const events = (await getCollection('events')).map((e) => e.data);
 const areas = getAreas(members);
 ---
 
-<BaseLayout
-  title="Member portal"
-  description="Calendar, directory entry, paperwork, blog drafts, and records for listed tradesmen and Guild officers."
-  noindex
-  suppressWelcome
->
-  <PageHeader title="Member portal" lede={`Logged in as ${session.name}.`} />
-  <div class="wrap py-10 md:py-14">
+<!--
+  The portal has its own header and sidebar (the approved portal design), so
+  it does not use the public site's navigation and footer. The seal links home.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#43402a" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <SeoHead
+      title={session.role === 'admin' ? 'Officer portal' : 'Tradesman portal'}
+      description="Directory entry, paperwork, calendar, and Guild work for listed tradesmen and Guild officers."
+      noindex
+    />
+  </head>
+  <body class="bg-stone min-h-svh">
+    <SkipLink />
     <PortalApp client:load session={session} members={members} events={events} areas={areas}>
-      <div slot="fallback" aria-busy="true">
+      <div slot="fallback" aria-busy="true" class="p-6">
         <p class="font-sans text-ash">Loading the portal.</p>
         <noscript>
-          <p class="mt-3">The member portal needs JavaScript.</p>
+          <p class="mt-3">The portal needs JavaScript.</p>
         </noscript>
       </div>
     </PortalApp>
-  </div>
-</BaseLayout>
+  </body>
+</html>

@@ -1,21 +1,22 @@
 import { useEffect, useState } from 'react';
 import type { GuildEvent, Member, Session } from '@/lib/types';
 import { authClient } from '@/lib/auth-client';
-import PortalShell, { type Tab } from './PortalShell';
+import { useResource } from '@/lib/hooks';
+import { portal } from '@/lib/api-portal';
+import PortalShell, { type NavItem } from './PortalShell';
+import { SubTabs } from './layout';
 import MemberCalendar from './member/MemberCalendar';
-import ProfileEditor from './member/ProfileEditor';
 import PostEditor from './member/PostEditor';
 import DonorRecords from './member/DonorRecords';
 import EventsEditor from './admin/EventsEditor';
 import SponsorsEditor from './admin/SponsorsEditor';
-import MembersAdmin from './admin/MembersAdmin';
 import EmailListPanel from './admin/EmailListPanel';
 import AnnouncementsPanel from './admin/AnnouncementsPanel';
 import TasksBoard from './admin/TasksBoard';
 import AidApplicationsPanel from './admin/AidApplicationsPanel';
-import DocumentsReview from './admin/DocumentsReview';
-import SigningPanel from './admin/SigningPanel';
-import MyDocuments from './member/MyDocuments';
+import { MyListing, TradesmanHome } from './pages/MemberPages';
+import Dashboard from './pages/Dashboard';
+import TradesmenPage from './pages/Tradesmen';
 
 interface Props {
   session: Session;
@@ -25,58 +26,230 @@ interface Props {
 }
 
 /**
+ * Old ?tab= ids from emails and bookmarks, mapped to [page, sub-tab].
+ * Officers and tradesmen land in different places for some of them.
+ */
+const OLD_MEMBER: Record<string, [string, string?]> = {
+  jobs: ['home'],
+  profile: ['listing'],
+  paperwork: ['listing'],
+};
+const OLD_ADMIN: Record<string, [string, string?]> = {
+  jobs: ['dashboard'],
+  home: ['dashboard'],
+  profile: ['listing'],
+  paperwork: ['listing'],
+  members: ['tradesmen', 'entries'],
+  invitations: ['tradesmen'],
+  signing: ['tradesmen', 'paperwork'],
+  documents: ['tradesmen', 'documents'],
+  announce: ['comms', 'announce'],
+  emaillist: ['comms', 'emaillist'],
+  posts: ['comms', 'posts'],
+  donors: ['giving', 'donors'],
+  sponsors: ['giving', 'sponsors'],
+  calendar: ['events', 'calendar'],
+};
+
+/** Query params that belong to one page and should not follow you to another. */
+const PAGE_PARAMS: Record<string, string[]> = { tasks: ['task'], aid: ['aid'], tradesmen: ['show'] };
+
+/**
  * The portal for a logged-in Guild member. The page that renders this island
  * runs on demand and only reaches here with a verified session, so there is
- * no client-side gate. Officers get the admin tabs.
+ * no client-side gate. Officers get the officer pages.
  */
 export default function PortalApp({ session, events, areas }: Props) {
+  const isAdmin = session.role === 'admin';
   const [tab, setTab] = useState('');
+  const [sub, setSub] = useState<string | undefined>();
+  const [ready, setReady] = useState(false);
+  const summary = useResource(() => portal.summary(), []);
+
+  function resolve(id: string): [string, string?] {
+    return (isAdmin ? OLD_ADMIN : OLD_MEMBER)[id] ?? [id];
+  }
 
   useEffect(() => {
-    setTab(new URLSearchParams(window.location.search).get('tab') ?? '');
+    const [t, s] = resolve(new URLSearchParams(window.location.search).get('tab') ?? '');
+    setTab(t);
+    setSub(s);
+    setReady(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
+  /** Go to a page, optionally with page params such as aid=<id>. */
+  function go(next: string, query?: string) {
     const p = new URLSearchParams(window.location.search);
-    if (tab) p.set('tab', tab);
-    else p.delete('tab');
-    if (tab && tab !== 'tasks') p.delete('task');
-    const qs = p.toString();
-    window.history.replaceState(null, '', `${window.location.pathname}${qs ? `?${qs}` : ''}`);
-  }, [tab]);
+    for (const k of Object.values(PAGE_PARAMS).flat()) p.delete(k);
+    new URLSearchParams(query ?? '').forEach((v, k) => p.set(k, v));
+    p.set('tab', next);
+    window.history.replaceState(null, '', `${window.location.pathname}?${p}`);
+    setSub(undefined);
+    setTab(next);
+  }
 
-  const isAdmin = session.role === 'admin';
-  const tabs: Tab[] = [
-    { id: 'calendar', label: 'Calendar', content: <MemberCalendar initial={events} /> },
-    { id: 'profile', label: 'My entry', content: <ProfileEditor areas={areas} /> },
-    { id: 'paperwork', label: 'My paperwork', content: <MyDocuments session={session} /> },
-    { id: 'posts', label: 'Blog posts', content: <PostEditor session={session} /> },
-    ...(isAdmin
-      ? [
-          { id: 'aid', label: 'Help requests', content: <AidApplicationsPanel /> },
-          { id: 'signing', label: 'Send for signature', content: <SigningPanel /> },
-          { id: 'documents', label: 'Tradesman documents', content: <DocumentsReview /> },
-          { id: 'tasks', label: 'Tasks', content: <TasksBoard session={session} /> },
-          { id: 'events', label: 'Events', content: <EventsEditor /> },
-          { id: 'sponsors', label: 'Sponsors', content: <SponsorsEditor /> },
-          { id: 'donors', label: 'Donor records', content: <DonorRecords /> },
-          { id: 'members', label: 'Members', content: <MembersAdmin areas={areas} /> },
-          { id: 'announce', label: 'Email members', content: <AnnouncementsPanel /> },
-          { id: 'emaillist', label: 'Email list', content: <EmailListPanel /> },
-        ]
-      : []),
+  const badges = summary.data?.badges ?? {};
+  const s = summary.data;
+  const err = summary.error;
+
+  const memberItems: NavItem[] = [
+    {
+      id: 'home',
+      label: 'Home',
+      count: badges.home,
+      title: `Welcome, ${session.name.split(' ')[0]}`,
+      lede: 'What needs your attention, and what is coming up.',
+      content: <TradesmanHome summary={s} error={err} go={go} />,
+    },
+    {
+      id: 'listing',
+      label: 'My listing',
+      title: 'My listing',
+      lede: 'Your directory entry, your documents, and your paperwork, in one place.',
+      content: <MyListing session={session} summary={s} areas={areas} />,
+    },
+    {
+      id: 'calendar',
+      label: 'Calendar',
+      title: 'Calendar',
+      lede: 'Guild meetings, Holy Hours, and events.',
+      content: <MemberCalendar initial={events} />,
+    },
+    {
+      id: 'posts',
+      label: 'Blog posts',
+      group: 'Write',
+      title: 'Blog posts',
+      lede: 'Write a post for the Guild blog. An officer reviews it before it goes up.',
+      content: <PostEditor session={session} />,
+    },
   ];
 
-  // Invitations folded into Members; old links still land there.
-  const wanted = tab === 'invitations' ? 'members' : tab;
-  const active = tabs.some((t) => t.id === wanted) ? wanted : tabs[0].id;
+  const adminItems: NavItem[] = [
+    {
+      id: 'dashboard',
+      label: 'Dashboard',
+      title: 'Dashboard',
+      lede: 'Everything waiting on an officer, at a glance.',
+      content: <Dashboard summary={s} error={err} go={go} />,
+    },
+    {
+      id: 'tradesmen',
+      label: 'Tradesmen',
+      group: 'People',
+      count: badges.tradesmen,
+      title: 'Tradesmen',
+      lede: 'Everyone listed or on the way: their checklist, documents, and paperwork.',
+      content: <TradesmenPage areas={areas} initial={sub} />,
+    },
+    {
+      id: 'aid',
+      label: 'Help requests',
+      group: 'Charity',
+      count: badges.aid,
+      title: 'Help requests',
+      lede: 'Applications for financial help. Review each one and record a decision.',
+      content: <AidApplicationsPanel />,
+    },
+    {
+      id: 'events',
+      label: 'Events and calendar',
+      group: 'Guild life',
+      title: 'Events and calendar',
+      lede: 'What is on the public calendar and the portal calendar.',
+      content: (
+        <SubTabs
+          label="Events views"
+          initial={sub}
+          tabs={[
+            { id: 'edit', label: 'Events', content: <EventsEditor /> },
+            { id: 'calendar', label: 'Calendar', content: <MemberCalendar initial={events} /> },
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'tasks',
+      label: 'Tasks',
+      group: 'Guild life',
+      count: badges.tasks,
+      title: 'Tasks',
+      lede: 'Who is doing what for the Guild.',
+      content: <TasksBoard session={session} />,
+    },
+    {
+      id: 'comms',
+      label: 'Communications',
+      group: 'Outreach',
+      title: 'Communications',
+      lede: 'Emails to tradesmen, the public email list, and the blog.',
+      content: (
+        <SubTabs
+          label="Communications"
+          initial={sub}
+          tabs={[
+            { id: 'announce', label: 'Email tradesmen', content: <AnnouncementsPanel /> },
+            { id: 'emaillist', label: 'Public email list', content: <EmailListPanel /> },
+            { id: 'posts', label: 'Blog posts', content: <PostEditor session={session} /> },
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'giving',
+      label: 'Giving',
+      group: 'Outreach',
+      title: 'Giving',
+      lede: 'Donations, receipts, and sponsors.',
+      content: (
+        <SubTabs
+          label="Giving"
+          initial={sub}
+          tabs={[
+            { id: 'donors', label: 'Donations and receipts', content: <DonorRecords /> },
+            { id: 'sponsors', label: 'Sponsors', content: <SponsorsEditor /> },
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'listing',
+      label: 'My own listing',
+      group: 'You',
+      title: 'My own listing',
+      lede: 'Your directory entry and paperwork, like every tradesman.',
+      content: <MyListing session={session} summary={s} areas={areas} />,
+    },
+  ];
+
+  const items = isAdmin ? adminItems : memberItems;
+  const active = items.some((t) => t.id === tab) ? tab : items[0].id;
+
+  // Keep ?tab= in step with the page, and drop params that belong to another page.
+  useEffect(() => {
+    if (!ready) return;
+    const p = new URLSearchParams(window.location.search);
+    p.set('tab', active);
+    for (const [page, keys] of Object.entries(PAGE_PARAMS))
+      if (page !== active) keys.forEach((k) => p.delete(k));
+    window.history.replaceState(null, '', `${window.location.pathname}?${p}`);
+  }, [active, ready]);
+
+  if (!ready)
+    return (
+      <p className="text-ash p-6 font-sans" aria-busy="true">
+        Loading the portal.
+      </p>
+    );
 
   return (
     <PortalShell
       session={session}
-      tabs={tabs}
+      roleLabel={s?.roleLabel ?? (isAdmin ? 'Guild officer' : '')}
+      items={items}
       active={active}
-      onChange={setTab}
+      onChange={(id) => go(id)}
       onLogout={async () => {
         await authClient().signOut();
         window.location.assign('/');
