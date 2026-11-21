@@ -30,6 +30,7 @@
     "@netlify/functions": "^6.0.0",
     "astro": "^7.3.2",
     "drizzle-orm": "^0.45.3",
+    "pdf-lib": "^1.17.1",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "resend": "^6.28.1",

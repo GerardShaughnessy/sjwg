@@ -76,6 +76,8 @@ export const members = pgTable(
     photoKey: text('photo_key'),
     privatePhone: text('private_phone'),
     privateEmail: text('private_email'),
+    /** The tradesman agreed to show his phone and email to visitors who affirm the directory terms. */
+    showContact: boolean('show_contact').notNull().default(false),
     sortOrder: integer('sort_order').notNull().default(0),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
@@ -505,3 +507,147 @@ export const settings = pgTable('settings', {
   value: jsonb('value'),
   updatedAt: updatedAt(),
 });
+
+/* ------------------------------------------------- directory affirmations */
+/** One row each time a visitor reads and affirms the directory terms. */
+export const directoryAffirmations = pgTable(
+  'directory_affirmations',
+  {
+    id: id(),
+    fullName: text('full_name').notNull(),
+    email: text('email').notNull(),
+    /** The date the visitor typed on the form. */
+    signedDate: date('signed_date').notNull(),
+    isCatholic: boolean('is_catholic').notNull(),
+    /** For visitors who are not practising Catholics: how their values align. */
+    alignmentNote: text('alignment_note').notNull().default(''),
+    /** Hash of the exact terms text affirmed, so a wording change is traceable. */
+    termsVersion: text('terms_version').notNull(),
+    ipHash: text('ip_hash'),
+    userAgent: text('user_agent'),
+    createdAt: createdAt(),
+  },
+  (t) => [index('directory_affirmations_email_idx').on(sql`lower(${t.email})`)],
+);
+
+/* ------------------------------------------------------- aid applications */
+export const aidApplications = pgTable(
+  'aid_applications',
+  {
+    id: id(),
+    ref: text('ref').notNull(),
+    /** family, tradesman-medical, parish, school, religious-house, business, organization */
+    applicantType: text('applicant_type').notNull(),
+    /** new, reviewing, approved, declined, closed */
+    status: text('status').notNull().default('new'),
+    contactName: text('contact_name').notNull(),
+    email: text('email').notNull(),
+    phone: text('phone').notNull().default(''),
+    orgName: text('org_name').notNull().default(''),
+    urgency: text('urgency').notNull(),
+    /** Every answer on the form, by field id. */
+    answers: jsonb('answers').notNull().default({}),
+    awardCents: integer('award_cents'),
+    decisionNote: text('decision_note').notNull().default(''),
+    decidedBy: uuid('decided_by').references(() => appUsers.id, { onDelete: 'set null' }),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    ipHash: text('ip_hash'),
+    notifiedAt: timestamp('notified_at', { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    uniqueIndex('aid_applications_ref_idx').on(t.ref),
+    index('aid_applications_status_idx').on(t.status, t.createdAt),
+  ],
+);
+
+/* -------------------------------------------------------------- documents */
+/**
+ * Private files: a tradesman's baptism certificate, license, or insurance, or
+ * supporting papers sent with an aid application. Only officers can open them.
+ */
+export const documents = pgTable(
+  'documents',
+  {
+    id: id(),
+    /** member or aid */
+    ownerType: text('owner_type').notNull(),
+    ownerId: uuid('owner_id').notNull(),
+    /** baptism, confirmation, license, insurance, w9, other, supporting */
+    kind: text('kind').notNull(),
+    filename: text('filename').notNull(),
+    blobKey: text('blob_key').notNull(),
+    contentType: text('content_type').notNull(),
+    byteSize: integer('byte_size').notNull(),
+    /** pending, verified, rejected */
+    status: text('status').notNull().default('pending'),
+    expiresOn: date('expires_on'),
+    note: text('note').notNull().default(''),
+    uploadedBy: uuid('uploaded_by').references(() => appUsers.id, { onDelete: 'set null' }),
+    reviewedBy: uuid('reviewed_by').references(() => appUsers.id, { onDelete: 'set null' }),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index('documents_owner_idx').on(t.ownerType, t.ownerId)],
+);
+
+/* ------------------------------------------------------------ e-signature */
+/**
+ * A document sent by email for signature. The HTML is frozen and hashed when
+ * sent; the signer types a name after consenting to sign electronically. The
+ * officer who sends it signs for the Guild by sending.
+ */
+export const signRequests = pgTable(
+  'sign_requests',
+  {
+    id: id(),
+    /** listing-packet, pledge, waiver, agreement */
+    docKind: text('doc_kind').notNull(),
+    title: text('title').notNull(),
+    frozenHtml: text('frozen_html').notNull(),
+    docSha256: text('doc_sha256').notNull(),
+    signerName: text('signer_name').notNull(),
+    signerEmail: text('signer_email').notNull(),
+    memberId: uuid('member_id').references(() => members.id, { onDelete: 'set null' }),
+    tokenHash: text('token_hash').notNull(),
+    tokenExpiresAt: timestamp('token_expires_at', { withTimezone: true }).notNull(),
+    /** sent, viewed, signed, voided */
+    status: text('status').notNull().default('sent'),
+    sentBy: uuid('sent_by').references(() => appUsers.id, { onDelete: 'set null' }),
+    sentByName: text('sent_by_name').notNull(),
+    sentAt: timestamp('sent_at', { withTimezone: true }).notNull().defaultNow(),
+    viewedAt: timestamp('viewed_at', { withTimezone: true }),
+    consentAt: timestamp('consent_at', { withTimezone: true }),
+    consentSha256: text('consent_sha256'),
+    signedName: text('signed_name'),
+    signedAt: timestamp('signed_at', { withTimezone: true }),
+    signedIp: text('signed_ip'),
+    signedUserAgent: text('signed_user_agent'),
+    signedPdfKey: text('signed_pdf_key'),
+    voidedAt: timestamp('voided_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    uniqueIndex('sign_requests_token_idx').on(t.tokenHash),
+    index('sign_requests_member_idx').on(t.memberId),
+  ],
+);
+
+export const signEvents = pgTable(
+  'sign_events',
+  {
+    id: id(),
+    signRequestId: uuid('sign_request_id')
+      .notNull()
+      .references(() => signRequests.id, { onDelete: 'cascade' }),
+    /** sent, emailed, viewed, consented, signed, voided, resent */
+    type: text('type').notNull(),
+    actor: text('actor').notNull().default(''),
+    ip: text('ip'),
+    userAgent: text('user_agent'),
+    meta: jsonb('meta').notNull().default({}),
+    at: timestamp('at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('sign_events_request_idx').on(t.signRequestId, t.at)],
+);
