@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { GuildEvent, Member, Session } from '@/lib/types';
+import type { GuildEvent, Session } from '@/lib/types';
 import { authClient } from '@/lib/auth-client';
 import { useResource } from '@/lib/hooks';
 import { portal } from '@/lib/api-portal';
@@ -20,7 +20,6 @@ import TradesmenPage from './pages/Tradesmen';
 
 interface Props {
   session: Session;
-  members: Member[];
   events: GuildEvent[];
   areas: string[];
 }
@@ -70,26 +69,43 @@ export default function PortalApp({ session, events, areas }: Props) {
     return (isAdmin ? OLD_ADMIN : OLD_MEMBER)[id] ?? [id];
   }
 
-  useEffect(() => {
-    const [t, s] = resolve(new URLSearchParams(window.location.search).get('tab') ?? '');
+  /** Read ?tab= and ?sub= from the address bar. Old ?tab= ids name their sub-tab. */
+  function readUrl() {
+    const p = new URLSearchParams(window.location.search);
+    const [t, s] = resolve(p.get('tab') ?? '');
     setTab(t);
-    setSub(s);
+    setSub(s ?? p.get('sub') ?? undefined);
+  }
+
+  useEffect(() => {
+    readUrl();
     setReady(true);
+    // Back and Forward move between portal pages.
+    window.addEventListener('popstate', readUrl);
+    return () => window.removeEventListener('popstate', readUrl);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /** Go to a page, optionally with page params such as aid=<id>. */
+  /**
+   * Go to a page, optionally with page params such as aid=<id> or sub=<sub-tab>.
+   * A new page adds a history entry, so Back returns to the last page.
+   */
   function go(next: string, query?: string) {
     const p = new URLSearchParams(window.location.search);
-    for (const k of Object.values(PAGE_PARAMS).flat()) p.delete(k);
-    new URLSearchParams(query ?? '').forEach((v, k) => p.set(k, v));
+    for (const k of [...Object.values(PAGE_PARAMS).flat(), 'sub']) p.delete(k);
+    const q = new URLSearchParams(query ?? '');
+    q.forEach((v, k) => p.set(k, v));
     p.set('tab', next);
-    window.history.replaceState(null, '', `${window.location.pathname}?${p}`);
-    setSub(undefined);
+    const url = `${window.location.pathname}?${p}`;
+    if (next === active) window.history.replaceState(null, '', url);
+    else window.history.pushState(null, '', url);
+    setSub(q.get('sub') ?? undefined);
     setTab(next);
   }
 
   const badges = summary.data?.badges ?? {};
+  const n = (k: string, one: string, many: string) =>
+    `${badges[k] ?? 0} ${badges[k] === 1 ? one : many}`;
   const s = summary.data;
   const err = summary.error;
 
@@ -98,6 +114,7 @@ export default function PortalApp({ session, events, areas }: Props) {
       id: 'home',
       label: 'Home',
       count: badges.home,
+      countLabel: n('home', 'thing to do', 'things to do'),
       title: `Welcome, ${session.name.split(' ')[0]}`,
       lede: 'What needs your attention, and what is coming up.',
       content: <TradesmanHome summary={s} error={err} go={go} />,
@@ -107,7 +124,7 @@ export default function PortalApp({ session, events, areas }: Props) {
       label: 'My listing',
       title: 'My listing',
       lede: 'Your directory entry, your documents, and your paperwork, in one place.',
-      content: <MyListing session={session} summary={s} areas={areas} />,
+      content: <MyListing session={session} summary={s} error={err} areas={areas} />,
     },
     {
       id: 'calendar',
@@ -139,6 +156,7 @@ export default function PortalApp({ session, events, areas }: Props) {
       label: 'Tradesmen',
       group: 'People',
       count: badges.tradesmen,
+      countLabel: n('tradesmen', 'tradesman needs action', 'tradesmen need action'),
       title: 'Tradesmen',
       lede: 'Everyone listed or on the way: their checklist, documents, and paperwork.',
       content: <TradesmenPage areas={areas} initial={sub} />,
@@ -148,6 +166,7 @@ export default function PortalApp({ session, events, areas }: Props) {
       label: 'Help requests',
       group: 'Charity',
       count: badges.aid,
+      countLabel: n('aid', 'new help request', 'new help requests'),
       title: 'Help requests',
       lede: 'Applications for financial help. Review each one and record a decision.',
       content: <AidApplicationsPanel />,
@@ -174,6 +193,7 @@ export default function PortalApp({ session, events, areas }: Props) {
       label: 'Tasks',
       group: 'Guild life',
       count: badges.tasks,
+      countLabel: n('tasks', 'open task', 'open tasks'),
       title: 'Tasks',
       lede: 'Who is doing what for the Guild.',
       content: <TasksBoard session={session} />,
@@ -219,22 +239,24 @@ export default function PortalApp({ session, events, areas }: Props) {
       group: 'You',
       title: 'My own listing',
       lede: 'Your directory entry and paperwork, like every tradesman.',
-      content: <MyListing session={session} summary={s} areas={areas} />,
+      content: <MyListing session={session} summary={s} error={err} areas={areas} />,
     },
   ];
 
   const items = isAdmin ? adminItems : memberItems;
   const active = items.some((t) => t.id === tab) ? tab : items[0].id;
 
-  // Keep ?tab= in step with the page, and drop params that belong to another page.
+  // Keep ?tab= and ?sub= in step with the page (old ids such as ?tab=members
+  // become ?tab=tradesmen&sub=entries), and drop params that belong to another page.
   useEffect(() => {
     if (!ready) return;
     const p = new URLSearchParams(window.location.search);
     p.set('tab', active);
+    if (sub) p.set('sub', sub);
     for (const [page, keys] of Object.entries(PAGE_PARAMS))
       if (page !== active) keys.forEach((k) => p.delete(k));
     window.history.replaceState(null, '', `${window.location.pathname}?${p}`);
-  }, [active, ready]);
+  }, [active, sub, ready]);
 
   if (!ready)
     return (
@@ -251,7 +273,11 @@ export default function PortalApp({ session, events, areas }: Props) {
       active={active}
       onChange={(id) => go(id)}
       onLogout={async () => {
-        await authClient().signOut();
+        try {
+          await authClient().signOut();
+        } catch {
+          // Go home anyway; the session check there shows whether it worked.
+        }
         window.location.assign('/');
       }}
     />

@@ -179,7 +179,9 @@ export interface SubTab {
 
 /**
  * Secondary tabs inside a page (Communications, Giving, Tradesmen). ARIA tabs
- * with arrow keys; the panel stays mounted only while shown.
+ * with arrow keys; the panel stays mounted only while shown. The active tab is
+ * kept in the address bar as ?sub=, so a reload keeps it (without adding a
+ * history entry).
  */
 export function SubTabs({
   tabs,
@@ -190,9 +192,15 @@ export function SubTabs({
   label: string;
   initial?: string;
 }) {
-  const [active, setActive] = useState(
+  const [active, setActiveState] = useState(
     tabs.some((t) => t.id === initial) ? initial! : tabs[0].id,
   );
+  function setActive(id: string) {
+    setActiveState(id);
+    const p = new URLSearchParams(window.location.search);
+    p.set('sub', id);
+    window.history.replaceState(window.history.state, '', `${window.location.pathname}?${p}`);
+  }
   const i = Math.max(
     0,
     tabs.findIndex((t) => t.id === active),

@@ -8,6 +8,8 @@ export type NavItem = {
   /** Sidebar heading this item sits under. */
   group?: string;
   count?: number;
+  /** What a screen reader hears for the count, e.g. "3 tradesmen need action". */
+  countLabel?: string;
   title: string;
   lede: string;
   content: ReactNode;
@@ -41,6 +43,30 @@ export default function PortalShell({
   const headingRef = useRef<HTMLHeadingElement>(null);
   const first = useRef(true);
   const isAdmin = session.role === 'admin';
+  const menuBtnRef = useRef<HTMLButtonElement>(null);
+  const navListRef = useRef<HTMLUListElement>(null);
+
+  // On phones: opening the menu moves focus to its first link; Escape closes
+  // it and returns focus to the Menu button.
+  useEffect(() => {
+    if (!menuOpen) return;
+    navListRef.current?.querySelector<HTMLAnchorElement>('a[href]')?.focus();
+    function onKey(e: KeyboardEvent) {
+      if (e.key !== 'Escape') return;
+      setMenuOpen(false);
+      menuBtnRef.current?.focus();
+    }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [menuOpen]);
+
+  // Consecutive items with the same group form one labelled section.
+  const sections: { group?: string; items: NavItem[] }[] = [];
+  for (const n of items) {
+    const last = sections[sections.length - 1];
+    if (last && last.group === n.group) last.items.push(n);
+    else sections.push({ group: n.group, items: [n] });
+  }
 
   useEffect(() => {
     document.title = `${current.label} | ${isAdmin ? 'Officer' : 'Tradesman'} portal | St. Joseph the Worker Guild`;
@@ -60,6 +86,7 @@ export default function PortalShell({
       <header className="border-mortar bg-paper border-b">
         <div className="mx-auto flex max-w-[1400px] items-center gap-3 px-4 py-3 md:gap-4 md:px-6">
           <button
+            ref={menuBtnRef}
             type="button"
             className="border-mortar rounded-sm border px-2.5 py-1.5 font-sans text-sm font-semibold md:hidden"
             onClick={() => setMenuOpen((o) => !o)}
@@ -104,37 +131,48 @@ export default function PortalShell({
               Log out
             </button>
           </div>
-          <ul className="flex flex-col gap-0.5 font-sans">
-            {items.map((n, i) => {
-              const showGroup = n.group && n.group !== items[i - 1]?.group;
-              const on = n.id === current.id;
+          <ul ref={navListRef} className="flex flex-col gap-0.5 font-sans">
+            {sections.map((sec, si) => {
+              const links = sec.items.map((n) => {
+                const on = n.id === current.id;
+                return (
+                  <li key={n.id}>
+                    <a
+                      href={`?tab=${n.id}`}
+                      onClick={(e) => {
+                        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+                        e.preventDefault();
+                        go(n.id);
+                      }}
+                      aria-current={on ? 'page' : undefined}
+                      className={`flex w-full items-center justify-between gap-2 rounded-sm px-3 py-2 text-left font-semibold no-underline ${on ? 'bg-brick text-paper' : 'hover:bg-paper text-charcoal'}`}
+                    >
+                      {n.label}
+                      {n.count ? (
+                        <span
+                          className={`rounded-full px-2 text-[0.75rem] ${on ? 'bg-paper text-brick' : 'bg-[#a8432f] text-white'}`}
+                        >
+                          <span aria-hidden="true">{n.count}</span>
+                          <span className="sr-only">, {n.countLabel ?? `${n.count} waiting`}</span>
+                        </span>
+                      ) : null}
+                    </a>
+                  </li>
+                );
+              });
+              if (!sec.group) return links;
+              const labelId = `portal-nav-group-${si}`;
               return (
-                <li key={n.id}>
-                  {showGroup && (
-                    <p className="text-ash mt-5 mb-1.5 px-3 text-[0.75rem] font-semibold tracking-[0.14em] uppercase">
-                      {n.group}
-                    </p>
-                  )}
-                  <a
-                    href={`?tab=${n.id}`}
-                    onClick={(e) => {
-                      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
-                      e.preventDefault();
-                      go(n.id);
-                    }}
-                    aria-current={on ? 'page' : undefined}
-                    className={`flex w-full items-center justify-between gap-2 rounded-sm px-3 py-2 text-left font-semibold no-underline ${on ? 'bg-brick text-paper' : 'hover:bg-paper text-charcoal'}`}
+                <li key={`group-${si}`}>
+                  <p
+                    id={labelId}
+                    className="text-ash mt-5 mb-1.5 px-3 text-[0.75rem] font-semibold tracking-[0.14em] uppercase"
                   >
-                    {n.label}
-                    {n.count ? (
-                      <span
-                        className={`rounded-full px-2 text-[0.75rem] ${on ? 'bg-paper text-brick' : 'bg-[#a8432f] text-white'}`}
-                      >
-                        {n.count}
-                        <span className="sr-only"> waiting</span>
-                      </span>
-                    ) : null}
-                  </a>
+                    {sec.group}
+                  </p>
+                  <ul aria-labelledby={labelId} className="flex flex-col gap-0.5">
+                    {links}
+                  </ul>
                 </li>
               );
             })}

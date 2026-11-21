@@ -7,7 +7,7 @@ import { Badge, Card, Checklist, EventList, ProgressBar, pBtn, pBtnQuiet, pLink 
 
 export type Go = (tab: string, query?: string) => void;
 
-/** Five items count: paperwork, Baptism, Confirmation, insurance, license. */
+/** Four required items count (paperwork, Baptism, Confirmation, insurance), plus a license once uploaded. */
 function progressWord(m: MySummary): { tone: 'done' | 'waiting' | 'neutral'; word: string } {
   if (m.tone === 'done') return { tone: 'done', word: m.listed ? 'Listed' : 'Ready to list' };
   if (m.done >= 3) return { tone: 'waiting', word: 'Almost ready' };
@@ -116,10 +116,12 @@ function NotLinked() {
 export function MyListing({
   session,
   summary,
+  error,
   areas,
 }: {
   session: Session;
   summary: PortalSummary | null;
+  error: string | null;
   areas: string[];
 }) {
   if (!session.memberId)
@@ -146,12 +148,20 @@ export function MyListing({
         action={
           m ? (
             <Badge tone={m.tone === 'done' ? 'done' : 'waiting'}>
-              {m.done} of {m.total}
+              {m.done} of {m.total} done
             </Badge>
           ) : undefined
         }
       >
-        {m ? <Checklist items={m.checklist} /> : <Loading what="your checklist" />}
+        {m ? (
+          <Checklist items={m.checklist} />
+        ) : error ? (
+          <ErrorStrip>{error}</ErrorStrip>
+        ) : summary ? (
+          <p className="text-ash font-sans">No checklist to show.</p>
+        ) : (
+          <Loading what="your checklist" />
+        )}
         <p className="text-ash mt-4 font-sans text-[0.85rem]">
           A trade license counts only if your trade needs one.
         </p>

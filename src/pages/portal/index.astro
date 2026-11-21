@@ -16,6 +16,7 @@ export const prerender = false;
 const session = Astro.locals.session;
 if (!session) return Astro.redirect('/login?next=/portal', 302);
 
+// Members are read only for the service-area list; the island never gets them.
 const members = (await getCollection('members')).map((m) => m.data);
 const events = (await getCollection('events')).map((e) => e.data);
 const areas = getAreas(members);
@@ -39,7 +40,7 @@ const areas = getAreas(members);
   </head>
   <body class="bg-stone min-h-svh">
     <SkipLink />
-    <PortalApp client:load session={session} members={members} events={events} areas={areas}>
+    <PortalApp client:load session={session} events={events} areas={areas}>
       <div slot="fallback" aria-busy="true" class="p-6">
         <p class="font-sans text-ash">Loading the portal.</p>
         <noscript>

@@ -70,6 +70,12 @@ function Roster({ areas }: { areas: string[] }) {
           : true,
   );
   const sel = all.find((t) => t.id === selId) ?? shown[0] ?? null;
+  // Remember an auto-selected first row, so after an action the same person
+  // stays selected (even if they leave the current filter) and the status
+  // message beside them stays visible.
+  useEffect(() => {
+    if (sel && sel.id !== selId) setSelId(sel.id);
+  }, [sel, selId]);
 
   function pick(id: string) {
     setSelId(id);
