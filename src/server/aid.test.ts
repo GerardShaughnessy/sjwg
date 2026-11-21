@@ -55,6 +55,8 @@ const business: AidAnswers = {
   applicantType: 'business',
   orgName: 'Catholic Books LLC',
   mission: 'We sell Catholic books and support local parishes.',
+  catastrophicImpact: 'A fire closed the store and we cannot pay the mortgage.',
+  forProfit: 'yes',
   attestValues: true,
 };
 
@@ -179,5 +181,45 @@ describe('aidDecisionSchema', () => {
   it('parses dollars', () => {
     expect(dollarsToCents('1500')).toBe(150000);
     expect(dollarsToCents('12.345')).toBeNaN();
+  });
+});
+
+describe('for-profit applicants', () => {
+  const base = {
+    contactName: 'Pat',
+    email: 'pat@example.com',
+    phone: '(314) 555-0147',
+    contactPref: 'Phone call',
+    address: 'St. Louis 63104',
+    orgName: 'Pat Plumbing LLC',
+    need: 'Flood ruined the shop.',
+    urgency: 'weeks',
+    mission: 'Family plumbing business run by Catholics.',
+    attestValues: true,
+    affirmTruth: true,
+  };
+  it('a business must explain why the crisis is catastrophic', () => {
+    const r = aidApplicationSchema.safeParse({ ...base, applicantType: 'business' });
+    expect(r.success).toBe(false);
+    expect(
+      aidApplicationSchema.safeParse({
+        ...base,
+        applicantType: 'business',
+        catastrophicImpact: 'We would lose the house.',
+      }).success,
+    ).toBe(true);
+  });
+  it('another organization says whether it is for-profit', () => {
+    expect(aidApplicationSchema.safeParse({ ...base, applicantType: 'organization' }).success).toBe(
+      false,
+    );
+    expect(
+      aidApplicationSchema.safeParse({ ...base, applicantType: 'organization', forProfit: 'no' })
+        .success,
+    ).toBe(true);
+    expect(
+      aidApplicationSchema.safeParse({ ...base, applicantType: 'organization', forProfit: 'yes' })
+        .success,
+    ).toBe(false);
   });
 });

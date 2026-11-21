@@ -9,7 +9,7 @@ export const APPLICANT_TYPES = [
   { value: 'family', label: 'An individual or family' },
   {
     value: 'tradesman-medical',
-    label: 'A Catholic tradesman or his family facing a medical emergency',
+    label: 'A tradesman or his family facing a medical emergency',
   },
   { value: 'parish', label: 'A parish or church' },
   { value: 'school', label: 'A Catholic school' },
@@ -126,6 +126,10 @@ export interface AidAnswers {
   // business and other organization
   mission: string;
   attestValues: boolean;
+  /** Other organizations: 'yes' if it is a for-profit business. */
+  forProfit: string;
+  /** For-profit applicants: why the crisis is catastrophic for faith life or household. */
+  catastrophicImpact: string;
   // everyone
   affirmTruth: boolean;
 }
@@ -158,8 +162,17 @@ export const EMPTY_AID: AidAnswers = {
   diocese: '',
   mission: '',
   attestValues: false,
+  forProfit: '',
+  catastrophicImpact: '',
   affirmTruth: false,
 };
+
+/** A business, or another organization that says it is for-profit. */
+export function isForProfit(a: Pick<AidAnswers, 'applicantType' | 'forProfit'>): boolean {
+  return (
+    a.applicantType === 'business' || (a.applicantType === 'organization' && a.forProfit === 'yes')
+  );
+}
 
 /** Fields that belong to one kind of applicant only. Others are dropped on save. */
 const TYPE_FIELDS: Record<ApplicantType, (keyof AidAnswers)[]> = {
@@ -175,8 +188,8 @@ const TYPE_FIELDS: Record<ApplicantType, (keyof AidAnswers)[]> = {
   parish: ['community', 'diocese'],
   school: ['schoolFormation', 'teachersCatholic', 'teachersExplain', 'studentImpact'],
   'religious-house': ['community', 'diocese'],
-  business: ['mission', 'attestValues'],
-  organization: ['mission', 'attestValues'],
+  business: ['mission', 'attestValues', 'catastrophicImpact'],
+  organization: ['mission', 'attestValues', 'forProfit', 'catastrophicImpact'],
 };
 
 const COMMON_FIELDS: (keyof AidAnswers)[] = [
@@ -248,6 +261,8 @@ export const AID_FIELD_LABEL: Record<keyof AidAnswers, string> = {
   diocese: 'Diocese',
   mission: 'Mission and shared values',
   attestValues: 'Attests nothing conflicts with Church teaching',
+  forProfit: 'For-profit business',
+  catastrophicImpact: 'Why the crisis is catastrophic (faith life or stable household)',
   affirmTruth: 'Affirmed everything is true',
 };
 
@@ -327,6 +342,11 @@ export function aidErrors(a: AidAnswers): Record<string, string> {
   if (type === 'business' || type === 'organization') {
     if (blank(a.mission)) e.mission = 'Tell us the mission and how it shares the Guild’s values.';
     if (!a.attestValues) e.attestValues = 'Check this box to apply.';
+    if (type === 'organization' && !['yes', 'no'].includes(a.forProfit))
+      e.forProfit = 'Choose an answer.';
+    if (isForProfit(a) && blank(a.catastrophicImpact))
+      e.catastrophicImpact =
+        'Please explain. The Guild helps a business only in a catastrophic case.';
   }
 
   if (blank(a.need)) e.need = 'Describe the need. A few sentences is enough.';

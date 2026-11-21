@@ -50,6 +50,8 @@ export const aidApplicationSchema = z
     diocese: short(200),
     mission: long,
     attestValues: z.boolean().default(false),
+    forProfit: z.union([z.enum(['yes', 'no']), z.literal('')]).default(''),
+    catastrophicImpact: long,
     affirmTruth: z.boolean().default(false),
   })
   .superRefine((v, ctx) => {

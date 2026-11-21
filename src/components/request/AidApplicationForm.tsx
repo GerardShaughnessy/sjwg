@@ -18,6 +18,7 @@ import {
   URGENCY_OPTIONS,
   type AidAnswers,
   type HelpKind,
+  isForProfit,
 } from '@/lib/aid';
 import {
   FormStatus,
@@ -462,6 +463,50 @@ export default function AidApplicationForm() {
                 Our organization does not promote, or take part in, anything that conflicts with the
                 teaching of the Catholic Church.
               </Checkbox>
+              {type === 'organization' && (
+                <fieldset className="flex flex-col gap-3">
+                  <legend className="font-sans text-[1.0625rem] leading-snug font-semibold">
+                    Is your organization a for-profit business?
+                  </legend>
+                  {(['no', 'yes'] as const).map((x) => (
+                    <label key={x} className="flex items-center gap-3 font-sans">
+                      <input
+                        type="radio"
+                        name={fid('forProfit')}
+                        id={x === 'no' ? fid('forProfit') : `${fid('forProfit')}-yes`}
+                        checked={v.forProfit === x}
+                        onChange={() => set('forProfit', x)}
+                      />
+                      {x === 'no'
+                        ? 'No, it is a nonprofit or ministry'
+                        : 'Yes, it is a for-profit business'}
+                    </label>
+                  ))}
+                  {errors.forProfit && (
+                    <p className="text-brick font-sans text-[0.95rem] font-semibold" role="alert">
+                      {errors.forProfit}
+                    </p>
+                  )}
+                </fieldset>
+              )}
+              {isForProfit(v) && (
+                <>
+                  <p className="border-brass bg-paper border-l-4 p-4 font-sans text-[0.95rem] leading-relaxed">
+                    The Guild rarely helps a for-profit business, and never with ordinary business
+                    costs. We consider it only when the crisis is catastrophic: so severe that,
+                    without help, the owner and his or her family could not adequately practise
+                    their Catholic faith or keep a stable household.
+                  </p>
+                  <TextArea
+                    id={fid('catastrophicImpact')}
+                    label="Explain why this crisis is that severe"
+                    hint="How it threatens your family's ability to practise the faith, or the stability of your household."
+                    value={v.catastrophicImpact}
+                    onChange={(e) => set('catastrophicImpact', e.target.value)}
+                    error={errors.catastrophicImpact}
+                  />
+                </>
+              )}
             </Group>
           )}
 
