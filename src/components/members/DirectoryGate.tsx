@@ -76,7 +76,7 @@ export default function DirectoryGate(p: Props) {
         alignmentNote: catholic === 'not-catholic' ? note : '',
         affirm,
         website: honey,
-        formToken: formToken.current,
+        formToken: await formToken.ensure(),
       });
       window.location.assign(window.location.pathname);
     } catch (err) {

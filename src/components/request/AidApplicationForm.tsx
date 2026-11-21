@@ -184,7 +184,10 @@ export default function AidApplicationForm() {
         focusFirst({ files: msg });
         return;
       }
-      const res = await aid.apply({ ...v, website: honey, formToken: formToken.current }, ready);
+      const res = await aid.apply(
+        { ...v, website: honey, formToken: await formToken.ensure() },
+        ready,
+      );
       setDone({ ref: res.ref, filesFailed: res.filesFailed ?? 0 });
       setTimeout(() => doneRef.current?.focus(), 0);
     } catch (err) {

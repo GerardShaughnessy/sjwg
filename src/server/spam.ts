@@ -8,7 +8,7 @@ import { dirCookieSecret } from './directory-cookie';
  * Database limits per IP hash and per email back it up across server instances.
  */
 export const FORM_TOKEN_MIN_MS = 3_000;
-export const FORM_TOKEN_MAX_MS = 24 * 60 * 60 * 1000;
+export const FORM_TOKEN_MAX_MS = 2 * 60 * 60 * 1000;
 
 const mac = (payload: string) =>
   createHmac('sha256', `form:${dirCookieSecret()}`).update(payload).digest('base64url');
