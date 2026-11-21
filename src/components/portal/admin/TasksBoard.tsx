@@ -104,7 +104,7 @@ export default function TasksBoard({ session }: { session: Session }) {
           <h2 className="text-h2 font-serif">Tasks</h2>
           <p className="text-ash text-[0.95rem]">
             Drag a card to another column, or open it to edit. Assigning a task to another officer
-            emails him.
+            emails them.
           </p>
         </div>
         <button type="button" className={btnPrimary} onClick={() => setEditing('new')}>

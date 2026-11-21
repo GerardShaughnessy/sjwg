@@ -58,7 +58,7 @@ export default function SigningPanel() {
     setStatus(
       r.emailed
         ? `${what} ${r.request.signerEmail}. The link works for 30 days.`
-        : `${what} ${r.request.signerEmail}, but the email could not be sent (${r.mailError ?? 'mail is not set up'}). Copy the link below and send it to him yourself.`,
+        : `${what} ${r.request.signerEmail}, but the email could not be sent (${r.mailError ?? 'mail is not set up'}). Copy the link below and send it to them yourself.`,
     );
     setCopied(false);
     setLink({ id: r.request.id, url: r.link });
@@ -122,13 +122,13 @@ export default function SigningPanel() {
       <form onSubmit={send} className="flex max-w-[48ch] flex-col gap-5" noValidate>
         <h2 className="text-h2 font-serif">Send for signature</h2>
         <p className="text-ash text-[0.95rem]">
-          He gets a private link by email, agrees to sign electronically, reads the document, and
-          signs with his typed name. You both get a signed PDF. Sending it signs for the Guild in
-          your name. Drafts can be sent for testing; they carry a draft banner.
+          The tradesman gets a private link by email, agrees to sign electronically, reads the
+          document, and signs with their typed name. You both get a signed PDF. Sending it signs for
+          the Guild in your name. Drafts can be sent for testing; they carry a draft banner.
         </p>
         <Labeled
           label="Tradesman"
-          hint="Fills in his name and private email. Leave blank to type them yourself."
+          hint="Fills in their name and private email. Leave blank to type them yourself."
         >
           <select value={memberId} onChange={(e) => pick(e.target.value)} className={inputCls}>
             <option value="">Someone not in the list</option>

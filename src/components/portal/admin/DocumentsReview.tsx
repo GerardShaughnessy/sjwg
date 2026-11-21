@@ -89,8 +89,7 @@ export default function DocumentsReview() {
       <h2 className="text-h2 font-serif">Tradesman documents</h2>
       <p className="text-ash max-w-[65ch] text-[0.95rem]">
         Proof of Baptism and Confirmation, licenses, and insurance. These are private: only officers
-        and the tradesman himself can open them. Expired documents do not count toward the
-        checklist.
+        and the tradesman can open them. Expired documents do not count toward the checklist.
       </p>
       <div role="radiogroup" aria-label="Show" className="flex flex-wrap gap-2">
         {(

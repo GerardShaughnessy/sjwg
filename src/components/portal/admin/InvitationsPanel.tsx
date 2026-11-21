@@ -49,7 +49,7 @@ export default function InvitationsPanel({
   function report(r: InvitationResult, what: string, who = { name: '', phone: '' }) {
     setStatus(
       r.emailed
-        ? `${what} ${r.email}. The link works for seven days. You can also text it to him below.`
+        ? `${what} ${r.email}. The link works for seven days. You can also text it to them below.`
         : `${what} ${r.email}, but the email could not be sent (${r.mailError ?? 'mail is not set up'}). Text or copy the link below.`,
     );
     setCopied(false);
@@ -116,15 +116,15 @@ export default function InvitationsPanel({
       <form onSubmit={send} className="flex flex-col gap-5 font-sans">
         <h2 className="text-h2 font-serif">Invite a member</h2>
         <p className="text-ash text-[0.95rem]">
-          He gets a link by email, and you can text it to him too. The link lets him set a password,
-          pick his trade, and start his own directory entry. It stays private until he chooses to
-          list it.
+          They get a link by email, and you can text it to them too. The link lets them set a
+          password, pick their trade, and start their own directory entry. It stays private until
+          they choose to list it.
         </p>
         {prefill && (
           <p className="border-brass bg-paper flex flex-wrap items-baseline justify-between gap-3 border-l-4 px-4 py-3 text-[0.95rem]">
             <span>
               Inviting <span className="font-semibold">{prefill.name}</span> to the entry already
-              listed for him.
+              listed for them.
             </span>
             <button type="button" onClick={onClearPrefill} className={btnQuiet}>
               Invite someone else
@@ -141,7 +141,7 @@ export default function InvitationsPanel({
             autoComplete="off"
           />
         </Labeled>
-        <Labeled label="Name" hint="Pre-fills his sign-up form." error={fields.name}>
+        <Labeled label="Name" hint="Pre-fills their sign-up form." error={fields.name}>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -151,7 +151,7 @@ export default function InvitationsPanel({
         </Labeled>
         <Labeled
           label="Cell phone"
-          hint="Optional. Only used to text him the link from your phone."
+          hint="Optional. Only used to text them the link from your phone."
         >
           <input
             type="tel"
@@ -172,7 +172,7 @@ export default function InvitationsPanel({
               checked={role === 'member'}
               onChange={() => setRole('member')}
             />
-            Member: job board, calendar, his own entry, blog drafts
+            Member: job board, calendar, their own entry, blog drafts
           </label>
           <label className="flex items-center gap-2">
             <input
