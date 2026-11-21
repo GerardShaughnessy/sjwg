@@ -298,7 +298,9 @@ export default function DonorRecords() {
               </dl>
             </div>
             <div>
-              <h3 className="text-brass-ink font-sans text-[0.95rem] font-semibold">By giving level</h3>
+              <h3 className="text-brass-ink font-sans text-[0.95rem] font-semibold">
+                By giving level
+              </h3>
               <dl className="border-mortar mt-2 border-t font-sans">
                 {[...byTier.entries()].map(([t, n]) => (
                   <div key={t} className="border-mortar flex justify-between border-b py-2">

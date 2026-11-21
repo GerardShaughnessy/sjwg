@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import type { GuildEvent, Member, Session } from '@/lib/types';
 import { authClient } from '@/lib/auth-client';
 import PortalShell, { type Tab } from './PortalShell';
-import JobBoard from './member/JobBoard';
 import MemberCalendar from './member/MemberCalendar';
 import ProfileEditor from './member/ProfileEditor';
 import PostEditor from './member/PostEditor';
@@ -13,6 +12,10 @@ import MembersAdmin from './admin/MembersAdmin';
 import EmailListPanel from './admin/EmailListPanel';
 import AnnouncementsPanel from './admin/AnnouncementsPanel';
 import TasksBoard from './admin/TasksBoard';
+import AidApplicationsPanel from './admin/AidApplicationsPanel';
+import DocumentsReview from './admin/DocumentsReview';
+import SigningPanel from './admin/SigningPanel';
+import MyDocuments from './member/MyDocuments';
 
 interface Props {
   session: Session;
@@ -44,12 +47,15 @@ export default function PortalApp({ session, events, areas }: Props) {
 
   const isAdmin = session.role === 'admin';
   const tabs: Tab[] = [
-    { id: 'jobs', label: 'Job board', content: <JobBoard session={session} /> },
     { id: 'calendar', label: 'Calendar', content: <MemberCalendar initial={events} /> },
     { id: 'profile', label: 'My entry', content: <ProfileEditor areas={areas} /> },
+    { id: 'paperwork', label: 'My paperwork', content: <MyDocuments session={session} /> },
     { id: 'posts', label: 'Blog posts', content: <PostEditor session={session} /> },
     ...(isAdmin
       ? [
+          { id: 'aid', label: 'Help requests', content: <AidApplicationsPanel /> },
+          { id: 'signing', label: 'Send for signature', content: <SigningPanel /> },
+          { id: 'documents', label: 'Tradesman documents', content: <DocumentsReview /> },
           { id: 'tasks', label: 'Tasks', content: <TasksBoard session={session} /> },
           { id: 'events', label: 'Events', content: <EventsEditor /> },
           { id: 'sponsors', label: 'Sponsors', content: <SponsorsEditor /> },

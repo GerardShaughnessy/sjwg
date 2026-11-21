@@ -92,11 +92,7 @@ export async function createPost({ byline, ...input }: PostInput, session: AppSe
   });
 }
 
-export async function updatePost(
-  id: string,
-  { byline, ...input }: PostInput,
-  session: AppSession,
-) {
+export async function updatePost(id: string, { byline, ...input }: PostInput, session: AppSession) {
   const p = await getPost(id);
   if (!canEdit(session, p))
     throw new HttpError(

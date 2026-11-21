@@ -1,0 +1,64 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PrintStyles from '@/components/sign/PrintStyles.astro';
+import { DOCUMENTS, DRAFT_NOTICE, renderDocHtml, type GuildDocument } from '@/config/documents';
+
+export const getStaticPaths = (() =>
+  DOCUMENTS.map((doc) => ({
+    params: { slug: doc.slug },
+    props: { doc },
+  }))) satisfies GetStaticPaths;
+
+const { doc } = Astro.props as { doc: GuildDocument };
+const html = renderDocHtml(doc);
+---
+
+<BaseLayout title={doc.title} description={doc.summary} noindex={doc.draft}>
+  <PrintStyles />
+  {doc.draft && (
+    <div class="doc-watermark" aria-hidden="true">
+      <span>DRAFT</span>
+    </div>
+  )}
+  <div class="wrap py-10 md:py-14">
+    <div class="no-print mb-8 flex flex-wrap items-center gap-4 font-sans">
+      <a href="/documents" class="decoration-brass underline decoration-2 underline-offset-4">
+        All documents
+      </a>
+      <button
+        type="button"
+        data-print
+        class="bg-brick text-paper hover:bg-kiln px-4 py-2.5 font-semibold"
+      >
+        Print this page
+      </button>
+    </div>
+    {doc.draft && (
+      <p
+        role="note"
+        class="no-print bg-brick text-paper mb-8 max-w-[70ch] px-4 py-3 font-sans text-[1.0625rem] font-semibold"
+      >
+        {DRAFT_NOTICE}
+      </p>
+    )}
+    <article class="doc-print prose prose-stone max-w-[70ch] font-serif">
+      <Fragment set:html={html} />
+
+      <section class="doc-signatures not-prose mt-12 font-sans">
+        <p class="mb-8 text-[0.95rem]">Signed by the tradesman:</p>
+        <div class="grid gap-10">
+          {['Name (print)', 'Signature', 'Date'].map((label) => (
+            <div>
+              <div class="border-charcoal h-10 border-b"></div>
+              <p class="text-ash mt-1 text-[0.85rem]">{label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </article>
+  </div>
+  <script>
+    document.querySelector('[data-print]')?.addEventListener('click', () => window.print());
+  </script>
+</BaseLayout>

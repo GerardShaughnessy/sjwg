@@ -1,0 +1,41 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/ui/PageHeader.astro';
+import { DOCUMENTS, DRAFT_NOTICE } from '@/config/documents';
+---
+
+<BaseLayout
+  title="Guild documents"
+  description="Printable copies of the Ethical Pledge and the papers a tradesman signs to be listed in the Guild directory."
+>
+  <PageHeader
+    title="Guild documents"
+    lede="The papers a tradesman signs to be listed in the Guild directory. Open one to read it or print it for a paper signature."
+  />
+  <div class="wrap py-12 md:py-16">
+    <ul class="flex max-w-[60ch] flex-col gap-8 font-sans">
+      {DOCUMENTS.map((d) => (
+        <li class="border-mortar border-b pb-8">
+          <h2 class="text-h3 font-serif">
+            <a
+              href={`/documents/${d.slug}`}
+              class="decoration-brass underline decoration-2 underline-offset-4"
+            >
+              {d.title}
+            </a>
+          </h2>
+          {d.draft && <p class="text-brick mt-2 font-semibold">{DRAFT_NOTICE}</p>}
+          <p class="mt-2 leading-relaxed">{d.summary}</p>
+          <p class="text-ash mt-1 text-[0.9rem]">Version {d.version}</p>
+        </li>
+      ))}
+    </ul>
+    <p class="text-ash mt-10 max-w-[60ch] font-sans text-[0.95rem]">
+      Guild officers can also send these to a tradesman to sign online. Questions? Write to
+      <a href="mailto:hello@sjwg.org" class="underline">
+        hello@sjwg.org
+      </a>
+      .
+    </p>
+  </div>
+</BaseLayout>

@@ -167,12 +167,11 @@ export default function EventsEditor() {
           member calendar.
         </p>
         {!id && (
-          <Labeled label="Start from" hint="Fills in the usual time, place, and wording, and the next date.">
-            <select
-              value=""
-              onChange={(e) => applyTemplate(e.target.value)}
-              className={inputCls}
-            >
+          <Labeled
+            label="Start from"
+            hint="Fills in the usual time, place, and wording, and the next date."
+          >
+            <select value="" onChange={(e) => applyTemplate(e.target.value)} className={inputCls}>
               <option value="">Blank event</option>
               {EVENT_TEMPLATES.map((t) => (
                 <option key={t.key} value={t.key}>

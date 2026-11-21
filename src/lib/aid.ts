@@ -85,7 +85,7 @@ export const AID_STATUS_LABEL: Record<AidStatus, string> = {
 };
 
 export const AID_MAX_FILES = 5;
-export const AID_FILE_MAX_BYTES = 10 * 1024 * 1024;
+export const AID_FILE_MAX_BYTES = 5 * 1024 * 1024;
 /**
  * Netlify functions take at most 6 MB per request, so the browser keeps the
  * whole upload under this. Photos are shrunk before sending, so most fit.

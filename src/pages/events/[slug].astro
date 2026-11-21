@@ -28,7 +28,10 @@ function chips(text: string) {
 }
 ---
 
-<BaseLayout title={titleCase(event.title)} description={event.summary.replace(tkRe, '').trim() || titleCase(event.title)}>
+<BaseLayout
+  title={titleCase(event.title)}
+  description={event.summary.replace(tkRe, '').trim() || titleCase(event.title)}
+>
   <PageHeader title={titleCase(event.title)}>
     <p class="mt-6 font-sans text-[1.125rem] text-stone/90">
       <time datetime={event.start}>

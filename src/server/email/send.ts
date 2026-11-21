@@ -10,6 +10,8 @@ export interface SendOptions {
   template: string;
   replyTo?: string;
   related?: { type: string; id: string };
+  /** Files to attach, e.g. a signed PDF. Resend takes a Buffer or base64 string. */
+  attachments?: { filename: string; content: Buffer | string }[];
 }
 
 export type SendResult =
@@ -26,7 +28,9 @@ export async function sendEmail(opts: SendOptions): Promise<SendResult> {
   let result: SendResult;
   if (!key) {
     result = { status: 'skipped', error: 'RESEND_API_KEY is not set' };
-    console.warn(`[email] skipped ${opts.template} to ${[opts.to].flat().join(', ')}: no RESEND_API_KEY`);
+    console.warn(
+      `[email] skipped ${opts.template} to ${[opts.to].flat().join(', ')}: no RESEND_API_KEY`,
+    );
   } else {
     try {
       const resend = new Resend(key);
@@ -37,6 +41,7 @@ export async function sendEmail(opts: SendOptions): Promise<SendResult> {
         subject: opts.email.subject,
         text: opts.email.text,
         html: opts.email.html,
+        ...(opts.attachments?.length ? { attachments: opts.attachments } : {}),
       });
       result = error
         ? { status: 'failed', error: error.message }

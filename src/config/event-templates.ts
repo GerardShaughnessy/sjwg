@@ -38,8 +38,7 @@ export const EVENT_TEMPLATES: EventTemplate[] = [
     startTime: '19:00',
     endTime: '20:30',
     location: GUILD_LOCATION,
-    summary:
-      'The monthly Guild meeting: formation, prayer, and Guild business. All are welcome.',
+    summary: 'The monthly Guild meeting: formation, prayer, and Guild business. All are welcome.',
     body: 'The Guild meets the first Thursday of every month. Formation in the Catholic faith and the dignity of work, prayer, and Guild business. All are welcome to come and see.',
     membersOnly: false,
   },
@@ -92,7 +91,8 @@ export const EVENT_TEMPLATES: EventTemplate[] = [
     startTime: '12:15',
     endTime: '14:30',
     location: GUILD_LOCATION,
-    summary: 'After the 11:00 AM Mass at St. Mary of Victories. Volunteers, families, and friends. All are welcome.',
+    summary:
+      'After the 11:00 AM Mass at St. Mary of Victories. Volunteers, families, and friends. All are welcome.',
     body: 'Join the Guild after the 11:00 AM Sunday Mass for the Christmas party. Members, families, and friends are welcome.',
     membersOnly: false,
   },

@@ -1,0 +1,83 @@
+---
+/**
+ * The signing page body for one request, reached by emailed link or by a
+ * logged-in tradesman from the portal. States: open, signed, voided, expired,
+ * missing.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/ui/PageHeader.astro';
+import SignForm from './SignForm';
+import { DRAFT_NOTICE } from '@/config/documents/types';
+import { ESIGN_CONSENT_SHA256, ESIGN_CONSENT_TEXT, guildTime } from '@/server/esign-core';
+import { isDraftHtml, type SignRow } from '@/server/esign';
+
+interface Props {
+  row: SignRow | null;
+  state: 'open' | 'signed' | 'voided' | 'expired' | 'missing';
+  endpoint: string;
+  pdfUrl: string;
+}
+const { row, state, endpoint, pdfUrl } = Astro.props;
+Astro.response.headers.set('cache-control', 'private, no-store');
+Astro.response.headers.set('x-robots-tag', 'noindex, nofollow');
+Astro.response.headers.set('referrer-policy', 'no-referrer');
+
+const heading = {
+  open: row ? `Sign the ${row.title}` : 'Sign',
+  signed: 'This document is signed',
+  voided: 'This request was withdrawn',
+  expired: 'This link has expired',
+  missing: 'This link is not right',
+}[state];
+const lede = {
+  open: 'Read the consent, then the document, and sign with your typed name.',
+  signed: row?.signedAt
+    ? `${row.signedName ?? row.signerName} signed it on ${guildTime(row.signedAt)}.`
+    : '',
+  voided:
+    'The Guild withdrew this request, so it can no longer be signed. If you think that is a mistake, write to hello@sjwg.org.',
+  expired: 'Signing links work for 30 days. Ask the Guild to send a new one at hello@sjwg.org.',
+  missing:
+    'Check that you opened the whole link from the email. If it still does not work, ask the Guild to send a new one at hello@sjwg.org.',
+}[state];
+---
+
+<BaseLayout
+  title={heading}
+  description="Sign a St. Joseph the Worker Guild document."
+  noindex
+  suppressWelcome
+>
+  <PageHeader title={heading} lede={lede} />
+  <div class="wrap py-10 md:py-14">
+    {state === 'open' && row ? (
+      <SignForm
+        client:load
+        title={row.title}
+        html={row.frozenHtml}
+        draft={isDraftHtml(row.frozenHtml)}
+        draftNotice={DRAFT_NOTICE}
+        signerName={row.signerName}
+        docSha256={row.docSha256}
+        consentText={ESIGN_CONSENT_TEXT}
+        consentSha256={ESIGN_CONSENT_SHA256}
+        endpoint={endpoint}
+        pdfUrl={pdfUrl}
+      />
+    ) : state === 'signed' && row?.signedPdfKey ? (
+      <a
+        href={pdfUrl}
+        class="bg-brick text-paper hover:bg-kiln inline-block px-4 py-2.5 font-sans font-semibold no-underline"
+      >
+        Download the signed PDF
+      </a>
+    ) : (
+      <a
+        href="/"
+        class="font-sans font-medium underline decoration-brass decoration-2 underline-offset-4"
+      >
+        Go to the Guild home page
+      </a>
+    )}
+  </div>
+</BaseLayout>

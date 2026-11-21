@@ -5,7 +5,7 @@
 export const SITE_NAME = 'St. Joseph the Worker Guild';
 export const SITE_SHORT = 'SJWG';
 export const SITE_DESCRIPTION =
-  'A Catholic charity of St. Louis tradesmen: home repairs for neighbors in need, help for tradesmen\'s families, and formation in the dignity of work.';
+  "A Catholic charity of St. Louis tradesmen: home repairs for neighbors in need, help for tradesmen's families, and formation in the dignity of work.";
 export const PARISH_NAME = 'Saint Mary of Victories Catholic Church';
 export const PARISH_CITY = 'St. Louis, Missouri';
 /** Confirmed 2026-09-22 against the parish listing. */
@@ -105,7 +105,8 @@ export const TK = {
   },
   taxStatus: {
     text: 'tax status line: update when the EIN arrives and again when the 501(c)(3) determination letter arrives (expected 1 to 5 months from September 2026)',
-    sample: 'St. Joseph the Worker Guild is forming as a Missouri nonprofit corporation and will apply to the IRS for recognition as a 501(c)(3) public charity. Until then, gifts are received by Saint Mary of Victories for the Guild\u2019s charitable work.',
+    sample:
+      'St. Joseph the Worker Guild is forming as a Missouri nonprofit corporation and will apply to the IRS for recognition as a 501(c)(3) public charity. Until then, gifts are received by Saint Mary of Victories for the Guild\u2019s charitable work.',
   },
   phone: { text: 'Guild phone number', sample: '(636) 288-7002' },
   email: { text: 'Guild email address', sample: 'hello@sjwg.org' },
@@ -127,7 +128,8 @@ export const TK = {
   legalName: { text: 'legal name for checks', sample: 'St. Joseph the Worker Guild' },
   leadership: {
     text: 'board and officer names, and the chaplain',
-    sample: 'Greg Miller, president. Sam Naumann, vice president. Angela Miller, secretary. Michael Cross, treasurer.',
+    sample:
+      'Greg Miller, president. Sam Naumann, vice president. Angela Miller, secretary. Michael Cross, treasurer.',
   },
   whoReplies: {
     text: 'who replies to contact and volunteer messages, and how fast',

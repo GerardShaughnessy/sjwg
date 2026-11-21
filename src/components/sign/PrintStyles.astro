@@ -1,0 +1,76 @@
+---
+/** Print rules for the /documents pages: Letter paper, no site chrome, no buttons. */
+---
+
+<style is:global>
+  .doc-print .draft-notice {
+    color: var(--color-brick);
+  }
+  .doc-print .doc-meta {
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    color: var(--color-ash);
+  }
+  .doc-watermark {
+    display: none;
+  }
+  @page {
+    size: letter;
+    margin: 0.75in 0.8in;
+  }
+  @media print {
+    html,
+    body {
+      background: #fff !important;
+      color: #000;
+    }
+    body > header,
+    body > footer,
+    body > a[href='#main'],
+    dialog,
+    .no-print {
+      display: none !important;
+    }
+    main {
+      padding: 0 !important;
+    }
+    .doc-print {
+      max-width: none !important;
+      padding: 0 !important;
+      font-size: 11pt;
+      line-height: 1.45;
+    }
+    .doc-print h1 {
+      font-size: 20pt;
+    }
+    .doc-print h2 {
+      font-size: 13pt;
+      break-after: avoid;
+    }
+    .doc-print li,
+    .doc-print p {
+      break-inside: avoid;
+    }
+    .doc-signatures {
+      break-inside: avoid;
+    }
+    .doc-watermark {
+      display: block;
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .doc-watermark span {
+      transform: rotate(-40deg);
+      font-family: var(--font-sans);
+      font-weight: 800;
+      font-size: 120pt;
+      color: rgba(160, 40, 30, 0.1);
+      letter-spacing: 0.05em;
+    }
+  }
+</style>

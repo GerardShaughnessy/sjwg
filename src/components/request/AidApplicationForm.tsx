@@ -141,7 +141,7 @@ export default function AidApplicationForm() {
         continue;
       }
       if (f.size > AID_FILE_MAX_BYTES) {
-        error = `${f.name} is too big. Keep each file under 10 MB.`;
+        error = `${f.name} is too big. Keep each file under 5 MB.`;
         continue;
       }
       if (f.size === 0) {
@@ -532,8 +532,8 @@ export default function AidApplicationForm() {
                 id={`${fid('files')}-hint`}
                 className="text-ash font-sans text-[0.95rem] leading-snug"
               >
-                Bids, bills, or photos of the problem. Up to {AID_MAX_FILES} files, PDF or photos,
-                10 MB each.
+                Bids, bills, or photos of the problem. Up to {AID_MAX_FILES} files, PDF or photos, 5
+                MB each, 5.5 MB together.
               </p>
               <input
                 ref={fileInput}

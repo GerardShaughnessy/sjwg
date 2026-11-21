@@ -46,9 +46,13 @@ If you did not ask for this, ignore it. Your password stays as it is.`;
 
 export function formNotification(kind: string, fields: Record<string, string>): Email {
   const label =
-    { contact: 'Contact form', partner: 'Partnership inquiry', membership: 'Membership interest', interest: 'Pop-up sign-up', rsvp: 'Christmas party RSVP' }[
-      kind
-    ] ?? kind;
+    {
+      contact: 'Contact form',
+      partner: 'Partnership inquiry',
+      membership: 'Membership interest',
+      interest: 'Pop-up sign-up',
+      rsvp: 'Christmas party RSVP',
+    }[kind] ?? kind;
   const lines = Object.entries(fields)
     .filter(([k, v]) => k !== 'website' && v)
     .map(

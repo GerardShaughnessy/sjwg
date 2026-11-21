@@ -10,7 +10,8 @@ import { readBlob, sniffImageType, uploadStore } from './uploads';
  * private blob store under docs/; only officers (and, for his own files, the
  * tradesman who uploaded them) can open them.
  */
-export const DOC_MAX_BYTES = 10 * 1024 * 1024;
+/** Netlify functions accept about 6 MB per request, so one file stays under 5 MB. */
+export const DOC_MAX_BYTES = 5 * 1024 * 1024;
 
 export const DOC_TYPES: Record<string, string> = {
   'application/pdf': 'pdf',
@@ -45,7 +46,10 @@ export type ValidDoc = { bytes: Uint8Array; contentType: string; ext: string };
 
 export function validateDoc(bytes: Uint8Array): ValidDoc | { error: string } {
   if (bytes.byteLength === 0) return { error: 'That file is empty.' };
-  if (bytes.byteLength > DOC_MAX_BYTES) return { error: 'That file is too big. Keep it under 10 MB.' };
+  if (bytes.byteLength > DOC_MAX_BYTES)
+    return {
+      error: 'That file is too big. Keep it under 5 MB. A phone photo or a scanned PDF usually is.',
+    };
   const type = sniffDocType(bytes);
   if (!type) return { error: 'Use a PDF or a photo (JPEG, PNG, WebP, or HEIC).' };
   return { bytes, contentType: type, ext: DOC_TYPES[type] };
