@@ -5,6 +5,7 @@ import {
   docState,
   isReady,
   memberTodos,
+  progressTotal,
   tradesmanStatus,
   type DocLite,
   type SignLite,
@@ -113,6 +114,43 @@ describe('listing checklist', () => {
   });
 });
 
+describe('listing paperwork and progress', () => {
+  it('counts a standalone pledge only when the waiver and agreement are signed too', () => {
+    const one = (docKind: string, id: string) => sign('signed', { docKind, id, title: docKind });
+    expect(computeChecklist([], [one('ethical-pledge', 'p')], NOW)[0].tone).not.toBe('done');
+    const all = [
+      one('ethical-pledge', 'p'),
+      one('tradesman-waiver', 'w'),
+      one('tradesman-agreement', 'a'),
+    ];
+    expect(computeChecklist([], all, NOW)[0].tone).toBe('done');
+  });
+
+  it('counts the license toward progress only once one is uploaded', () => {
+    const c = computeChecklist(allGood, [sign('signed')], NOW);
+    expect(progressTotal(c)).toBe(4);
+    const withLicense = computeChecklist(
+      [...allGood, doc('license', 'pending')],
+      [sign('signed')],
+      NOW,
+    );
+    expect(progressTotal(withLicense)).toBe(5);
+  });
+
+  it('expires by St. Louis date: good through the end of the printed day', () => {
+    const today = doc('insurance', 'verified', { expiresOn: '2026-11-21' });
+    // 11:30 PM Nov 21 in St. Louis is already Nov 22 in UTC.
+    const lateNight = new Date('2026-11-22T05:30:00Z');
+    expect(docState([today], 'insurance', lateNight).state).toBe('verified');
+    // 12:30 AM Nov 22 in St. Louis.
+    expect(docState([today], 'insurance', new Date('2026-11-22T06:30:00Z')).state).toBe('expired');
+    const edge = doc('insurance', 'verified', { expiresOn: '2026-12-21' });
+    expect(docState([edge], 'insurance', NOW)).toMatchObject({ soon: true });
+    const later = doc('insurance', 'verified', { expiresOn: '2026-12-22' });
+    expect(docState([later], 'insurance', NOW)).toMatchObject({ soon: false });
+  });
+});
+
 describe('officer status for a tradesman', () => {
   it('is Ready with nothing to do', () => {
     const s = tradesmanStatus({ docs: allGood, signs: [sign('signed')], listed: true, now: NOW });
@@ -189,6 +227,24 @@ describe('tradesman to-do list', () => {
     expect(memberTodos({ docs: allGood, signs: [sign('signed')], listed: true, now: NOW })).toEqual(
       [],
     );
+  });
+
+  it('still offers Sign now for an expired link, and hides an older open request', () => {
+    const old = sign('sent', {
+      id: 'old',
+      sentAt: '2026-10-01T15:00:00Z',
+      expiresAt: '2026-10-31T15:00:00Z',
+    });
+    const todos = memberTodos({ docs: allGood, signs: [old], listed: true, now: NOW });
+    expect(todos).toHaveLength(1);
+    expect(todos[0]).toMatchObject({ action: 'Sign now', href: '/sign/request/old' });
+    const both = memberTodos({
+      docs: allGood,
+      signs: [old, sign('sent', { id: 'new' })],
+      listed: true,
+      now: NOW,
+    });
+    expect(both.map((t) => t.href)).toEqual(['/sign/request/new']);
   });
 
   it('never uses an em dash', () => {

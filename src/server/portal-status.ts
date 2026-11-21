@@ -53,8 +53,13 @@ const DAY = 24 * 3600 * 1000;
 export const SOON_DAYS = 30;
 export const STALE_DAYS = 7;
 
-/** Kinds of signed paperwork that count toward the listing. */
-export const LISTING_SIGN_KINDS = ['listing-packet', 'ethical-pledge'];
+/** The three documents of the listing packet, when sent one at a time. */
+const STANDALONE_KINDS = ['ethical-pledge', 'tradesman-waiver', 'tradesman-agreement'];
+/**
+ * Kinds of signed paperwork that count toward the listing: the packet, or
+ * all three of its documents signed separately.
+ */
+export const LISTING_SIGN_KINDS = ['listing-packet', ...STANDALONE_KINDS];
 
 const DOC_LABEL: Record<string, string> = {
   baptism: 'Baptism certificate',
@@ -80,17 +85,30 @@ export function shortDay(d: string, withYear = false): string {
   }).format(new Date(plain ? `${d}T12:00:00Z` : d));
 }
 
-/** End of the printed expiry day, so a policy is good through that date. */
-const expiryTime = (d: string) => Date.parse(`${d}T23:59:59Z`);
+const TZ = 'America/Chicago';
+/** The St. Louis calendar date of a moment, as YYYY-MM-DD. */
+const dayKey = (iso: string) =>
+  new Intl.DateTimeFormat('en-CA', {
+    timeZone: TZ,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date(iso));
+const addDays = (day: string, n: number) =>
+  new Date(Date.parse(`${day}T00:00:00Z`) + n * DAY).toISOString().slice(0, 10);
 
+/**
+ * Expiry is by St. Louis calendar date: a policy that expires on a date is
+ * good through the end of that day in St. Louis.
+ */
 export function isExpired(d: DocLite, now: Date): boolean {
-  return Boolean(d.expiresOn) && expiryTime(d.expiresOn!) < now.getTime();
+  return Boolean(d.expiresOn) && d.expiresOn! < dayKey(now.toISOString());
 }
 export function expiresSoon(d: DocLite, now: Date): boolean {
   return (
     Boolean(d.expiresOn) &&
     !isExpired(d, now) &&
-    expiryTime(d.expiresOn!) - now.getTime() <= SOON_DAYS * DAY
+    d.expiresOn! <= addDays(dayKey(now.toISOString()), SOON_DAYS)
   );
 }
 
@@ -127,13 +145,25 @@ export type PaperState =
   | { state: 'open'; req: SignLite; expired: boolean; stale: boolean }
   | { state: 'none' };
 
-/** The listing paperwork: signed, out for signature, or not sent yet. Voided requests do not count. */
+/**
+ * The listing paperwork: signed, out for signature, or not sent yet. Only a
+ * signed listing packet counts, or the pledge, waiver, and agreement each
+ * signed on its own. Voided requests do not count.
+ */
 export function paperState(signs: SignLite[], now: Date): PaperState {
   const live = signs
     .filter((s) => LISTING_SIGN_KINDS.includes(s.docKind) && s.status !== 'voided' && !s.voidedAt)
     .sort((a, b) => Date.parse(b.sentAt) - Date.parse(a.sentAt));
-  const signed = live.find((s) => s.status === 'signed');
-  if (signed) return { state: 'signed', req: signed };
+  const isSigned = (s: SignLite) => s.status === 'signed';
+  const packet = live.find((s) => s.docKind === 'listing-packet' && isSigned(s));
+  if (packet) return { state: 'signed', req: packet };
+  const each = STANDALONE_KINDS.map((k) => live.find((s) => s.docKind === k && isSigned(s)));
+  if (each.every(Boolean)) {
+    const last = (each as SignLite[]).sort(
+      (a, b) => Date.parse(b.signedAt ?? b.sentAt) - Date.parse(a.signedAt ?? a.sentAt),
+    )[0];
+    return { state: 'signed', req: last };
+  }
   const open = live.find((s) => s.status === 'sent' || s.status === 'viewed');
   if (open)
     return {
@@ -188,6 +218,13 @@ export function computeChecklist(docs: DocLite[], signs: SignLite[], now: Date):
 }
 
 export const doneCount = (items: ChecklistItem[]) => items.filter((i) => i.tone === 'done').length;
+
+/**
+ * How many checklist items count toward progress: the four required ones,
+ * plus the trade license only once one has been uploaded.
+ */
+export const progressTotal = (items: ChecklistItem[]) =>
+  items.filter((i) => i.key !== 'license' || i.tone !== 'neutral').length;
 
 /** Paperwork, Baptism, Confirmation, and insurance done, and nothing waiting or wrong. */
 export function isReady(items: ChecklistItem[]): boolean {
@@ -275,6 +312,15 @@ export function tradesmanStatus(input: {
   };
 }
 
+/** Open (sent or viewed) requests, keeping only the newest of each kind. */
+function latestOpen(signs: SignLite[]): SignLite[] {
+  const seen = new Set<string>();
+  return signs
+    .filter((s) => (s.status === 'sent' || s.status === 'viewed') && !s.voidedAt)
+    .sort((a, b) => Date.parse(b.sentAt) - Date.parse(a.sentAt))
+    .filter((s) => !seen.has(s.docKind) && Boolean(seen.add(s.docKind)));
+}
+
 function shortLabel(kind: string): string {
   return (
     {
@@ -295,29 +341,22 @@ export function memberTodos(input: {
 }): Todo[] {
   const { docs, signs, listed, now } = input;
   const out: Todo[] = [];
-  const open = signs.filter((s) => (s.status === 'sent' || s.status === 'viewed') && !s.voidedAt);
-  for (const s of open) {
+  for (const s of latestOpen(signs)) {
+    // Signing from the portal ignores the emailed link's expiry, so an
+    // expired request can still be signed here.
     const expired = Date.parse(s.expiresAt) < now.getTime();
-    out.push(
-      expired
-        ? {
-            id: `sign-${s.id}`,
-            title: `Your signing link for the ${s.title} expired`,
-            detail: 'Ask a Guild officer to send a new one.',
-            action: '',
-            tone: 'attention',
-          }
-        : {
-            id: `sign-${s.id}`,
-            title: LISTING_SIGN_KINDS.includes(s.docKind)
-              ? 'Sign your listing paperwork'
-              : `Sign the ${s.title}`,
-            detail: `Sent ${shortDay(s.sentAt)}. It takes about ten minutes to read and sign.`,
-            href: `/sign/request/${s.id}`,
-            action: 'Sign now',
-            tone: 'attention',
-          },
-    );
+    out.push({
+      id: `sign-${s.id}`,
+      title: LISTING_SIGN_KINDS.includes(s.docKind)
+        ? 'Sign your listing paperwork'
+        : `Sign the ${s.title}`,
+      detail: expired
+        ? `Sent ${shortDay(s.sentAt)}. The emailed link has expired, but you can still sign it here.`
+        : `Sent ${shortDay(s.sentAt)}. It takes about ten minutes to read and sign.`,
+      href: `/sign/request/${s.id}`,
+      action: 'Sign now',
+      tone: 'attention',
+    });
   }
   for (const kind of DOC_KEYS) {
     const s = docState(docs, kind, now);
@@ -391,15 +430,6 @@ export interface ActivityInput {
   affirmations: { at: string }[];
   rsvps: { at: string }[];
 }
-
-const TZ = 'America/Chicago';
-const dayKey = (iso: string) =>
-  new Intl.DateTimeFormat('en-CA', {
-    timeZone: TZ,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date(iso));
 
 /** "Today, 9:12 AM", "Yesterday, 4:05 PM", or "Nov 20" in St. Louis time. */
 export function whenLabel(iso: string, now: Date, withTime = true): string {
