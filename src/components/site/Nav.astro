@@ -32,6 +32,7 @@ const isCurrent = (href: string) => current === href || current.startsWith(href 
       ))}
       <a
         href="/login"
+        data-auth-link
         class="font-sans text-[1rem] font-medium text-ash no-underline hover:underline"
       >
         Log In
@@ -85,6 +86,7 @@ const isCurrent = (href: string) => current === href || current.startsWith(href 
       <li class="border-b border-mortar">
         <a
           href="/login"
+          data-auth-link
           class="block py-4 font-sans text-[1.125rem] font-medium text-ash no-underline"
         >
           Log In
@@ -100,6 +102,31 @@ const isCurrent = (href: string) => current === href || current.startsWith(href 
 </header>
 
 <script>
+  import { authClient } from '@/lib/auth-client';
+
+  // Pages are prerendered, so the header asks once whether this browser is
+  // signed in. If it is, Log In becomes Log Out.
+  fetch('/api/session', { credentials: 'same-origin' })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((b: { signedIn?: boolean } | null) => {
+      if (!b?.signedIn) return;
+      document.querySelectorAll<HTMLAnchorElement>('[data-auth-link]').forEach((a) => {
+        a.textContent = 'Log Out';
+        a.href = '/';
+        a.addEventListener('click', async (e) => {
+          e.preventDefault();
+          a.textContent = 'Logging out';
+          try {
+            await authClient().signOut();
+          } catch {
+            /* the session may already be gone */
+          }
+          window.location.assign('/');
+        });
+      });
+    })
+    .catch(() => {});
+
   const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
   const menu = document.getElementById('mobile-menu');
   const label = toggle?.querySelector('[data-menu-label]');
