@@ -1,5 +1,5 @@
 import { siteUrl } from '../../env';
-import { APPLICANT_TYPE_LABEL, AID_URGENCY_LABEL, answerRows, type AidAnswers } from '@/lib/aid';
+import { APPLICANT_TYPE_LABEL, AID_URGENCY_LABEL, type AidAnswers } from '@/lib/aid';
 import { escapeHtml, paragraphs, shell, textFooter, button, type Email } from '../layout';
 
 export const AID_LIMITED_FUNDS =
@@ -11,19 +11,6 @@ export const AID_NEXT_STEPS = [
   'Depending on the answer, we decide what financial relief, if any, the Guild can give, and we let you know.',
 ];
 
-const LONG_FIELDS = new Set([
-  'The need',
-  'Effect on faith life, marriage, or children',
-  'The medical emergency',
-  'Health insurance',
-  'How the school furthers Catholic formation',
-  'About the teachers',
-  "Effect on students' spiritual formation if unmet",
-  'Community or ministry',
-  'Mission and shared values',
-  'Others asked for help',
-]);
-
 export interface AidEmailInput {
   id: string;
   ref: string;
@@ -32,54 +19,44 @@ export interface AidEmailInput {
   filesFailed: number;
 }
 
-/** To the officers: every answer, readable, plus the files and a link to the portal. */
+/**
+ * To the officers: who, what kind, how urgent, and a link. The answers (address,
+ * medical, money, faith) stay in the portal, never in an inbox.
+ */
 export function aidOfficerAlert(a: AidEmailInput): Email {
   const type = APPLICANT_TYPE_LABEL[a.answers.applicantType ?? ''] ?? 'Someone';
   const urgent = a.answers.urgency === 'emergency';
+  const urgency = AID_URGENCY_LABEL[a.answers.urgency ?? ''] ?? 'Not given';
   const who = a.answers.orgName || a.answers.contactName || 'An applicant';
   const link = `${siteUrl()}/portal?tab=aid&aid=${a.id}`;
-  const rows = answerRows(a.answers);
-  const fileLine = a.files.length ? a.files.map((f) => f.filename).join(', ') : 'None';
+  const docs = a.files.length ? `${a.files.length}` : 'None';
   const failNote = a.filesFailed
     ? `${a.filesFailed} file${a.filesFailed === 1 ? '' : 's'} could not be saved. Ask the applicant to email ${a.filesFailed === 1 ? 'it' : 'them'}.`
     : '';
   const subject = `${urgent ? 'Urgent: ' : ''}Request for help ${a.ref}: ${who}`;
-
+  const rows: [string, string][] = [
+    ['From', who],
+    ['Who is asking', type],
+    ['How urgent', urgency],
+    ['Documents', docs],
+  ];
   const text = `${urgent ? 'URGENT. ' : ''}New request for help ${a.ref}
-${type}
 
-${rows
-  .map((r) => (LONG_FIELDS.has(r.label) ? `${r.label}:\n${r.value}\n` : `${r.label}: ${r.value}`))
-  .join('\n')}
-
-Documents: ${fileLine}
-${failNote}
-Open it in the portal to see the documents and record a decision:
+${rows.map(([l, v]) => `${l}: ${v}`).join('\n')}
+${failNote ? `\n${failNote}\n` : ''}
+The full application stays private in the portal. Open it there to read it and record a decision:
 ${link}${textFooter()}`;
-
-  const tableRows = rows
-    .filter((r) => !LONG_FIELDS.has(r.label))
-    .map(
-      (r) =>
-        `<tr><td style="padding:3px 16px 3px 0;color:#6b6450;vertical-align:top">${escapeHtml(r.label)}</td><td style="vertical-align:top">${escapeHtml(r.value)}</td></tr>`,
-    )
-    .join('');
-  const longBlocks = rows
-    .filter((r) => LONG_FIELDS.has(r.label))
-    .map(
-      (r) =>
-        `<h2 style="margin:20px 0 6px 0;font-size:16px;color:#43402a">${escapeHtml(r.label)}</h2><div style="padding:10px 14px;border-left:4px solid #a37820;background:#f3ead5">${paragraphs(r.value)}</div>`,
-    )
-    .join('');
   const html = shell({
     title: `${urgent ? 'Urgent: ' : ''}Request for help ${a.ref}`,
     bodyHtml: `
-      <p style="margin:0 0 16px 0;font-size:17px;color:#43402a"><strong>${escapeHtml(type)}</strong></p>
-      <table role="presentation" cellpadding="0" cellspacing="0" style="font-size:16px;line-height:1.5;color:#43402a">${tableRows}
-        <tr><td style="padding:3px 16px 3px 0;color:#6b6450;vertical-align:top">Documents</td><td>${escapeHtml(fileLine)}</td></tr>
-      </table>
+      <table role="presentation" cellpadding="0" cellspacing="0" style="font-size:16px;line-height:1.5;color:#43402a">${rows
+        .map(
+          ([l, v]) =>
+            `<tr><td style="padding:3px 16px 3px 0;color:#6b6450;vertical-align:top">${escapeHtml(l)}</td><td style="vertical-align:top">${escapeHtml(v)}</td></tr>`,
+        )
+        .join('')}</table>
       ${failNote ? `<p style="margin:12px 0;color:#483223;font-weight:700">${escapeHtml(failNote)}</p>` : ''}
-      ${longBlocks}
+      <p style="margin:16px 0;font-size:15px;color:#6b6450">The full application stays private in the portal.</p>
       ${button(link, 'Open in the portal')}`,
   });
   return { subject, text, html };

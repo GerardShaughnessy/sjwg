@@ -27,7 +27,10 @@ async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
     }
     throw new ApiError(
       res.status,
-      body.error ?? `Something went wrong (${res.status}).`,
+      body.error ??
+        (res.status === 413
+          ? 'That file is too big to send. Keep it under 4 MB. A phone photo or a scanned PDF usually is.'
+          : `Something went wrong (${res.status}).`),
       body.fields ?? {},
     );
   }

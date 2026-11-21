@@ -45,7 +45,12 @@ export function sniffImageType(bytes: Uint8Array): string | null {
     b[11] === 0x50
   )
     return 'image/webp';
-  if (b[4] === 0x66 && b[5] === 0x74 && b[6] === 0x79 && b[7] === 0x70) return 'image/heic'; // ....ftyp
+  if (b[4] === 0x66 && b[5] === 0x74 && b[6] === 0x79 && b[7] === 0x70) {
+    // ....ftyp is shared by MP4 and MOV; only HEIC/HEIF brands count as photos.
+    const brand = String.fromCharCode(b[8], b[9], b[10], b[11]);
+    if (['heic', 'heix', 'hevc', 'hevx', 'heim', 'heis', 'mif1', 'msf1'].includes(brand))
+      return 'image/heic';
+  }
   const head = new TextDecoder().decode(b.slice(0, 256)).trimStart();
   if (head.startsWith('<svg') || (head.startsWith('<?xml') && head.includes('<svg')))
     return 'image/svg+xml';

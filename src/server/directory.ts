@@ -77,8 +77,11 @@ export const profileUpdateSchema = profileSchema.omit({ availability: true }).ex
   showContact: z.boolean().optional(),
 });
 
-/** An officer saving any entry. */
+/**
+ * An officer saving any entry. Only the tradesman himself can turn on showing
+ * his phone and email (his consent), so an officer's save never changes it.
+ */
 export const memberUpdateSchema = memberAdminSchema.omit({ availability: true }).extend({
-  showContact: z.boolean().optional(),
+  showContact: z.unknown().transform((): boolean | undefined => undefined),
 });
 export type MemberUpdate = z.output<typeof memberUpdateSchema>;

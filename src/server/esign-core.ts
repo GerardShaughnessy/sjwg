@@ -6,7 +6,9 @@
 import { makeToken, sha256 } from './refs';
 
 export const SIGN_TTL_MS = 30 * 24 * 3600 * 1000;
-export const GUILD_COPY_EMAIL = 'hello@sjwg.org';
+export { INBOX } from '@/config/contact-routing';
+import { INBOX } from '@/config/contact-routing';
+export const GUILD_COPY_EMAIL = INBOX.hello;
 export const SIGN_TIME_ZONE = 'America/Chicago';
 
 /** A base64url encoding of 32 random bytes. */

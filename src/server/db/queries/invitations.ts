@@ -149,6 +149,7 @@ export async function complete(
       sortOrder: 0,
       privatePhone: setup.phone,
       privateEmail: row.email,
+      showContact: undefined,
     });
     memberId = entry.id;
   }

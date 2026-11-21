@@ -16,8 +16,9 @@ interface Props {
   state: 'open' | 'signed' | 'voided' | 'expired' | 'missing';
   endpoint: string;
   pdfUrl: string;
+  viewUrl?: string;
 }
-const { row, state, endpoint, pdfUrl } = Astro.props;
+const { row, state, endpoint, pdfUrl, viewUrl } = Astro.props;
 Astro.response.headers.set('cache-control', 'private, no-store');
 Astro.response.headers.set('x-robots-tag', 'noindex, nofollow');
 Astro.response.headers.set('referrer-policy', 'no-referrer');
@@ -63,6 +64,7 @@ const lede = {
         consentSha256={ESIGN_CONSENT_SHA256}
         endpoint={endpoint}
         pdfUrl={pdfUrl}
+        viewUrl={viewUrl}
       />
     ) : state === 'signed' && row?.signedPdfKey ? (
       <a

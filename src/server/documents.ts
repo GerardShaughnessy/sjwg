@@ -10,8 +10,8 @@ import { readBlob, sniffImageType, uploadStore } from './uploads';
  * private blob store under docs/; only officers (and, for his own files, the
  * tradesman who uploaded them) can open them.
  */
-/** Netlify functions accept about 6 MB per request, so one file stays under 5 MB. */
-export const DOC_MAX_BYTES = 5 * 1024 * 1024;
+/** Netlify functions accept about 6 MB per request after base64 encoding (about 4.4 MB of file), so one file stays under 4 MB. */
+export const DOC_MAX_BYTES = 4 * 1024 * 1024;
 
 export const DOC_TYPES: Record<string, string> = {
   'application/pdf': 'pdf',
@@ -48,7 +48,7 @@ export function validateDoc(bytes: Uint8Array): ValidDoc | { error: string } {
   if (bytes.byteLength === 0) return { error: 'That file is empty.' };
   if (bytes.byteLength > DOC_MAX_BYTES)
     return {
-      error: 'That file is too big. Keep it under 5 MB. A phone photo or a scanned PDF usually is.',
+      error: 'That file is too big. Keep it under 4 MB. A phone photo or a scanned PDF usually is.',
     };
   const type = sniffDocType(bytes);
   if (!type) return { error: 'Use a PDF or a photo (JPEG, PNG, WebP, or HEIC).' };
@@ -58,7 +58,7 @@ export function validateDoc(bytes: Uint8Array): ValidDoc | { error: string } {
 /** A safe display name: no path parts, no control characters, 120 characters at most. */
 export function cleanFilename(name: string, ext: string): string {
   const base = (name.split(/[\\/]/).pop() ?? '')
-    .replace(/[\u0000-\u001f\u007f"]/g, '')
+    .replace(/[\u0000-\u001f\u007f"\\]/g, '')
     .trim()
     .slice(0, 120);
   return base || `document.${ext}`;
@@ -107,7 +107,7 @@ export async function documentResponse(doc: DocRow): Promise<Response | null> {
   return new Response(blob.bytes, {
     headers: {
       'content-type': doc.contentType,
-      'content-disposition': `inline; filename="${doc.filename.replace(/[^\x20-\x7e]/g, '_')}"`,
+      'content-disposition': `inline; filename="${doc.filename.replace(/[^\x20-\x7e]|["\\]/g, '_')}"; filename*=UTF-8''${encodeURIComponent(doc.filename)}`,
       'x-content-type-options': 'nosniff',
       'cache-control': 'private, no-store',
       'content-security-policy': 'sandbox',

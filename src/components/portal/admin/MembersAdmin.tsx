@@ -323,24 +323,14 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
             />
             Show on the home page strip
           </label>
-          <label className="flex items-start gap-2">
-            <input
-              type="checkbox"
-              className="accent-brick mt-1 h-5 w-5"
-              checked={form.showContact}
-              onChange={(e) => setForm({ ...form, showContact: e.target.checked })}
-            />
-            <span>
-              Show his phone and email in the directory to visitors who affirm the directory terms
-              <span className="text-ash block text-[0.9rem]">
-                Only with his consent. Shows{' '}
-                {[form.privatePhone.trim(), form.privateEmail.trim()]
-                  .filter(Boolean)
-                  .join(' and ') || 'nothing yet: add a phone or email above'}
-                , and only while he is listed.
-              </span>
+          <p className="text-[0.95rem]">
+            <span className="font-semibold">Phone and email in the directory: </span>
+            {form.showContact ? 'Shown' : 'Not shown'}
+            <span className="text-ash block text-[0.9rem]">
+              Only the tradesman can change this, from My entry in his portal, because it needs his
+              consent.
             </span>
-          </label>
+          </p>
           <label className="border-brass bg-paper flex items-start gap-3 border-l-4 px-4 py-3">
             <input
               type="checkbox"

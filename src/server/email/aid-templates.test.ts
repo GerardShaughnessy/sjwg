@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { aidConfirmation, aidOfficerAlert } from './templates/aid';
 
 describe('aid emails', () => {
-  it('gives officers every answer, escaped, and flags emergencies', () => {
+  it('tells officers who and how urgent, without the private answers', () => {
     const e = aidOfficerAlert({
       id: 'abc',
       ref: 'SJWG-ABC234',
@@ -18,9 +18,10 @@ describe('aid emails', () => {
       filesFailed: 1,
     });
     expect(e.subject).toMatch(/^Urgent: Request for help SJWG-ABC234/);
-    expect(e.text).toContain('Hard on the children.');
-    expect(e.text).toContain('Paying for materials');
-    expect(e.text).toContain('bid.pdf');
+    expect(e.text).not.toContain('Hard on the children.');
+    expect(e.text).not.toContain('No heat.');
+    expect(e.text).toContain('Documents: 1');
+    expect(e.text).toContain('/portal?tab=aid&aid=abc');
     expect(e.text).toContain('1 file could not be saved');
     expect(e.html).toContain('Mary &lt;Smith&gt;');
     expect(e.html).not.toContain('<Smith>');

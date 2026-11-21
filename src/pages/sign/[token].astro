@@ -1,23 +1,17 @@
 ---
 import SignPage from '@/components/sign/SignPage.astro';
-import { findByToken, recordView } from '@/server/esign';
+import { findByToken } from '@/server/esign';
 import { linkState } from '@/server/esign-core';
-import type { APIContext } from 'astro';
-import { clientIp } from '@/server/http';
 
 export const prerender = false;
 
 const token = Astro.params.token ?? '';
-let row = await findByToken(token);
-let state: 'open' | 'signed' | 'voided' | 'expired' | 'missing' = row ? linkState(row) : 'missing';
-if (row && state === 'open') {
-  row = await recordView(row, {
-    actor: row.signerName,
-    ip: clientIp(Astro as unknown as APIContext),
-    userAgent: Astro.request.headers.get('user-agent'),
-    meta: { via: 'link' },
-  });
-}
+const row = await findByToken(token);
+const state: 'open' | 'signed' | 'voided' | 'expired' | 'missing' = row
+  ? linkState(row)
+  : 'missing';
+// The first view is recorded by the page's script (see SignForm viewUrl), not on this GET,
+// so email link scanners that prefetch the URL never show up as the signer.
 ---
 
 <SignPage
@@ -25,4 +19,5 @@ if (row && state === 'open') {
   state={state}
   endpoint={`/api/sign/${token}`}
   pdfUrl={`/api/sign/${token}/pdf`}
+  viewUrl={`/api/sign/${token}/view`}
 />

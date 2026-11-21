@@ -68,8 +68,13 @@ export const PATCH: APIRoute = route(async (ctx) => {
   const session = requireRole(ctx, 'admin');
   const { app } = await load(ctx.params.id!);
   const input = parseOrThrow(aidDecisionSchema, await readJson(ctx));
-  const deciding =
-    (input.status === 'approved' || input.status === 'declined') && input.status !== app.status;
+  // Whoever sets or changes a decision (status, award, or note on an approved or
+  // declined case) is recorded; moving back to an open status clears it.
+  const decided = input.status === 'approved' || input.status === 'declined';
+  const changed =
+    input.status !== app.status ||
+    input.awardCents !== app.awardCents ||
+    input.decisionNote !== app.decisionNote;
   await db()
     .update(aidApplications)
     .set({
@@ -77,7 +82,11 @@ export const PATCH: APIRoute = route(async (ctx) => {
       awardCents: input.awardCents,
       decisionNote: input.decisionNote,
       updatedAt: new Date(),
-      ...(deciding ? { decidedBy: session.userId, decidedAt: new Date() } : {}),
+      ...(decided
+        ? changed
+          ? { decidedBy: session.userId, decidedAt: new Date() }
+          : {}
+        : { decidedBy: null, decidedAt: null }),
     })
     .where(eq(aidApplications.id, app.id));
   return json({ application: await view(app.id) });

@@ -1,6 +1,6 @@
-import { asc, eq } from 'drizzle-orm';
+import { and, asc, eq } from 'drizzle-orm';
 import { db } from '../client';
-import { appUsers, members } from '../schema';
+import { appUsers, documents, members } from '../schema';
 import { HttpError } from '../../http';
 import { isUniqueViolation } from '../../refs';
 import { slugify } from '@/lib/trades';
@@ -101,9 +101,16 @@ export async function updateMember(id: string, input: MemberInput) {
   return row;
 }
 
+/** Removes the entry and his private documents (certificates, license, insurance) with it. */
 export async function deleteMember(id: string) {
   const [row] = await db().delete(members).where(eq(members.id, id)).returning();
   if (!row) throw new HttpError(404, 'That member was not found.');
+  const docs = await db()
+    .select()
+    .from(documents)
+    .where(and(eq(documents.ownerType, 'member'), eq(documents.ownerId, id)));
+  const { deleteDocument } = await import('../../documents');
+  for (const d of docs) await deleteDocument(d);
   return row;
 }
 

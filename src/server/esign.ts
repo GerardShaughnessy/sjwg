@@ -369,27 +369,35 @@ export async function completeSignature(
     pdf = null;
   }
 
-  const mail = await sendEmail({
-    to: [signed.signerEmail, GUILD_COPY_EMAIL],
-    email: signedCopyEmail({
-      signerName: signed.signedName ?? input.signedName,
-      title: signed.title,
-      signedAt: guildTime(signed.signedAt),
-      hasPdf: Boolean(pdf),
-    }),
-    template: 'sign-completed',
-    related: { type: 'sign_request', id: signed.id },
-    ...(pdf ? { attachments: [{ filename: pdfFilename(signed), content: Buffer.from(pdf) }] } : {}),
-  });
-  await addEvent(signed.id, 'emailed', {
-    actor: 'system',
-    meta: {
-      ok: mail.status === 'sent',
-      to: [signed.signerEmail, GUILD_COPY_EMAIL],
-      copy: true,
-      ...(mail.status === 'sent' ? {} : { error: mail.error }),
-    },
-  });
+  // Separate sends, so a problem with one address never costs the signer his copy.
+  const copyFor = async (to: string, who: 'signer' | 'guild') => {
+    const res = await sendEmail({
+      to,
+      email: signedCopyEmail({
+        signerName: signed.signedName ?? input.signedName,
+        title: signed.title,
+        signedAt: guildTime(signed.signedAt),
+        hasPdf: Boolean(pdf),
+      }),
+      template: 'sign-completed',
+      related: { type: 'sign_request', id: signed.id },
+      ...(pdf
+        ? { attachments: [{ filename: pdfFilename(signed), content: Buffer.from(pdf) }] }
+        : {}),
+    });
+    await addEvent(signed.id, 'emailed', {
+      actor: 'system',
+      meta: {
+        ok: res.status === 'sent',
+        to,
+        copy: who,
+        ...(res.status === 'sent' ? {} : { error: res.error }),
+      },
+    });
+    return res;
+  };
+  const mail = await copyFor(signed.signerEmail, 'signer');
+  await copyFor(GUILD_COPY_EMAIL, 'guild');
 
   return { row: final, pdfStored: Boolean(final.signedPdfKey), emailed: mail.status === 'sent' };
 }

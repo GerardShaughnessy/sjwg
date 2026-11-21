@@ -175,7 +175,7 @@ export default function MyDocuments({ session }: { session: Session }) {
         <p className="text-ash text-[0.95rem] leading-relaxed">
           To be listed in the directory, the Guild needs proof of your Baptism and Confirmation, and
           any license and insurance your trade requires. Only Guild officers can see these files.
-          Use a PDF or a photo, up to 5 MB.
+          Use a PDF or a photo, up to 4 MB.
         </p>
         <Labeled label="What is it?" error={fields.kind}>
           <select value={kind} onChange={(e) => setKind(e.target.value)} className={inputCls}>

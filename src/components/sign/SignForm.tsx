@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { btnPrimary, btnQuiet, ErrorStrip, inputCls, Labeled, msg } from '../portal/ui';
 
 interface Props {
@@ -14,6 +14,11 @@ interface Props {
   endpoint: string;
   /** Where the signed PDF can be downloaded once signed. */
   pdfUrl: string;
+  /**
+   * Posted once when a real browser shows the page. Email link scanners fetch
+   * the page but do not run scripts, so they never count as a view.
+   */
+  viewUrl?: string;
 }
 
 /**
@@ -33,6 +38,10 @@ export default function SignForm(p: Props) {
     hasPdf: boolean;
     emailed: boolean;
   } | null>(null);
+
+  useEffect(() => {
+    if (p.viewUrl) fetch(p.viewUrl, { method: 'POST' }).catch(() => {});
+  }, [p.viewUrl]);
 
   async function sign(e: React.FormEvent) {
     e.preventDefault();
