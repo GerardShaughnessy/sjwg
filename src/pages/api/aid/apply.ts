@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { and, eq, gt, sql } from 'drizzle-orm';
+import { and, eq, gt, sql, type SQL } from 'drizzle-orm';
 import { checkFormToken, formTokenMessage } from '@/server/spam';
 import { db } from '@/server/db/client';
 import { aidApplications } from '@/server/db/schema';
@@ -42,24 +42,31 @@ export const POST: APIRoute = route(async (ctx) => {
   const tok = checkFormToken('aid', raw.formToken);
   if (tok !== 'ok') throw badRequest(formTokenMessage(tok));
   delete raw.formToken;
+  const data = parseOrThrow(aidApplicationSchema, raw);
+
+  // Durable limits, shared by every server instance: 5 a day from one address
+  // (when we have one), 3 a day for one email (always), 50 a day in all.
   const ipHash = hashIp(ip);
-  if (ipHash) {
+  const dayAgo = new Date(Date.now() - 86_400_000);
+  const countSince = async (cond?: SQL) => {
     const [{ n }] = await db()
       .select({ n: sql<number>`count(*)::int` })
       .from(aidApplications)
-      .where(
-        and(
-          eq(aidApplications.ipHash, ipHash),
-          gt(aidApplications.createdAt, new Date(Date.now() - 86_400_000)),
-        ),
-      );
-    if (n >= 5)
-      throw badRequest(
-        'We already have several requests from you today. Email hello@sjwg.org if you need to add something.',
-      );
-  }
-
-  const data = parseOrThrow(aidApplicationSchema, raw);
+      .where(and(gt(aidApplications.createdAt, dayAgo), cond));
+    return n;
+  };
+  if (ipHash && (await countSince(eq(aidApplications.ipHash, ipHash))) >= 5)
+    throw badRequest(
+      'We already have several requests from you today. Email hello@sjwg.org if you need to add something.',
+    );
+  if ((await countSince(sql`lower(${aidApplications.email}) = ${data.email.toLowerCase()}`)) >= 3)
+    throw badRequest(
+      'We already have several requests from this email today. Email hello@sjwg.org if you need to add something.',
+    );
+  if ((await countSince()) >= 50)
+    throw badRequest(
+      "We're receiving a lot of requests right now. Please email hello@sjwg.org and we will get back to you.",
+    );
 
   const uploads = form.getAll('files').filter((f): f is File => f instanceof File && f.size > 0);
   if (uploads.length > AID_MAX_FILES)
@@ -89,7 +96,7 @@ export const POST: APIRoute = route(async (ctx) => {
         orgName: data.orgName,
         urgency: data.urgency,
         answers,
-        ipHash: hashIp(ip),
+        ipHash,
       })
       .returning({ id: aidApplications.id, ref: aidApplications.ref });
     return row;

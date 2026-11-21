@@ -28,7 +28,8 @@ export const POST: APIRoute = route(async (ctx) => {
   if (tok !== 'ok') throw badRequest(formTokenMessage(tok));
   const data = parseOrThrow(affirmSchema, raw);
   // Durable limits, shared by every server instance: 10 an hour from one
-  // address, 5 a day for one email.
+  // address (when we have one), 5 a day for one email (always, so a missing
+  // address never skips the limits).
   const ipHash = hashIp(ip);
   const hourAgo = new Date(Date.now() - 3600_000);
   const dayAgo = new Date(Date.now() - 86_400_000);
