@@ -114,7 +114,7 @@ export interface AidDetail {
 
 export const aid = {
   /** Public. Sends the answers as JSON in `data` and the files alongside. */
-  apply(answers: AidAnswers & { website?: string }, files: File[]) {
+  apply(answers: AidAnswers & { website?: string; formToken?: string }, files: File[]) {
     const fd = new FormData();
     fd.append('data', JSON.stringify(answers));
     for (const f of files) fd.append('files', f, f.name);

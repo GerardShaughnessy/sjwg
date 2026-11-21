@@ -4,15 +4,15 @@ import { ol, p, type GuildDocument } from './types';
 export const tradesmanWaiver: GuildDocument = {
   slug: 'tradesman-waiver',
   title: 'Tradesman Waiver and Release',
-  version: '2026-11-21-draft',
+  version: '2026-11-22-draft',
   draft: true,
   summary:
-    'The tradesman releases the Guild from claims arising from his work and takes full responsibility for his own business.',
+    'The tradesman or tradeswoman releases the Guild from claims arising from his or her work and takes full responsibility for his or her own business.',
   sections: [
     {
       blocks: [
         p(
-          'This Waiver and Release is between St. Joseph the Worker Guild, a Missouri nonprofit corporation (the "Guild"), and the tradesman who signs below ("I" or "the Tradesman"). I sign it so that I may be listed in the Guild\'s directory and may take part in work arranged through the Guild\'s charity program.',
+          'This Waiver and Release is between St. Joseph the Worker Guild, a Missouri nonprofit corporation (the "Guild"), and the tradesman who signs below ("I" or "the Tradesman"; in this document "tradesman" includes a tradeswoman). I sign it so that I may be listed in the Guild\'s directory and may take part in work arranged through the Guild\'s charity program.',
         ),
       ],
     },

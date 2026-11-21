@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { ApiError } from '@/lib/api';
 import { aid, shrinkPhoto } from '@/lib/api-aid';
+import { useFormToken } from '@/lib/form-token';
 import {
   AID_FILE_MAX_BYTES,
   AID_MAX_FILES,
@@ -109,6 +110,7 @@ export default function AidApplicationForm() {
   const [pending, setPending] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [honey, setHoney] = useState('');
+  const formToken = useFormToken('aid');
   const [done, setDone] = useState<{ ref: string; filesFailed: number } | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const doneRef = useRef<HTMLHeadingElement>(null);
@@ -182,7 +184,7 @@ export default function AidApplicationForm() {
         focusFirst({ files: msg });
         return;
       }
-      const res = await aid.apply({ ...v, website: honey }, ready);
+      const res = await aid.apply({ ...v, website: honey, formToken: formToken.current }, ready);
       setDone({ ref: res.ref, filesFailed: res.filesFailed ?? 0 });
       setTimeout(() => doneRef.current?.focus(), 0);
     } catch (err) {
@@ -329,7 +331,9 @@ export default function AidApplicationForm() {
 
           {personal && (
             <Group
-              title={type === 'tradesman-medical' ? 'About him and the family' : 'Your household'}
+              title={
+                type === 'tradesman-medical' ? 'About the tradesman and family' : 'Your household'
+              }
             >
               <TextInput
                 id={fid('householdSize')}
@@ -344,7 +348,7 @@ export default function AidApplicationForm() {
                 <>
                   <TextInput
                     id={fid('trade')}
-                    label="His trade"
+                    label="Trade"
                     value={v.trade}
                     onChange={(e) => set('trade', e.target.value)}
                     error={errors.trade}
@@ -359,7 +363,7 @@ export default function AidApplicationForm() {
                   />
                   <TextArea
                     id={fid('insurance')}
-                    label="What is his health insurance situation?"
+                    label="What is the health insurance situation?"
                     hint="For example: none, a high deductible, or coverage that has run out."
                     value={v.insurance}
                     onChange={(e) => set('insurance', e.target.value)}

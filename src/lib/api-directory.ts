@@ -9,6 +9,7 @@ export interface AffirmPayload {
   alignmentNote: string;
   affirm: Record<string, boolean>;
   website: string;
+  formToken: string;
 }
 
 async function post<T>(path: string, data: unknown): Promise<T> {

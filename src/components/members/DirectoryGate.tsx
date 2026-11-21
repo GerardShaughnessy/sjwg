@@ -3,6 +3,7 @@ import { ApiError } from '@/lib/api';
 import { directory } from '@/lib/api-directory';
 import { isEmail, required } from '@/lib/validate';
 import { FormStatus, PrimaryButton, TextArea, TextInput } from '@/components/forms/fields';
+import { useFormToken } from '@/lib/form-token';
 
 type Affirmation = { id: string; text: string };
 
@@ -30,6 +31,7 @@ export default function DirectoryGate(p: Props) {
   const [note, setNote] = useState('');
   const [v, setV] = useState({ fullName: '', signedDate: p.today, email: '' });
   const [honey, setHoney] = useState('');
+  const formToken = useFormToken('directory');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pending, setPending] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -74,6 +76,7 @@ export default function DirectoryGate(p: Props) {
         alignmentNote: catholic === 'not-catholic' ? note : '',
         affirm,
         website: honey,
+        formToken: formToken.current,
       });
       window.location.assign(window.location.pathname);
     } catch (err) {
@@ -246,6 +249,10 @@ export default function DirectoryGate(p: Props) {
             {submitError}
           </p>
         )}
+        <p className="text-ash font-sans text-[0.9rem] leading-relaxed">
+          The Guild keeps a permanent record of this affirmation: your name, email, the date, and
+          your answers. Only Guild officers can see it, and it is never sold or shared.
+        </p>
         <div className="flex items-center gap-4">
           <PrimaryButton pending={pending} pendingLabel="Opening the directory">
             I affirm. Show the directory

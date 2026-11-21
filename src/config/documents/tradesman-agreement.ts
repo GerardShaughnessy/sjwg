@@ -9,7 +9,7 @@ import { ol, p, type GuildDocument } from './types';
 export const tradesmanAgreement: GuildDocument = {
   slug: 'tradesman-agreement',
   title: 'Tradesman Listing Agreement',
-  version: '2026-11-21-draft',
+  version: '2026-11-22-draft',
   draft: true,
   summary:
     'The independent contractor agreement for a directory listing, including how the charity program pays tradesmen as vendors.',
@@ -17,7 +17,7 @@ export const tradesmanAgreement: GuildDocument = {
     {
       blocks: [
         p(
-          'This Listing Agreement is between St. Joseph the Worker Guild, a Missouri nonprofit corporation (the "Guild"), and the tradesman who signs below ("I" or "the Tradesman"). It sets the terms on which the Guild lists me in its directory of Catholic tradesmen and on which I may do work paid for by the Guild\'s charity program.',
+          'This Listing Agreement is between St. Joseph the Worker Guild, a Missouri nonprofit corporation (the "Guild"), and the tradesman who signs below ("I" or "the Tradesman"; in this document "tradesman" includes a tradeswoman). It sets the terms on which the Guild lists me in its directory of Catholic tradesmen and on which I may do work paid for by the Guild\'s charity program.',
         ),
       ],
     },

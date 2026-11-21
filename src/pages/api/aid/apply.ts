@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
-import { eq } from 'drizzle-orm';
+import { and, eq, gt, sql } from 'drizzle-orm';
+import { checkFormToken, formTokenMessage } from '@/server/spam';
 import { db } from '@/server/db/client';
 import { aidApplications } from '@/server/db/schema';
 import { sendEmail } from '@/server/email/send';
@@ -37,6 +38,26 @@ export const POST: APIRoute = route(async (ctx) => {
   const ip = clientIp(ctx);
   if (!rateLimit(`aid:${ip ?? 'none'}`, 4, 10 * 60 * 1000))
     throw badRequest('Too many requests in a row. Wait a few minutes and try again.');
+
+  const tok = checkFormToken('aid', raw.formToken);
+  if (tok !== 'ok') throw badRequest(formTokenMessage(tok));
+  delete raw.formToken;
+  const ipHash = hashIp(ip);
+  if (ipHash) {
+    const [{ n }] = await db()
+      .select({ n: sql<number>`count(*)::int` })
+      .from(aidApplications)
+      .where(
+        and(
+          eq(aidApplications.ipHash, ipHash),
+          gt(aidApplications.createdAt, new Date(Date.now() - 86_400_000)),
+        ),
+      );
+    if (n >= 5)
+      throw badRequest(
+        'We already have several requests from you today. Email hello@sjwg.org if you need to add something.',
+      );
+  }
 
   const data = parseOrThrow(aidApplicationSchema, raw);
 

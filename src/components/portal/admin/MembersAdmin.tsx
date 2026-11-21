@@ -193,7 +193,7 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
         <form onSubmit={save} className="flex flex-col gap-5 font-sans">
           <h2 className="text-h2 font-serif">Edit {form.name || 'member'}</h2>
           <p className="text-ash text-[0.95rem]">
-            He can edit most of this himself in My entry once he has a login.
+            They can edit most of this themselves in My entry once they have a login.
           </p>
           <Labeled label="Name as listed" error={fields.name}>
             <input
@@ -279,7 +279,7 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
               <p className="text-brick mt-1 text-[0.95rem] font-semibold">{fields.areas}</p>
             )}
           </fieldset>
-          <Labeled label="One line in his own words" error={fields.bio}>
+          <Labeled label="One line in their own words" error={fields.bio}>
             <textarea
               value={form.bio}
               onChange={(e) => setForm({ ...form, bio: e.target.value })}
@@ -291,7 +291,7 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
           <div className="grid gap-4 sm:grid-cols-2">
             <Labeled
               label="Phone (private)"
-              hint="Officers only. Shown in the directory only if he turns on that setting below."
+              hint="Officers only. Shown in the directory only if the tradesman turns on that setting."
               error={fields.privatePhone}
             >
               <input
@@ -303,7 +303,7 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
             </Labeled>
             <Labeled
               label="Email (private)"
-              hint="Used for referrals if he has no login yet."
+              hint="Used for paperwork and contact if they have no login yet."
               error={fields.privateEmail}
             >
               <input
@@ -327,8 +327,8 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
             <span className="font-semibold">Phone and email in the directory: </span>
             {form.showContact ? 'Shown' : 'Not shown'}
             <span className="text-ash block text-[0.9rem]">
-              Only the tradesman can change this, from My entry in his portal, because it needs his
-              consent.
+              Only the tradesman can change this, from My entry in their portal, because it needs
+              their consent.
             </span>
           </p>
           <label className="border-brass bg-paper flex items-start gap-3 border-l-4 px-4 py-3">
@@ -341,8 +341,8 @@ export default function MembersAdmin({ areas }: { areas: string[] }) {
             <span>
               <span className="font-semibold">Listed in the public directory.</span>
               <span className="text-ash block text-[0.9rem]">
-                Only with his consent. Name, trade, areas, years, and the line above are shown. The
-                phone and email are shown only if he turns on that setting.
+                Only with their consent. Name, trade, areas, years, and the line above are shown.
+                The phone and email are shown only if they turn on that setting.
               </span>
             </span>
           </label>

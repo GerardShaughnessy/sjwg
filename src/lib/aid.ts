@@ -9,7 +9,7 @@ export const APPLICANT_TYPES = [
   { value: 'family', label: 'An individual or family' },
   {
     value: 'tradesman-medical',
-    label: 'A tradesman or his family facing a medical emergency',
+    label: 'A tradesman or tradeswoman, or their family, facing a medical emergency',
   },
   { value: 'parish', label: 'A parish or church' },
   { value: 'school', label: 'A Catholic school' },
@@ -249,7 +249,7 @@ export const AID_FIELD_LABEL: Record<keyof AidAnswers, string> = {
   otherHelp: 'Others asked for help',
   householdSize: 'Household size',
   faithImpact: 'Effect on faith life, marriage, or children',
-  trade: 'His trade',
+  trade: 'Trade',
   medicalNature: 'The medical emergency',
   insurance: 'Health insurance',
   monthlyShortfall: 'Expected monthly shortfall',
@@ -322,10 +322,10 @@ export function aidErrors(a: AidAnswers): Record<string, string> {
     if (blank(a.faithImpact)) e.faithImpact = 'Please answer this. A few sentences is enough.';
   }
   if (type === 'tradesman-medical') {
-    if (blank(a.trade)) e.trade = 'What is his trade?';
+    if (blank(a.trade)) e.trade = 'What is the trade?';
     if (blank(a.medicalNature)) e.medicalNature = 'Tell us briefly what happened.';
     if (blank(a.insurance))
-      e.insurance = 'Tell us about his health insurance, or that he has none.';
+      e.insurance = 'Tell us about the health insurance situation, or that there is none.';
   }
   if (type === 'school') {
     if (blank(a.schoolFormation)) e.schoolFormation = 'Tell us how the school forms its students.';
