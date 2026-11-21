@@ -1,6 +1,6 @@
 ---
 /**
- * The plan (StoryBrand): three plain steps from stranger to volunteer, and one
+ * The plan (StoryBrand): three plain steps from stranger to listed tradesman, and one
  * line for donors. Dates come from the regular schedule in WhereWeMeet.
  */
 import Section from '@/components/ui/Section.astro';
@@ -14,13 +14,13 @@ const steps = [
   },
   {
     n: '2',
-    title: 'Meet the Crew',
-    text: 'Talk trade, family, and faith with the volunteers. An officer will answer your questions about serving with the Guild.',
+    title: 'Meet the Guild',
+    text: 'Talk trade, family, and faith with Catholic tradesmen. An officer will answer your questions about the Guild and the directory.',
   },
   {
     n: '3',
-    title: 'Serve',
-    text: 'Sign the Volunteer Covenant and give your first service day on a repair crew or a parish work day.',
+    title: 'Take the Pledge',
+    text: 'Take the Ethical Pledge and be listed in the directory, free. We hope you will consider charity work for those in need when the Guild asks.',
   },
 ];
 ---
@@ -46,11 +46,11 @@ const steps = [
   <div class="mt-10 flex flex-wrap items-center gap-4">
     <Button href="/events">See upcoming events</Button>
     <Button href="/get-involved" variant="quiet">
-      Ask about volunteering
+      Ask about listing
     </Button>
   </div>
   <p class="mt-8 max-w-[64ch] border-t border-mortar pt-6 leading-relaxed text-ash">
-    Supporting the Guild is just as simple: you give, Guild tradesmen serve, and a family is helped.{' '}
+    Supporting the Guild is just as simple: you give, the Guild reviews each request for help, and a family or parish in need is helped.{' '}
     <a
       href="/donate"
       class="font-semibold text-charcoal underline decoration-brass decoration-2 underline-offset-4"
