@@ -102,8 +102,6 @@ const isCurrent = (href: string) => current === href || current.startsWith(href 
 </header>
 
 <script>
-  import { authClient } from '@/lib/auth-client';
-
   // Pages are prerendered, so the header asks once whether this browser is
   // signed in. If it is, Log In becomes Log Out.
   fetch('/api/session', { credentials: 'same-origin' })
@@ -117,6 +115,8 @@ const isCurrent = (href: string) => current === href || current.startsWith(href 
           e.preventDefault();
           a.textContent = 'Logging out';
           try {
+            // Loaded only on click, so public pages do not ship the auth client.
+            const { authClient } = await import('@/lib/auth-client');
             await authClient().signOut();
           } catch {
             /* the session may already be gone */
