@@ -158,7 +158,7 @@ export default function DocumentsReview() {
   );
 }
 
-function DocRow({
+export function DocRow({
   d,
   onReview,
   onRemove,
@@ -196,7 +196,7 @@ function DocRow({
       </div>
       <div className="flex flex-wrap items-end gap-3">
         <label className="flex flex-1 flex-col gap-1">
-          <span className="text-[0.9rem] font-semibold">Note (he sees this)</span>
+          <span className="text-[0.9rem] font-semibold">Note (the tradesman sees this)</span>
           <input
             value={note}
             onChange={(e) => setNote(e.target.value)}
@@ -229,7 +229,7 @@ function DocRow({
           className={btnSecondary}
           onClick={() => {
             if (!note.trim()) {
-              window.alert('Add a note so he knows what to fix.');
+              window.alert('Add a note so the tradesman knows what to fix.');
               return;
             }
             void onReview(
