@@ -45,6 +45,25 @@ export function taskEmailPlan(o: {
   };
 }
 
+/**
+ * Narrows a plan to what the database confirmed: only people whose
+ * task_assignees row this save inserted are emailed (and logged as added),
+ * and hello@ hears only when this save's 'finished' event was the one
+ * inserted. A duplicate add or a second finish racing the first sends nothing.
+ */
+export function confirmPlan(
+  plan: TaskEmailPlan,
+  db: { inserted: string[]; finishedLogged: boolean },
+): TaskEmailPlan {
+  const inserted = new Set(db.inserted);
+  return {
+    ...plan,
+    added: plan.added.filter((id) => inserted.has(id)),
+    notify: plan.notify.filter((id) => inserted.has(id)),
+    finished: plan.finished && db.finishedLogged,
+  };
+}
+
 /** "Sam", "Sam and Milton", "Sam, Milton, and Greg" */
 export function joinNames(names: string[]): string {
   if (names.length <= 1) return names[0] ?? '';

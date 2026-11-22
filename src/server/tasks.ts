@@ -1,13 +1,14 @@
 import { INBOX } from '@/config/contact-routing';
 import type { AppSession } from './auth/server';
 import {
+  addFinishedEvent,
   addTaskEvents,
   getAssignee,
   namesFor,
   wasFinished,
   type NewTaskEvent,
 } from './db/queries/tasks';
-import { taskEmailPlan, type TaskStatus } from './task-rules';
+import { confirmPlan, taskEmailPlan, type TaskStatus } from './task-rules';
 import type { tasks } from './db/schema';
 import { sendEmail } from './email/send';
 import { taskAssigned, taskFinished } from './email/templates/task';
@@ -69,12 +70,15 @@ export interface TaskSaveResult {
 
 /**
  * After a task is created or saved: write the feed events and send exactly
- * the emails taskEmailPlan allows. `before` is null on create.
+ * the emails taskEmailPlan allows, narrowed by confirmPlan to what the
+ * database actually inserted. `before` is null on create; `inserted` is the
+ * assignee ids this save inserted.
  */
 export async function afterTaskSave(o: {
   row: Task;
   before: { status: TaskStatus; assigneeIds: string[] } | null;
   after: string[] | undefined;
+  inserted: string[];
   actor: AppSession;
 }): Promise<TaskSaveResult> {
   const { row, before, actor } = o;
@@ -82,7 +86,7 @@ export async function afterTaskSave(o: {
   const statusChanged = from !== row.status;
   const alreadyFinished =
     before && statusChanged && row.status === 'done' ? await wasFinished(row.id) : false;
-  const plan = taskEmailPlan({
+  const draft = taskEmailPlan({
     before: before?.assigneeIds ?? [],
     after: o.after,
     actorId: actor.userId,
@@ -92,6 +96,24 @@ export async function afterTaskSave(o: {
   });
   const by = { userId: actor.userId, name: actor.name };
   const meta = { title: row.title };
+
+  // The finished event goes in first and alone: the unique index lets only
+  // one save win, and only the winner emails hello@.
+  let finishedLogged = false;
+  if (draft.finished)
+    finishedLogged = await addFinishedEvent({
+      taskId: row.id,
+      type: 'finished',
+      actor: by,
+      fromStatus: from,
+      toStatus: 'done',
+      meta,
+    }).catch((err) => {
+      console.error('[tasks] could not log the finish', err);
+      return false;
+    });
+  const plan = confirmPlan(draft, { inserted: o.inserted, finishedLogged });
+
   const events: NewTaskEvent[] = [];
   if (!before) {
     events.push({
@@ -131,15 +153,6 @@ export async function afterTaskSave(o: {
         meta,
       });
   }
-  if (plan.finished)
-    events.push({
-      taskId: row.id,
-      type: 'finished',
-      actor: by,
-      fromStatus: from,
-      toStatus: 'done',
-      meta,
-    });
   await addTaskEvents(events).catch((err) => console.error('[tasks] could not log events', err));
 
   const emailed = await Promise.all(

@@ -16,20 +16,22 @@ export const prerender = false;
 
 /**
  * Edit part or all of a task. A drag between columns sends only { status }.
- * assigneeIds (or the old assigneeId) replaces the list of people on it.
+ * assigneeIds replaces the list of people on it; the old assigneeId does too,
+ * unless the task has several people, in which case it only adds one.
  */
 export const PATCH: APIRoute = route(async (ctx) => {
   const session = requireRole(ctx, 'admin');
   const before = await getTask(ctx.params.id!);
   const patch = parseOrThrow(taskPatchSchema, await readJson(ctx));
-  const ids = resolveAssigneeIds(patch);
   const beforeIds = await getAssigneeIds(before.id);
+  const ids = resolveAssigneeIds(patch, beforeIds);
   if (ids) await checkAssignees(ids, beforeIds);
-  const row = await updateTask(before.id, patch, ids, session.userId);
+  const { row, inserted } = await updateTask(before.id, patch, ids, session.userId);
   const result = await afterTaskSave({
     row,
     before: { status: before.status, assigneeIds: beforeIds },
     after: ids,
+    inserted,
     actor: session,
   });
   return json({ task: taskView(row, ids ?? beforeIds), ...result });

@@ -25,7 +25,7 @@ export const POST: APIRoute = route(async (ctx) => {
   const input = parseOrThrow(taskSchema, await readJson(ctx));
   const ids = resolveAssigneeIds(input) ?? [];
   await checkAssignees(ids);
-  const row = await createTask(input, ids, session.userId);
-  const result = await afterTaskSave({ row, before: null, after: ids, actor: session });
+  const { row, inserted } = await createTask(input, ids, session.userId);
+  const result = await afterTaskSave({ row, before: null, after: ids, inserted, actor: session });
   return json({ task: taskView(row, ids), ...result }, 201);
 });

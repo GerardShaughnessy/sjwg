@@ -26,7 +26,7 @@ export function taskView(t: TaskRow, assigneeIds: string[]) {
   };
 }
 
-/** Assignee ids per task, in the order they were added. */
+/** Assignee ids per task, in the order they were added (user id breaks ties). */
 async function assigneeMap(taskIds?: string[]) {
   if (taskIds && taskIds.length === 0) return new Map<string, string[]>();
   const q = db()
@@ -34,6 +34,7 @@ async function assigneeMap(taskIds?: string[]) {
     .from(taskAssignees);
   const rows = await (taskIds ? q.where(inArray(taskAssignees.taskId, taskIds)) : q).orderBy(
     asc(taskAssignees.addedAt),
+    asc(taskAssignees.userId),
   );
   const m = new Map<string, string[]>();
   for (const r of rows) m.set(r.taskId, [...(m.get(r.taskId) ?? []), r.userId]);
@@ -106,6 +107,22 @@ export async function getTask(id: string) {
   return row;
 }
 
+/**
+ * Inserts people onto a task and returns the ids actually inserted. Someone
+ * already on it (a double click, two officers at once) is skipped, so they
+ * are only ever emailed once.
+ */
+async function insertAssignees(taskId: string, userIds: string[], addedBy: string) {
+  if (userIds.length === 0) return [];
+  const rows = await db()
+    .insert(taskAssignees)
+    .values(userIds.map((userId) => ({ taskId, userId, addedBy })))
+    .onConflictDoNothing()
+    .returning({ userId: taskAssignees.userId });
+  return rows.map((r) => r.userId);
+}
+
+/** Returns the task and the assignee ids actually inserted. */
 export async function createTask(input: TaskInput, assigneeIds: string[], createdBy: string) {
   const { assigneeIds: _ids, assigneeId: _id, ...rest } = input;
   const [row] = await db()
@@ -117,14 +134,14 @@ export async function createTask(input: TaskInput, assigneeIds: string[], create
       createdBy,
     })
     .returning();
-  if (assigneeIds.length)
-    await db()
-      .insert(taskAssignees)
-      .values(assigneeIds.map((userId) => ({ taskId: row.id, userId, addedBy: createdBy })));
-  return row;
+  const inserted = await insertAssignees(row.id, assigneeIds, createdBy);
+  return { row, inserted };
 }
 
-/** Saves the fields in `patch`. `assigneeIds` replaces the list when given. */
+/**
+ * Saves the fields in `patch`. `assigneeIds` replaces the list when given.
+ * Returns the task and the assignee ids this save actually inserted.
+ */
 export async function updateTask(
   id: string,
   patch: TaskPatch,
@@ -140,6 +157,7 @@ export async function updateTask(
   if (assigneeIds) set.assigneeId = assigneeIds[0] ?? null;
   const [row] = await db().update(tasks).set(set).where(eq(tasks.id, id)).returning();
   if (!row) throw new HttpError(404, 'That task was not found.');
+  let inserted: string[] = [];
   if (assigneeIds) {
     const before = await getAssigneeIds(id);
     const gone = before.filter((u) => !assigneeIds.includes(u));
@@ -148,13 +166,9 @@ export async function updateTask(
       await db()
         .delete(taskAssignees)
         .where(and(eq(taskAssignees.taskId, id), inArray(taskAssignees.userId, gone)));
-    if (fresh.length)
-      await db()
-        .insert(taskAssignees)
-        .values(fresh.map((userId) => ({ taskId: id, userId, addedBy: actorId })))
-        .onConflictDoNothing();
+    inserted = await insertAssignees(id, fresh, actorId);
   }
-  return row;
+  return { row, inserted };
 }
 
 export async function deleteTask(id: string) {
@@ -191,6 +205,28 @@ export async function addTaskEvents(list: NewTaskEvent[]) {
         meta: e.meta,
       })),
     );
+}
+
+/**
+ * Logs the one 'finished' event a task can have. Returns false when one
+ * already exists (unique index task_events_finished_once), in which case the
+ * hello@ email must not go out again.
+ */
+export async function addFinishedEvent(e: NewTaskEvent): Promise<boolean> {
+  const rows = await db()
+    .insert(taskEvents)
+    .values({
+      taskId: e.taskId,
+      type: 'finished',
+      actorId: e.actor.userId,
+      actorName: e.actor.name.split(' ')[0] || e.actor.name,
+      fromStatus: e.fromStatus ?? null,
+      toStatus: 'done',
+      meta: e.meta,
+    })
+    .onConflictDoNothing()
+    .returning({ id: taskEvents.id });
+  return rows.length > 0;
 }
 
 /** Whether this task has been finished before (moving it back to Done stays quiet). */

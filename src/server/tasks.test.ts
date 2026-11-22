@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { resolveAssigneeIds, taskPatchSchema, taskSchema } from './schemas';
 import { taskAssigned, taskFinished, tasksAssignedDigest } from './email/templates/task';
-import { taskEmailPlan, taskEventText, joinNames } from './task-rules';
+import { confirmPlan, taskEmailPlan, taskEventText, joinNames } from './task-rules';
 
 const ME = '11111111-1111-4111-8111-111111111111';
 const GREG = '22222222-2222-4222-8222-222222222222';
@@ -78,12 +78,57 @@ describe('who hears about a task save', () => {
   });
 });
 
+describe('duplicate adds and finishes never double-email', () => {
+  it('only people whose row this save inserted are emailed and logged', () => {
+    // Two saves race to add Greg and Sam: the first inserted both rows.
+    const draft = plan({ before: [ME], after: [ME, GREG, SAM] });
+    const first = confirmPlan(draft, { inserted: [GREG, SAM], finishedLogged: false });
+    expect(first.notify).toEqual([GREG, SAM]);
+    // The second save's insert hit ON CONFLICT DO NOTHING and returned no rows.
+    const second = confirmPlan(draft, { inserted: [], finishedLogged: false });
+    expect(second.notify).toEqual([]);
+    expect(second.added).toEqual([]);
+    // A partial overlap emails only the one actually added.
+    expect(confirmPlan(draft, { inserted: [SAM], finishedLogged: false }).notify).toEqual([SAM]);
+  });
+  it('the actor is still never emailed, even when inserted', () => {
+    const draft = plan({ fromStatus: null, after: [ME, GREG] });
+    expect(confirmPlan(draft, { inserted: [ME, GREG], finishedLogged: false }).notify).toEqual([
+      GREG,
+    ]);
+  });
+  it('hello@ hears only when this save inserted the finished event', () => {
+    const draft = plan({ fromStatus: 'doing', toStatus: 'done' });
+    expect(confirmPlan(draft, { inserted: [], finishedLogged: true }).finished).toBe(true);
+    // A second finish (double click, or a backfilled Done task) lost on task_events_finished_once.
+    expect(confirmPlan(draft, { inserted: [], finishedLogged: false }).finished).toBe(false);
+    // And a logged event never turns a non-finish into one.
+    expect(
+      confirmPlan(plan({ toStatus: 'doing' }), { inserted: [], finishedLogged: true }).finished,
+    ).toBe(false);
+  });
+});
+
 describe('the old single assigneeId', () => {
   it('maps to a list, and assigneeIds wins when both are sent', () => {
     expect(resolveAssigneeIds({ assigneeId: GREG })).toEqual([GREG]);
     expect(resolveAssigneeIds({ assigneeId: null })).toEqual([]);
     expect(resolveAssigneeIds({})).toBeUndefined();
     expect(resolveAssigneeIds({ assigneeId: GREG, assigneeIds: [SAM, SAM] })).toEqual([SAM]);
+  });
+  it('on a PATCH, a lone assigneeId adds to a multi-person list instead of replacing it', () => {
+    const current = [GREG, SAM];
+    expect(resolveAssigneeIds({ assigneeId: MILTON }, current)).toEqual([GREG, SAM, MILTON]);
+    // Already on it, or null: the list stays as is.
+    expect(resolveAssigneeIds({ assigneeId: SAM }, current)).toBeUndefined();
+    expect(resolveAssigneeIds({ assigneeId: null }, current)).toBeUndefined();
+    // assigneeIds still replaces it.
+    expect(resolveAssigneeIds({ assigneeIds: [MILTON] }, current)).toEqual([MILTON]);
+  });
+  it('with one person or none, a lone assigneeId still replaces as before', () => {
+    expect(resolveAssigneeIds({ assigneeId: MILTON }, [GREG])).toEqual([MILTON]);
+    expect(resolveAssigneeIds({ assigneeId: null }, [GREG])).toEqual([]);
+    expect(resolveAssigneeIds({ assigneeId: GREG }, [])).toEqual([GREG]);
   });
   it('both forms validate', () => {
     expect(taskSchema.parse({ title: 'x', assigneeIds: [GREG, SAM] }).assigneeIds).toEqual([

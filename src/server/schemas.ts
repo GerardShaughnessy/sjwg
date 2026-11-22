@@ -357,13 +357,20 @@ export const taskPatchSchema = z.object(taskFields).partial();
 /**
  * Who a task is for after this save: assigneeIds wins, the old single
  * assigneeId maps to a one-item list, and undefined means "leave as is".
+ * On a PATCH, pass the task's `current` list: a lone assigneeId from an old
+ * client must not wipe a multi-person list, so it only adds that person
+ * (and a null leaves the list alone).
  */
-export function resolveAssigneeIds(input: {
-  assigneeIds?: string[];
-  assigneeId?: string | null;
-}): string[] | undefined {
+export function resolveAssigneeIds(
+  input: { assigneeIds?: string[]; assigneeId?: string | null },
+  current?: string[],
+): string[] | undefined {
   if (input.assigneeIds) return [...new Set(input.assigneeIds)];
   if (input.assigneeId === undefined) return undefined;
+  if (current && current.length > 1) {
+    if (!input.assigneeId || current.includes(input.assigneeId)) return undefined;
+    return [...current, input.assigneeId];
+  }
   return input.assigneeId ? [input.assigneeId] : [];
 }
 
