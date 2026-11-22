@@ -500,7 +500,8 @@ export const taskEvents = pgTable(
   'task_events',
   {
     id: id(),
-    taskId: uuid('task_id').references(() => tasks.id, { onDelete: 'cascade' }),
+    /** Set null when the task is deleted, so its history stays in the feed (meta.title). */
+    taskId: uuid('task_id').references(() => tasks.id, { onDelete: 'set null' }),
     type: text('type').notNull(),
     actorId: uuid('actor_id').references(() => appUsers.id, { onDelete: 'set null' }),
     actorName: text('actor_name').notNull().default(''),
@@ -509,7 +510,14 @@ export const taskEvents = pgTable(
     meta: jsonb('meta').notNull().default({}),
     at: timestamp('at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index('task_events_at_idx').on(t.at), index('task_events_task_idx').on(t.taskId)],
+  (t) => [
+    index('task_events_at_idx').on(t.at),
+    index('task_events_task_idx').on(t.taskId),
+    /** A task is finished once: the hello@ email rides on this insert winning. */
+    uniqueIndex('task_events_finished_once')
+      .on(t.taskId)
+      .where(sql`${t.type} = 'finished'`),
+  ],
 );
 
 /* ---------------------------------------------------------- service hours */

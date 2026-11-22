@@ -3459,6 +3459,22 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "task_events_finished_once": {
+          "name": "task_events_finished_once",
+          "columns": [
+            {
+              "expression": "task_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"task_events\".\"type\" = 'finished'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -3472,7 +3488,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
+          "onDelete": "set null",
           "onUpdate": "no action"
         },
         "task_events_actor_id_app_users_id_fk": {
