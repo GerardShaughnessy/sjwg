@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull, sql } from 'drizzle-orm';
+import { and, desc, eq, gt, isNull, sql } from 'drizzle-orm';
 import { db } from '../client';
 import { appUsers, invitations, members } from '../schema';
 import { makeToken, sha256 } from '../../refs';
@@ -7,6 +7,7 @@ import { memberInvitation } from '../../email/templates/account';
 import { HttpError } from '../../http';
 import type { AppSession } from '../../auth/server';
 import { createMember } from './members';
+import { assertCanInvite } from '../../permissions';
 
 export const INVITE_TTL_MS = 7 * 24 * 3600 * 1000;
 
@@ -39,6 +40,7 @@ export async function invite(
   input: { email: string; name: string; role: 'admin' | 'member'; memberId?: string | null },
   by: AppSession,
 ) {
+  assertCanInvite(by, input.role);
   const d = db();
   const email = input.email.toLowerCase();
   const [existingUser] = await d
@@ -51,6 +53,23 @@ export async function invite(
       409,
       'That email already has a Guild account. They can log in or reset their password.',
     );
+  // Only the Admin may replace a pending officer invitation.
+  if (!(by.role === 'admin' && by.siteAdmin)) {
+    const [officerInvite] = await d
+      .select({ id: invitations.id })
+      .from(invitations)
+      .where(
+        and(
+          sql`lower(${invitations.email}) = ${email}`,
+          isNull(invitations.acceptedAt),
+          eq(invitations.role, 'admin'),
+          gt(invitations.expiresAt, new Date()),
+        ),
+      )
+      .limit(1);
+    if (officerInvite)
+      throw new HttpError(409, 'An officer invitation is already pending for that email.');
+  }
   // One live invitation per email: supersede any pending one.
   await d
     .delete(invitations)
@@ -86,6 +105,8 @@ export async function resend(id: string, by: AppSession) {
   const [row] = await db().select().from(invitations).where(eq(invitations.id, id)).limit(1);
   if (!row) throw new HttpError(404, 'That invitation was not found.');
   if (row.acceptedAt) throw new HttpError(409, 'That invitation was already accepted.');
+  // Resending an officer invitation is the Admin's call, like sending it.
+  assertCanInvite(by, row.role);
   return invite(
     { email: row.email, name: row.name ?? '', role: row.role, memberId: row.memberId },
     by,
@@ -134,6 +155,15 @@ export async function complete(
     throw new HttpError(410, 'That invitation link has expired or was already used.');
   if (row.email.toLowerCase() !== authUser.email.toLowerCase())
     throw new HttpError(403, 'This invitation was sent to a different email address.');
+  // An existing account keeps its role, disabled flag and Admin flag: an
+  // invitation link can link an entry, never re-enable or promote anyone.
+  const [existing] = await d
+    .select({ id: appUsers.id, disabled: appUsers.disabled })
+    .from(appUsers)
+    .where(eq(appUsers.authUserId, authUser.id))
+    .limit(1);
+  if (existing?.disabled)
+    throw new HttpError(403, "This account is disabled. Ask the Guild's Admin.");
   let memberId = row.memberId;
   if (!memberId && (row.role === 'member' || setup.trade)) {
     if (!setup.trade) throw new HttpError(400, 'Pick your trade.', { trade: 'Pick your trade.' });
@@ -164,9 +194,12 @@ export async function complete(
     })
     .onConflictDoUpdate({
       target: appUsers.authUserId,
-      set: { role: row.role, memberId, disabled: false },
+      // Keep an entry they already have when this invitation brings none.
+      set: { memberId: sql`coalesce(excluded.member_id, ${appUsers.memberId})` },
+      setWhere: eq(appUsers.disabled, false),
     })
     .returning();
+  if (!user) throw new HttpError(403, "This account is disabled. Ask the Guild's Admin.");
   await d
     .update(invitations)
     .set({ acceptedAt: new Date(), authUserId: authUser.id })
