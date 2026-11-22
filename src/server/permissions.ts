@@ -34,3 +34,18 @@ export function assertUserPatchAllowed(
   if (patch.siteAdmin === true && roleAfter !== 'admin')
     throw badRequest('Make them an officer first. Only an officer can be the Admin.');
 }
+
+/**
+ * True when this patch takes the Admin level away from someone who has it now:
+ * removing the flag, removing officer access, or disabling the account. Such
+ * an update must leave another enabled Admin, checked in the UPDATE itself.
+ */
+export function dropsAdmin(
+  target: { role: Role; siteAdmin: boolean; disabled: boolean },
+  patch: UserPatch,
+): boolean {
+  if (!(target.role === 'admin' && target.siteAdmin && !target.disabled)) return false;
+  return patch.siteAdmin === false || patch.role === 'member' || patch.disabled === true;
+}
+
+export const LAST_ADMIN_MESSAGE = 'The Guild needs an Admin. Make another officer the Admin first.';

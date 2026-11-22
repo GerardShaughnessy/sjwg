@@ -1,8 +1,8 @@
-import { asc, eq } from 'drizzle-orm';
+import { and, asc, eq, sql } from 'drizzle-orm';
 import { db } from '../client';
 import { appUsers, members } from '../schema';
 import { HttpError } from '../../http';
-import type { UserPatch } from '../../permissions';
+import { dropsAdmin, LAST_ADMIN_MESSAGE, type UserPatch } from '../../permissions';
 
 export interface UserView {
   id: string;
@@ -61,15 +61,39 @@ export async function getUser(id: string) {
   return row;
 }
 
-/** Applies a checked patch. Losing officer access also drops the Admin flag. */
-export async function updateUser(id: string, patch: UserPatch) {
+/** Another enabled Admin, besides `id`. Used inside the UPDATE so two Admins can't remove each other at once. */
+export function anotherAdminExists(id: string) {
+  return sql`exists (select 1 from ${appUsers} as other where other.id <> ${id} and other.role = 'admin' and other.site_admin = true and other.disabled = false)`;
+}
+
+/**
+ * Applies a checked patch. Losing officer access also drops the Admin flag.
+ * Taking the Admin level from the current Admin only goes through while
+ * another enabled Admin exists, so the site never ends up with none.
+ */
+export async function updateUser(
+  target: { id: string; role: 'admin' | 'member'; siteAdmin: boolean; disabled: boolean },
+  patch: UserPatch,
+) {
   const set: Partial<typeof appUsers.$inferInsert> = {};
   if (patch.role !== undefined) set.role = patch.role;
   if (patch.title !== undefined) set.title = patch.title;
   if (patch.disabled !== undefined) set.disabled = patch.disabled;
   if (patch.siteAdmin !== undefined) set.siteAdmin = patch.siteAdmin;
   if (patch.role === 'member') set.siteAdmin = false;
-  const [row] = await db().update(appUsers).set(set).where(eq(appUsers.id, id)).returning();
-  if (!row) throw new HttpError(404, 'That account was not found.');
+  const guard = dropsAdmin(target, patch);
+  const [row] = await db()
+    .update(appUsers)
+    .set(set)
+    .where(
+      guard
+        ? and(eq(appUsers.id, target.id), anotherAdminExists(target.id))
+        : eq(appUsers.id, target.id),
+    )
+    .returning();
+  if (!row)
+    throw guard
+      ? new HttpError(409, LAST_ADMIN_MESSAGE)
+      : new HttpError(404, 'That account was not found.');
   return (await selectUsers(eq(appUsers.id, row.id)))[0];
 }

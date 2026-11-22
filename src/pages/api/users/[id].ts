@@ -12,5 +12,5 @@ export const PATCH: APIRoute = route(async (ctx) => {
   const patch = parseOrThrow(userPatchSchema, await readJson(ctx));
   const target = await getUser(ctx.params.id!);
   assertUserPatchAllowed(actor, target, patch);
-  return json({ user: await updateUser(target.id, patch) });
+  return json({ user: await updateUser(target, patch) });
 });
