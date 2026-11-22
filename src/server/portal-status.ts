@@ -474,11 +474,19 @@ const UPLOAD_PHRASE: Record<string, string> = {
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 const lowerFirst = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
 
+/** Task board events take at most this many feed slots, so help requests and uploads stay visible. */
+export const TASK_FEED_MAX = 5;
+
 /**
  * The officer dashboard feed. Directory affirmations and RSVPs are counted
- * per day and never name anyone.
+ * per day and never name anyone. Task events are capped at TASK_FEED_MAX.
+ * A task event whose task was deleted (taskId null) still reads from its
+ * stored title, just without a link.
  */
 export function buildActivity(input: ActivityInput, now: Date, limit = 12): ActivityItem[] {
+  const taskEvents = [...(input.tasks ?? [])]
+    .sort((a, b) => b.at.localeCompare(a.at))
+    .slice(0, TASK_FEED_MAX);
   const items: ActivityItem[] = [
     ...input.aid.map((a) => ({
       at: a.at,
@@ -513,7 +521,7 @@ export function buildActivity(input: ActivityInput, now: Date, limit = 12): Acti
       when: whenLabel(g.latest, now, false),
       text: `${plural(g.count, 'new RSVP', 'new RSVPs')} came in.`,
     })),
-    ...(input.tasks ?? []).map((t) => ({
+    ...taskEvents.map((t) => ({
       at: t.at,
       when: whenLabel(t.at, now),
       text: t.text,

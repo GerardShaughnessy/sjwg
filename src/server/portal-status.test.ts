@@ -9,7 +9,9 @@ import {
   tradesmanStatus,
   type DocLite,
   type SignLite,
+  TASK_FEED_MAX,
 } from './portal-status';
+import { taskEventText } from './task-rules';
 
 const NOW = new Date('2026-11-21T18:00:00Z'); // Sat Nov 21, noon in St. Louis
 
@@ -297,5 +299,52 @@ describe('activity feed', () => {
     );
     expect(feed).toHaveLength(12);
     expect(feed[0].text).toBe('Person 0 uploaded a baptism certificate.');
+  });
+
+  it('task events take at most five slots, so help requests and uploads stay', () => {
+    const at = (i: number) => new Date(NOW.getTime() - i * 60000).toISOString();
+    const tasks = Array.from({ length: 12 }, (_, i) => ({
+      at: at(i),
+      text: `Task line ${i}.`,
+      taskId: `t${i}`,
+    }));
+    const feed = buildActivity(
+      {
+        aid: [{ id: 'a1', at: at(30), who: 'St. Agatha Parish', urgency: 'normal' }],
+        uploads: [{ at: at(31), name: 'Sam Naumann', kind: 'insurance' }],
+        signed: [],
+        affirmations: [],
+        rsvps: [],
+        tasks,
+      },
+      NOW,
+    );
+    expect(feed.filter((f) => f.tab === 'tasks')).toHaveLength(TASK_FEED_MAX);
+    expect(TASK_FEED_MAX).toBe(5);
+    expect(feed[0].text).toBe('Task line 0.');
+    expect(feed.map((f) => f.text)).toContain('St. Agatha Parish applied for help.');
+    expect(feed.map((f) => f.text)).toContain('Sam Naumann uploaded proof of insurance.');
+  });
+
+  it('an event from a deleted task reads from its stored title, without a link', () => {
+    const text = taskEventText({
+      type: 'moved',
+      actorName: 'Greg',
+      toStatus: 'doing',
+      meta: { title: 'Order shirts' },
+    });
+    const [item] = buildActivity(
+      {
+        aid: [],
+        uploads: [],
+        signed: [],
+        affirmations: [],
+        rsvps: [],
+        tasks: [{ at: NOW.toISOString(), text: text!, taskId: null }],
+      },
+      NOW,
+    );
+    expect(item.text).toBe("Greg moved 'Order shirts' to In progress.");
+    expect(item).not.toHaveProperty('query');
   });
 });
