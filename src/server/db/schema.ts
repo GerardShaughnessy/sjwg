@@ -107,6 +107,10 @@ export const appUsers = pgTable(
     role: userRole('role').notNull().default('member'),
     memberId: uuid('member_id').references(() => members.id, { onDelete: 'set null' }),
     disabled: boolean('disabled').notNull().default(false),
+    /** The Admin level on top of officer: makes and removes officers, sets titles, disables accounts. */
+    siteAdmin: boolean('site_admin').notNull().default(false),
+    /** Officer title shown in the portal header, e.g. "Vice President". Empty until set. */
+    title: text('title').notNull().default(''),
     lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
     createdAt: createdAt(),
   },
@@ -466,6 +470,46 @@ export const tasks = pgTable(
     index('tasks_status_idx').on(t.status, t.sortOrder),
     index('tasks_assignee_idx').on(t.assigneeId),
   ],
+);
+
+/** Everyone on a task. tasks.assignee_id stays as the first assignee for older code paths. */
+export const taskAssignees = pgTable(
+  'task_assignees',
+  {
+    taskId: uuid('task_id')
+      .notNull()
+      .references(() => tasks.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => appUsers.id, { onDelete: 'cascade' }),
+    addedBy: uuid('added_by').references(() => appUsers.id, { onDelete: 'set null' }),
+    addedAt: timestamp('added_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.taskId, t.userId] }),
+    index('task_assignees_user_idx').on(t.userId),
+  ],
+);
+
+/**
+ * The task board's history, for the Dashboard feed: created, moved, assigned,
+ * unassigned, finished, deleted. `meta.title` keeps the task's title, so a
+ * deleted task (task_id null) still reads in the feed.
+ */
+export const taskEvents = pgTable(
+  'task_events',
+  {
+    id: id(),
+    taskId: uuid('task_id').references(() => tasks.id, { onDelete: 'cascade' }),
+    type: text('type').notNull(),
+    actorId: uuid('actor_id').references(() => appUsers.id, { onDelete: 'set null' }),
+    actorName: text('actor_name').notNull().default(''),
+    fromStatus: text('from_status'),
+    toStatus: text('to_status'),
+    meta: jsonb('meta').notNull().default({}),
+    at: timestamp('at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('task_events_at_idx').on(t.at), index('task_events_task_idx').on(t.taskId)],
 );
 
 /* ---------------------------------------------------------- service hours */
