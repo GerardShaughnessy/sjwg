@@ -4,7 +4,7 @@ import {
   resolveNeonAuthLogging,
   type SessionData,
 } from '@neondatabase/auth/server';
-import { eq } from 'drizzle-orm';
+import { and, eq, isNull, or, sql } from 'drizzle-orm';
 import { astroRequestContext } from './context';
 import { db } from '../db/client';
 import { appUsers } from '../db/schema';
@@ -61,10 +61,19 @@ export async function resolveAppSession(session: SessionData | null): Promise<Ap
   const [row] = await db().select().from(appUsers).where(eq(appUsers.authUserId, user.id)).limit(1);
   const app = toAppSession(row, user);
   if (app && (!row.lastLoginAt || Date.now() - row.lastLoginAt.getTime() > LOGIN_TOUCH_MS)) {
+    // The 30-minute check is repeated in the WHERE, so parallel requests write once.
     await db()
       .update(appUsers)
       .set({ lastLoginAt: new Date() })
-      .where(eq(appUsers.id, row.id))
+      .where(
+        and(
+          eq(appUsers.id, row.id),
+          or(
+            isNull(appUsers.lastLoginAt),
+            sql`${appUsers.lastLoginAt} < now() - interval '30 minutes'`,
+          ),
+        ),
+      )
       .catch((err) => console.error('[auth] could not record last login', err));
   }
   return app;
