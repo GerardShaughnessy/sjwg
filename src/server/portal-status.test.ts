@@ -295,7 +295,7 @@ describe('activity feed', () => {
       { aid: [], uploads: many, signed: [], affirmations: [], rsvps: [] },
       NOW,
     );
-    expect(feed).toHaveLength(10);
+    expect(feed).toHaveLength(12);
     expect(feed[0].text).toBe('Person 0 uploaded a baptism certificate.');
   });
 });

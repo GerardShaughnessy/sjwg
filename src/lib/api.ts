@@ -529,27 +529,35 @@ export interface Task {
   notes: string;
   status: TaskStatus;
   section: string;
+  /** First of assigneeIds, kept for older code. */
   assigneeId: string | null;
+  assigneeIds: string[];
   waitingOn: string;
   dueDate: string;
   sortOrder: number;
   createdBy: string | null;
   updatedAt: string;
 }
-export type TaskInput = Omit<Task, 'id' | 'createdBy' | 'updatedAt'>;
+export type TaskInput = Omit<Task, 'id' | 'createdBy' | 'updatedAt' | 'assigneeId'>;
 export interface Assignee {
   id: string;
   name: string | null;
   email: string;
 }
-type Emailed = 'sent' | 'failed' | 'skipped' | null;
+type SendStatus = 'sent' | 'failed' | 'skipped';
+export interface TaskSaved {
+  task: Task;
+  /** One entry per person emailed about being added. */
+  emailed: { id: string; status: SendStatus }[];
+  /** The hello@ email, when the task was finished for the first time. */
+  finished: SendStatus | null;
+}
 
 export const tasks = {
   list: () => call<{ tasks: Task[]; assignees: Assignee[] }>('/api/tasks'),
-  create: (input: TaskInput) =>
-    mutate<{ task: Task; emailed: Emailed }>('/api/tasks', json('POST', input)),
+  create: (input: TaskInput) => mutate<TaskSaved>('/api/tasks', json('POST', input)),
   update: (id: string, patch: Partial<TaskInput>) =>
-    mutate<{ task: Task; emailed: Emailed }>(`/api/tasks/${id}`, json('PATCH', patch)),
+    mutate<TaskSaved>(`/api/tasks/${id}`, json('PATCH', patch)),
   remove: (id: string) => mutate<{ ok: true }>(`/api/tasks/${id}`, { method: 'DELETE' }),
 };
 

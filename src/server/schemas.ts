@@ -329,7 +329,11 @@ const taskFields = {
   notes: trimmed(10_000),
   status: z.enum(TASK_STATUSES),
   section: z.enum(TASK_SECTIONS, { message: 'Pick a section.' }),
+  /** Old single-assignee field, still accepted and mapped to assigneeIds. */
   assigneeId: z.string().uuid('Pick someone from the list.').nullable(),
+  assigneeIds: z
+    .array(z.string().uuid('Pick people from the list.'))
+    .max(20, 'Twenty people at most.'),
   waitingOn: trimmed(120),
   dueDate: z.union([z.literal(''), z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date as YYYY-MM-DD.')]),
   sortOrder: z.number().int().min(0).max(99_999),
@@ -341,6 +345,7 @@ export const taskSchema = z.object({
   status: taskFields.status.default('todo'),
   section: taskFields.section.default('General'),
   assigneeId: taskFields.assigneeId.default(null),
+  assigneeIds: taskFields.assigneeIds.optional(),
   waitingOn: taskFields.waitingOn.default(''),
   dueDate: taskFields.dueDate.default(''),
   sortOrder: taskFields.sortOrder.default(0),
@@ -348,6 +353,19 @@ export const taskSchema = z.object({
 
 /** Moving a card or editing part of one. No defaults, so absent fields stay untouched. */
 export const taskPatchSchema = z.object(taskFields).partial();
+
+/**
+ * Who a task is for after this save: assigneeIds wins, the old single
+ * assigneeId maps to a one-item list, and undefined means "leave as is".
+ */
+export function resolveAssigneeIds(input: {
+  assigneeIds?: string[];
+  assigneeId?: string | null;
+}): string[] | undefined {
+  if (input.assigneeIds) return [...new Set(input.assigneeIds)];
+  if (input.assigneeId === undefined) return undefined;
+  return input.assigneeId ? [input.assigneeId] : [];
+}
 
 /* ------------------------------------------------------------- app users */
 export const userPatchSchema = z

@@ -13,6 +13,8 @@ import {
   tasks,
 } from './db/schema';
 import { roleLabelFor, type AppSession } from './auth/session';
+import { recentTaskEvents } from './db/queries/tasks';
+import { taskEventText, type TaskEventLike } from './task-rules';
 import { photoUrl } from './db/queries/members';
 import { listMemberDocs, type MemberDocView } from './member-docs';
 import { memberSignRequests, requestsForMember, type SignRequestView } from './esign';
@@ -271,7 +273,7 @@ async function officerCounts(now: Date, roster: TradesmanRow[]): Promise<Officer
 
 async function officerActivity(now: Date): Promise<ActivityItem[]> {
   const since = new Date(now.getTime() - 30 * DAY);
-  const [aid, uploads, signed, affirmations, rsvps] = await Promise.all([
+  const [aid, uploads, signed, affirmations, rsvps, taskRows] = await Promise.all([
     db()
       .select({
         id: aidApplications.id,
@@ -313,7 +315,12 @@ async function officerActivity(now: Date): Promise<ActivityItem[]> {
       .where(and(eq(formSubmissions.kind, 'rsvp'), gte(formSubmissions.createdAt, since)))
       .orderBy(desc(formSubmissions.createdAt))
       .limit(2000),
+    recentTaskEvents(12),
   ]);
+  const taskItems = taskRows.flatMap((e) => {
+    const text = taskEventText({ ...e, meta: e.meta as TaskEventLike['meta'] });
+    return text ? [{ at: e.at.toISOString(), text, taskId: e.taskId }] : [];
+  });
   return buildActivity(
     {
       aid: aid.map((a) => ({
@@ -326,6 +333,7 @@ async function officerActivity(now: Date): Promise<ActivityItem[]> {
       signed: signed.map((s) => ({ at: s.at!.toISOString(), name: s.name, title: s.title })),
       affirmations: affirmations.map((a) => ({ at: a.at.toISOString() })),
       rsvps: rsvps.map((r) => ({ at: r.at.toISOString() })),
+      tasks: taskItems,
     },
     now,
   );

@@ -27,7 +27,7 @@ const EMPTY: TaskInput = {
   notes: '',
   status: 'todo',
   section: 'General',
-  assigneeId: null,
+  assigneeIds: [],
   waitingOn: '',
   dueDate: '',
   sortOrder: 0,
@@ -37,6 +37,13 @@ const today = () => new Date().toISOString().slice(0, 10);
 const shortDate = (iso: string) =>
   new Date(`${iso}T12:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 const personName = (a: Assignee | undefined) => a?.name || a?.email || 'Someone';
+const initials = (a: Assignee | undefined) =>
+  (a?.name || a?.email || '?')
+    .split(/[\s@.]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]!.toUpperCase())
+    .join('');
 
 /** The officers' to-do board. Drag a card between columns, or click it to edit. */
 export default function TasksBoard({ session }: { session: Session }) {
@@ -79,7 +86,7 @@ export default function TasksBoard({ session }: { session: Session }) {
   const visible = all
     .map((t) => (moved[t.id] ? { ...t, status: moved[t.id] } : t))
     .filter((t) => !section || t.section === section)
-    .filter((t) => !mine || t.assigneeId === session.userId);
+    .filter((t) => !mine || t.assigneeIds.includes(session.userId));
 
   async function move(t: Task, to: TaskStatus) {
     if (t.status === to) return;
@@ -103,8 +110,8 @@ export default function TasksBoard({ session }: { session: Session }) {
         <div>
           <h2 className="text-h2 font-serif">Tasks</h2>
           <p className="text-ash text-[0.95rem]">
-            Drag a card to another column, or open it to edit. Assigning a task to another officer
-            emails them.
+            Drag a card to another column, or open it to edit. People you add to a task get an
+            email. Moves show on the Dashboard instead.
           </p>
         </div>
         <button type="button" className={btnPrimary} onClick={() => setEditing('new')}>
@@ -163,7 +170,9 @@ export default function TasksBoard({ session }: { session: Session }) {
                 <Card
                   key={t.id}
                   task={t}
-                  assignee={t.assigneeId ? byId.get(t.assigneeId) : undefined}
+                  people={t.assigneeIds.map(
+                    (id) => byId.get(id) ?? { id, name: null, email: 'Former officer' },
+                  )}
                   onOpen={() => setEditing(t)}
                   onMove={(to) => move(t, to)}
                 />
@@ -191,12 +200,12 @@ export default function TasksBoard({ session }: { session: Session }) {
 
 function Card({
   task: t,
-  assignee,
+  people,
   onOpen,
   onMove,
 }: {
   task: Task;
-  assignee: Assignee | undefined;
+  people: Assignee[];
   onOpen: () => void;
   onMove: (to: TaskStatus) => void;
 }) {
@@ -220,8 +229,25 @@ function Card({
       >
         {t.title}
       </button>
+      {people.length > 0 && (
+        <ul
+          className="flex flex-wrap gap-1"
+          aria-label={`Assigned to ${people.map(personName).join(', ')}`}
+        >
+          {people.map((p) => (
+            <li
+              key={p.id}
+              title={personName(p)}
+              className="bg-stone border-mortar text-charcoal flex h-7 min-w-7 items-center justify-center rounded-full border px-1.5 text-[0.75rem] font-semibold"
+            >
+              <span aria-hidden="true">{initials(p)}</span>
+              <span className="sr-only">{personName(p)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
       <div className="text-ash flex flex-wrap gap-x-3 gap-y-1 text-[0.85rem]">
-        {assignee && <span>{personName(assignee)}</span>}
+        {people.length === 1 && <span>{personName(people[0])}</span>}
         {t.waitingOn && <span>Waiting on {t.waitingOn}</span>}
         {t.dueDate && (
           <span className={overdue ? 'text-brick font-semibold' : ''}>
@@ -268,7 +294,7 @@ function TaskEditor({
           notes: task.notes,
           status: task.status,
           section: task.section,
-          assigneeId: task.assigneeId,
+          assigneeIds: task.assigneeIds,
           waitingOn: task.waitingOn,
           dueDate: task.dueDate,
           sortOrder: task.sortOrder,
@@ -294,13 +320,12 @@ function TaskEditor({
     setFields({});
     try {
       const r = task ? await api.update(task.id, form) : await api.create(form);
-      const who = assignees.find((a) => a.id === r.task.assigneeId);
+      const nameOf = (id: string) => personName(assignees.find((a) => a.id === id));
+      const sent = r.emailed.filter((e) => e.status === 'sent').map((e) => nameOf(e.id));
+      const unsent = r.emailed.filter((e) => e.status !== 'sent').map((e) => nameOf(e.id));
       const mail =
-        r.emailed === 'sent'
-          ? ` Emailed ${personName(who)}.`
-          : r.emailed
-            ? ` The email to ${personName(who)} did not go out (${r.emailed}).`
-            : '';
+        (sent.length ? ` Emailed ${sent.join(', ')}.` : '') +
+        (unsent.length ? ` The email to ${unsent.join(', ')} did not go out.` : '');
       onClose(`${task ? 'Saved' : 'Added'} "${r.task.title}".${mail}`);
     } catch (err) {
       setFields((err as { fields?: Record<string, string> }).fields ?? {});
@@ -379,25 +404,6 @@ function TaskEditor({
               ))}
             </select>
           </Labeled>
-          <Labeled
-            label="Assigned to"
-            hint="Another officer gets an email."
-            error={fields.assigneeId}
-          >
-            <select
-              value={form.assigneeId ?? ''}
-              onChange={(e) => set('assigneeId', e.target.value || null)}
-              className={inputCls}
-            >
-              <option value="">Nobody yet</option>
-              {assignees.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {personName(a)}
-                  {a.id === session.userId ? ' (you)' : ''}
-                </option>
-              ))}
-            </select>
-          </Labeled>
           <Labeled label="Due date" error={fields.dueDate}>
             <input
               type="date"
@@ -407,6 +413,46 @@ function TaskEditor({
             />
           </Labeled>
         </div>
+        <fieldset className="flex flex-col gap-1">
+          <legend className="font-semibold">Assigned to</legend>
+          <span className="text-ash text-[0.9rem]">
+            Each person you add gets an email. Nobody else does.
+          </span>
+          <ul className="border-mortar mt-1 grid max-h-52 gap-x-4 overflow-y-auto border p-2 sm:grid-cols-2">
+            {[
+              ...assignees,
+              // Someone on the task who is no longer an active officer stays listed.
+              ...form.assigneeIds
+                .filter((id) => !assignees.some((a) => a.id === id))
+                .map((id) => ({ id, name: 'Former officer', email: '' })),
+            ].map((a) => (
+              <li key={a.id}>
+                <label className="flex items-center gap-2 py-1">
+                  <input
+                    type="checkbox"
+                    className="accent-brick h-5 w-5"
+                    checked={form.assigneeIds.includes(a.id)}
+                    onChange={(e) =>
+                      set(
+                        'assigneeIds',
+                        e.target.checked
+                          ? [...form.assigneeIds, a.id]
+                          : form.assigneeIds.filter((x) => x !== a.id),
+                      )
+                    }
+                  />
+                  {personName(a)}
+                  {a.id === session.userId ? ' (you)' : ''}
+                </label>
+              </li>
+            ))}
+          </ul>
+          {fields.assigneeIds && (
+            <span role="alert" className="text-brick text-[0.95rem] font-semibold">
+              {fields.assigneeIds}
+            </span>
+          )}
+        </fieldset>
         <Labeled
           label="Waiting on"
           hint="Someone without a login, like the pastor or the IRS."

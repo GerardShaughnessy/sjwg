@@ -60,3 +60,19 @@ Open the board: ${link}${textFooter()}`;
   });
   return { subject: `${n} ${n === 1 ? 'task' : 'tasks'} for you on the Guild board`, text, html };
 }
+
+/** The one email when a task is finished for the first time. Goes to hello@. */
+export function taskFinished(o: { id: string; title: string; section: string; by: string }): Email {
+  const link = boardLink(o.id);
+  const line = `${o.by} finished ${o.title}.`;
+  const text = `${line}
+
+Section: ${o.section}
+
+Open the task: ${link}${textFooter()}`;
+  const html = shell({
+    title: 'Task finished',
+    bodyHtml: `${paragraphs(`${line}\n\nSection: ${o.section}`)}${button(link, 'Open the task')}`,
+  });
+  return { subject: `${o.by} finished ${o.title}`, text, html };
+}

@@ -239,7 +239,7 @@ async function seed() {
   for (const [i, s] of CHECKLIST.entries()) {
     if (existing.has(s.title)) continue;
     const ours = s.who === 'us';
-    await db()
+    const [row] = await db()
       .insert(t.tasks)
       .values({
         title: s.title,
@@ -251,7 +251,12 @@ async function seed() {
         dueDate: s.due ?? null,
         sortOrder: (i + 1) * 10,
         createdBy: owner.id,
-      });
+      })
+      .returning({ id: t.tasks.id });
+    if (ours)
+      await db()
+        .insert(t.taskAssignees)
+        .values({ taskId: row.id, userId: owner.id, addedBy: owner.id });
     added++;
   }
   console.log(`Added ${added} tasks (${CHECKLIST.length - added} already there).`);
@@ -265,7 +270,13 @@ async function handover() {
     .update(t.tasks)
     .set({ assigneeId: to.id, waitingOn: '', updatedAt: new Date() })
     .where(and(eq(t.tasks.waitingOn, waitingOn), sql`${t.tasks.status} <> 'done'`))
-    .returning({ title: t.tasks.title, sortOrder: t.tasks.sortOrder });
+    .returning({ id: t.tasks.id, title: t.tasks.title, sortOrder: t.tasks.sortOrder });
+  // Each task stays assigned to anyone already on it, plus the new person.
+  if (rows.length)
+    await db()
+      .insert(t.taskAssignees)
+      .values(rows.map((r) => ({ taskId: r.id, userId: to.id })))
+      .onConflictDoNothing();
   console.log(`Assigned ${rows.length} tasks to ${to.email}.`);
   if (!rows.length) return;
   const res = await sendEmail({

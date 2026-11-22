@@ -429,6 +429,8 @@ export interface ActivityInput {
   signed: { at: string; name: string; title: string }[];
   affirmations: { at: string }[];
   rsvps: { at: string }[];
+  /** Task board events, already worded (see taskEventText). taskId is null once deleted. */
+  tasks?: { at: string; text: string; taskId: string | null }[];
 }
 
 /** "Today, 9:12 AM", "Yesterday, 4:05 PM", or "Nov 20" in St. Louis time. */
@@ -476,7 +478,7 @@ const lowerFirst = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
  * The officer dashboard feed. Directory affirmations and RSVPs are counted
  * per day and never name anyone.
  */
-export function buildActivity(input: ActivityInput, now: Date, limit = 10): ActivityItem[] {
+export function buildActivity(input: ActivityInput, now: Date, limit = 12): ActivityItem[] {
   const items: ActivityItem[] = [
     ...input.aid.map((a) => ({
       at: a.at,
@@ -510,6 +512,13 @@ export function buildActivity(input: ActivityInput, now: Date, limit = 10): Acti
       at: g.latest,
       when: whenLabel(g.latest, now, false),
       text: `${plural(g.count, 'new RSVP', 'new RSVPs')} came in.`,
+    })),
+    ...(input.tasks ?? []).map((t) => ({
+      at: t.at,
+      when: whenLabel(t.at, now),
+      text: t.text,
+      tab: 'tasks',
+      ...(t.taskId ? { query: `task=${t.taskId}` } : {}),
     })),
   ];
   return items.sort((a, b) => b.at.localeCompare(a.at)).slice(0, limit);

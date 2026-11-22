@@ -1,15 +1,14 @@
 import type { APIRoute } from 'astro';
 import { json, readJson, requireRole, route } from '@/server/http';
 import {
-  assigneeToNotify,
+  checkAssignees,
   createTask,
-  getAssignee,
   listAssignees,
   listTasks,
   taskView,
 } from '@/server/db/queries/tasks';
-import { parseOrThrow, taskSchema } from '@/server/schemas';
-import { notifyAssignee } from '@/server/tasks';
+import { parseOrThrow, resolveAssigneeIds, taskSchema } from '@/server/schemas';
+import { afterTaskSave } from '@/server/tasks';
 
 export const prerender = false;
 
@@ -20,12 +19,13 @@ export const GET: APIRoute = route(async (ctx) => {
   return json({ tasks, assignees });
 });
 
+/** Accepts assigneeIds, or the old single assigneeId. */
 export const POST: APIRoute = route(async (ctx) => {
   const session = requireRole(ctx, 'admin');
   const input = parseOrThrow(taskSchema, await readJson(ctx));
-  if (input.assigneeId) await getAssignee(input.assigneeId);
-  const row = await createTask(input, session.userId);
-  const to = assigneeToNotify(null, row.assigneeId, session.userId);
-  const emailed = to ? await notifyAssignee(row, to, session.name) : null;
-  return json({ task: taskView(row), emailed }, 201);
+  const ids = resolveAssigneeIds(input) ?? [];
+  await checkAssignees(ids);
+  const row = await createTask(input, ids, session.userId);
+  const result = await afterTaskSave({ row, before: null, after: ids, actor: session });
+  return json({ task: taskView(row, ids), ...result }, 201);
 });
