@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { users as api, type UserView } from '@/lib/api';
 import { useResource } from '@/lib/hooks';
 import { formatShortDate } from '@/lib/events';
@@ -30,12 +30,36 @@ export default function OfficersPage({ session }: { session: Session }) {
   const others = all.filter((u) => u.role !== 'admin' && !u.disabled);
   const disabled = all.filter((u) => u.disabled);
 
+  // Removing, disabling or enabling someone moves them to another list, so the
+  // card or row that held the button unmounts on refetch. The message lives
+  // here instead, and focus moves to it so keyboard and screen reader users
+  // are not dropped at the top of the page.
+  const [notice, setNotice] = useState({ text: '', n: 0 });
+  const noticeRef = useRef<HTMLParagraphElement>(null);
+  useEffect(() => {
+    if (notice.n) noticeRef.current?.focus();
+  }, [notice.n]);
+  const announce = (text: string) => setNotice((p) => ({ text, n: p.n + 1 }));
+
   return (
     <div className="flex flex-col gap-6">
+      <p
+        ref={noticeRef}
+        tabIndex={-1}
+        role="status"
+        aria-live="polite"
+        className={
+          notice.text
+            ? 'border-mortar bg-paper rounded-md border-l-4 px-4 py-3 font-sans font-semibold focus:outline-2 focus:outline-offset-2'
+            : 'sr-only'
+        }
+      >
+        {notice.text}
+      </p>
       {admin && data && (
         <div className="grid gap-6 lg:grid-cols-2">
           <AddOfficer candidates={others} />
-          <DisabledAccounts list={disabled} />
+          <DisabledAccounts list={disabled} onDone={announce} />
         </div>
       )}
       <Card
@@ -49,7 +73,13 @@ export default function OfficersPage({ session }: { session: Session }) {
         {officers.length > 0 && (
           <ul className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
             {officers.map((u) => (
-              <Officer key={u.id} u={u} me={u.id === session.userId} admin={admin} />
+              <Officer
+                key={u.id}
+                u={u}
+                me={u.id === session.userId}
+                admin={admin}
+                onGone={announce}
+              />
             ))}
           </ul>
         )}
@@ -63,26 +93,63 @@ export default function OfficersPage({ session }: { session: Session }) {
   );
 }
 
-function Officer({ u, me, admin }: { u: UserView; me: boolean; admin: boolean }) {
+function Officer({
+  u,
+  me,
+  admin,
+  onGone,
+}: {
+  u: UserView;
+  me: boolean;
+  admin: boolean;
+  /** Page-level message for a change that takes this card off the list. */
+  onGone: (text: string) => void;
+}) {
   const [title, setTitle] = useState(u.title);
   const [status, setStatus] = useState('');
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
   const [confirm, setConfirm] = useState<'remove' | 'disable' | null>(null);
   const phone = u.member?.privatePhone ?? '';
+  const first = u.name.split(' ')[0];
+  const promptRef = useRef<HTMLDivElement>(null);
+  const opener = useRef<HTMLButtonElement | null>(null);
+  const alive = useRef(true);
+  useEffect(
+    () => () => {
+      alive.current = false;
+    },
+    [],
+  );
+  useEffect(() => {
+    if (confirm) promptRef.current?.focus();
+  }, [confirm]);
 
-  async function save(patch: Parameters<typeof api.update>[1], done: string) {
+  function ask(kind: 'remove' | 'disable', e: React.MouseEvent<HTMLButtonElement>) {
+    opener.current = e.currentTarget;
+    setConfirm(kind);
+  }
+  function cancel() {
+    setConfirm(null);
+    // Back to the button that opened the prompt, once it has re-rendered.
+    requestAnimationFrame(() => opener.current?.focus());
+  }
+
+  /** `gone` is true when this save moves the person off the officers list. */
+  async function save(patch: Parameters<typeof api.update>[1], done: string, gone = false) {
     setBusy(true);
     setErr('');
     setStatus('');
     try {
       await api.update(u.id, patch);
-      setStatus(done);
+      if (gone) onGone(done);
+      if (!alive.current) return;
+      if (!gone) setStatus(done);
       setConfirm(null);
     } catch (e) {
-      setErr(msg(e, 'Could not save that.'));
+      if (alive.current) setErr(msg(e, 'Could not save that.'));
     } finally {
-      setBusy(false);
+      if (alive.current) setBusy(false);
     }
   }
 
@@ -163,34 +230,44 @@ function Officer({ u, me, admin }: { u: UserView; me: boolean; admin: boolean })
           {!me && (
             <div className="flex flex-wrap items-center gap-2">
               {confirm ? (
-                <>
-                  <span className="text-[0.9rem]">
+                <div
+                  ref={promptRef}
+                  role="alertdialog"
+                  aria-labelledby={`confirm-${u.id}`}
+                  tabIndex={-1}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') cancel();
+                  }}
+                  className="flex flex-wrap items-center gap-2 focus:outline-2 focus:outline-offset-2"
+                >
+                  <span id={`confirm-${u.id}`} className="text-[0.9rem]">
                     {confirm === 'remove'
-                      ? `Make ${u.name.split(' ')[0]} a tradesman account?`
-                      : `Disable ${u.name.split(' ')[0]}? They can't log in until enabled.`}
+                      ? `Make ${first} a tradesman account?`
+                      : `Disable ${first}? They can't log in until enabled.`}
                   </span>
                   <button
                     type="button"
                     className={pBtn}
                     disabled={busy}
+                    aria-busy={busy}
                     onClick={() =>
                       confirm === 'remove'
-                        ? save({ role: 'member' }, `${u.name} is no longer an officer.`)
-                        : save({ disabled: true }, `${u.name} is disabled.`)
+                        ? save({ role: 'member' }, `${u.name} is no longer an officer.`, true)
+                        : save({ disabled: true }, `${u.name} is disabled.`, true)
                     }
                   >
-                    {confirm === 'remove' ? 'Yes, remove' : 'Yes, disable'}
+                    {busy ? 'Saving…' : confirm === 'remove' ? 'Yes, remove' : 'Yes, disable'}
                   </button>
-                  <button type="button" className={pBtnQuiet} onClick={() => setConfirm(null)}>
+                  <button type="button" className={pBtnQuiet} disabled={busy} onClick={cancel}>
                     Cancel
                   </button>
-                </>
+                </div>
               ) : (
                 <>
-                  <button type="button" className={pBtnQuiet} onClick={() => setConfirm('remove')}>
+                  <button type="button" className={pBtnQuiet} onClick={(e) => ask('remove', e)}>
                     Remove officer access
                   </button>
-                  <button type="button" className={pBtnQuiet} onClick={() => setConfirm('disable')}>
+                  <button type="button" className={pBtnQuiet} onClick={(e) => ask('disable', e)}>
                     Disable
                   </button>
                 </>
@@ -277,17 +354,27 @@ function AddOfficer({ candidates }: { candidates: UserView[] }) {
   );
 }
 
-function DisabledAccounts({ list }: { list: UserView[] }) {
-  const [status, setStatus] = useState('');
+function DisabledAccounts({
+  list,
+  onDone,
+}: {
+  list: UserView[];
+  /** Page-level message: the row (and its button) leaves this list on refetch. */
+  onDone: (text: string) => void;
+}) {
   const [err, setErr] = useState('');
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   async function enable(u: UserView) {
     setErr('');
+    setBusyId(u.id);
     try {
       await api.update(u.id, { disabled: false });
-      setStatus(`${u.name} can log in again.`);
+      onDone(`${u.name} can log in again.`);
     } catch (e) {
       setErr(msg(e, 'Could not enable that account.'));
+    } finally {
+      setBusyId(null);
     }
   }
 
@@ -308,8 +395,14 @@ function DisabledAccounts({ list }: { list: UserView[] }) {
                   {u.email} · {u.role === 'admin' ? 'Officer' : 'Tradesman'}
                 </span>
               </span>
-              <button type="button" className={pBtnQuiet} onClick={() => enable(u)}>
-                Enable
+              <button
+                type="button"
+                className={pBtnQuiet}
+                disabled={busyId !== null}
+                aria-busy={busyId === u.id}
+                onClick={() => enable(u)}
+              >
+                {busyId === u.id ? 'Enabling…' : 'Enable'}
               </button>
             </li>
           ))}
@@ -320,9 +413,6 @@ function DisabledAccounts({ list }: { list: UserView[] }) {
           <ErrorStrip>{err}</ErrorStrip>
         </div>
       )}
-      <div className="mt-2">
-        <Status>{status}</Status>
-      </div>
     </Card>
   );
 }
