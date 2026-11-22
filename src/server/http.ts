@@ -59,6 +59,13 @@ export function requireRole(ctx: APIContext, role: Role): AppSession {
   return s;
 }
 
+/** The Admin level: makes and removes officers, sets titles, disables accounts. */
+export function requireSiteAdmin(ctx: APIContext): AppSession {
+  const s = requireSession(ctx);
+  if (s.role !== 'admin' || !s.siteAdmin) throw new HttpError(403, 'Only the Admin can do that.');
+  return s;
+}
+
 export async function readJson<T = unknown>(ctx: APIContext): Promise<T> {
   try {
     return (await ctx.request.json()) as T;

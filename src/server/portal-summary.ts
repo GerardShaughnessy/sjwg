@@ -12,7 +12,7 @@ import {
   signRequests,
   tasks,
 } from './db/schema';
-import type { AppSession } from './auth/server';
+import { roleLabelFor, type AppSession } from './auth/session';
 import { photoUrl } from './db/queries/members';
 import { listMemberDocs, type MemberDocView } from './member-docs';
 import { memberSignRequests, requestsForMember, type SignRequestView } from './esign';
@@ -65,7 +65,7 @@ export interface OfficerCounts {
 
 export interface PortalSummary {
   role: 'admin' | 'member';
-  /** Shown under the name in the header: the trade, or "Guild officer". */
+  /** Shown under the name in the header: the officer title, "Admin", "Guild officer", or the trade. */
   roleLabel: string;
   upcoming: UpcomingEvent[];
   mine: MySummary | null;
@@ -353,7 +353,7 @@ export async function portalSummary(s: AppSession, now = new Date()): Promise<Po
     : { home: mine?.todos.length ?? 0 };
   return {
     role: s.role,
-    roleLabel: isAdmin ? 'Guild officer' : mine?.trade || 'Guild member',
+    roleLabel: roleLabelFor(s, mine?.trade),
     upcoming,
     mine,
     officer,

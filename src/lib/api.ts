@@ -412,6 +412,34 @@ export const invitations = {
     ),
 };
 
+/* -------------------------------------------------------------- app users */
+export interface UserView {
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'member';
+  title: string;
+  disabled: boolean;
+  siteAdmin: boolean;
+  lastLoginAt: string | null;
+  member: { id: string; name: string; trade: string; privatePhone: string } | null;
+}
+export interface UserPatch {
+  role?: 'admin' | 'member';
+  title?: string;
+  disabled?: boolean;
+  siteAdmin?: boolean;
+}
+
+export const users = {
+  /** Every account. Admin only. */
+  list: () => call<{ users: UserView[] }>('/api/users').then((r) => r.users),
+  /** Every active officer. Any officer. */
+  officers: () => call<{ officers: UserView[] }>('/api/users/officers').then((r) => r.officers),
+  update: (id: string, patch: UserPatch) =>
+    mutate<{ user: UserView }>(`/api/users/${id}`, json('PATCH', patch)).then((r) => r.user),
+};
+
 /* ---------------------------------------------------------------- members */
 export interface MemberAdmin extends Member {
   public: boolean;

@@ -9,18 +9,13 @@ import { astroRequestContext } from './context';
 import { db } from '../db/client';
 import { appUsers } from '../db/schema';
 import { env, requireEnv } from '../env';
+import { toAppSession, type AppSession } from './session';
 
-export type Role = 'admin' | 'member';
+export type { AppSession, Role } from './session';
+export { roleLabelFor } from './session';
 
-/** What every server route and page sees for a logged-in Guild member. */
-export interface AppSession {
-  userId: string;
-  authUserId: string;
-  email: string;
-  name: string;
-  role: Role;
-  memberId: string | null;
-}
+/** last_login_at is refreshed at most this often, so it costs one write per visit, not per request. */
+const LOGIN_TOUCH_MS = 30 * 60 * 1000;
 
 const log = resolveNeonAuthLogging({ logLevel: env('NEON_AUTH_LOG_LEVEL') as never });
 
@@ -64,13 +59,13 @@ export async function resolveAppSession(session: SessionData | null): Promise<Ap
   const user = session?.user;
   if (!user) return null;
   const [row] = await db().select().from(appUsers).where(eq(appUsers.authUserId, user.id)).limit(1);
-  if (!row || row.disabled) return null;
-  return {
-    userId: row.id,
-    authUserId: row.authUserId,
-    email: row.email,
-    name: row.name ?? user.name ?? row.email,
-    role: row.role,
-    memberId: row.memberId,
-  };
+  const app = toAppSession(row, user);
+  if (app && (!row.lastLoginAt || Date.now() - row.lastLoginAt.getTime() > LOGIN_TOUCH_MS)) {
+    await db()
+      .update(appUsers)
+      .set({ lastLoginAt: new Date() })
+      .where(eq(appUsers.id, row.id))
+      .catch((err) => console.error('[auth] could not record last login', err));
+  }
+  return app;
 }

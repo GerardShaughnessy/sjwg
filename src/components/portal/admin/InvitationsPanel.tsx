@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { invitations as api, type InvitationResult } from '@/lib/api';
 import { useResource } from '@/lib/hooks';
 import { formatShortDate } from '@/lib/events';
+import { useSession } from '../session-context';
 import {
   btnMuted,
   btnPrimary,
@@ -29,15 +30,21 @@ export interface InvitePrefill {
 export default function InvitationsPanel({
   prefill,
   onClearPrefill,
+  officerOnly = false,
 }: {
   prefill?: InvitePrefill | null;
   onClearPrefill?: () => void;
+  /** The Officers page: officer invitations only, no role choice. */
+  officerOnly?: boolean;
 }) {
+  // Only the Admin can invite an officer; everyone else invites tradesmen.
+  const canInviteOfficer = useSession()?.siteAdmin ?? false;
   const { data, loading, error } = useResource(() => api.list(), []);
   const [email, setEmail] = useState(prefill?.email ?? '');
   const [name, setName] = useState(prefill?.name ?? '');
   const [phone, setPhone] = useState(prefill?.phone ?? '');
-  const [role, setRole] = useState<'member' | 'admin'>('member');
+  const [chosenRole, setRole] = useState<'member' | 'admin'>('member');
+  const role = officerOnly ? 'admin' : canInviteOfficer ? chosenRole : 'member';
   const memberId = prefill?.memberId ?? '';
   const [status, setStatus] = useState('');
   const [link, setLink] = useState<{ url: string; name: string; phone: string } | null>(null);
@@ -109,16 +116,20 @@ export default function InvitationsPanel({
   }
 
   // Accepted invitations are members now; they show in the list beside this.
-  const list = (data ?? []).filter((i) => i.state !== 'accepted');
+  const list = (data ?? []).filter(
+    (i) => i.state !== 'accepted' && (!officerOnly || i.role === 'admin'),
+  );
 
   return (
     <div className="flex flex-col gap-10">
       <form onSubmit={send} className="flex flex-col gap-5 font-sans">
-        <h2 className="text-h2 font-serif">Invite a member</h2>
+        <h2 className="text-h2 font-serif">
+          {officerOnly ? 'Invite an officer' : 'Invite a member'}
+        </h2>
         <p className="text-ash text-[0.95rem]">
-          They get a link by email, and you can text it to them too. The link lets them set a
-          password, pick their trade, and start their own directory entry. It stays private until
-          they choose to list it.
+          {officerOnly
+            ? 'For someone new to the site. They get a link by email, and you can text it to them too. The link lets them set a password and opens the officer portal.'
+            : 'They get a link by email, and you can text it to them too. The link lets them set a password, pick their trade, and start their own directory entry. It stays private until they choose to list it.'}
         </p>
         {prefill && (
           <p className="border-brass bg-paper flex flex-wrap items-baseline justify-between gap-3 border-l-4 px-4 py-3 text-[0.95rem]">
@@ -162,29 +173,31 @@ export default function InvitationsPanel({
             autoComplete="off"
           />
         </Labeled>
-        <fieldset className="flex flex-col gap-2">
-          <legend className="font-semibold">Role</legend>
-          <label className="flex items-center gap-2">
-            <input
-              type="radio"
-              name="role"
-              className="accent-brick h-5 w-5"
-              checked={role === 'member'}
-              onChange={() => setRole('member')}
-            />
-            Member: job board, calendar, their own entry, blog drafts
-          </label>
-          <label className="flex items-center gap-2">
-            <input
-              type="radio"
-              name="role"
-              className="accent-brick h-5 w-5"
-              checked={role === 'admin'}
-              onChange={() => setRole('admin')}
-            />
-            Officer: everything, including events, sponsors, donor records, and members
-          </label>
-        </fieldset>
+        {canInviteOfficer && !officerOnly && (
+          <fieldset className="flex flex-col gap-2">
+            <legend className="font-semibold">Role</legend>
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                name="role"
+                className="accent-brick h-5 w-5"
+                checked={role === 'member'}
+                onChange={() => setRole('member')}
+              />
+              Member: job board, calendar, their own entry, blog drafts
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                name="role"
+                className="accent-brick h-5 w-5"
+                checked={role === 'admin'}
+                onChange={() => setRole('admin')}
+              />
+              Officer: everything, including events, sponsors, donor records, and members
+            </label>
+          </fieldset>
+        )}
         {formError && <ErrorStrip>{formError}</ErrorStrip>}
         <div className="flex flex-wrap items-center gap-4">
           <button type="submit" disabled={pending} className={btnPrimary}>

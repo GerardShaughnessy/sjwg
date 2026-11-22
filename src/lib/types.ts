@@ -61,6 +61,10 @@ export interface Session {
   role: Role;
   name: string;
   memberId: string | null;
+  /** The Admin level on top of officer. */
+  siteAdmin: boolean;
+  /** Officer title, e.g. "Vice President". Empty when not set. */
+  title: string;
 }
 
 export type FormKind = 'contact' | 'partner' | 'membership' | 'interest' | 'rsvp';

@@ -9,6 +9,7 @@
  */
 import 'dotenv/config';
 import { sql } from 'drizzle-orm';
+import { toAppSession } from '../src/server/auth/session';
 import { db } from '../src/server/db/client';
 import { appUsers } from '../src/server/db/schema';
 import { invite } from '../src/server/db/queries/invitations';
@@ -29,17 +30,13 @@ async function main() {
     .where(sql`lower(${appUsers.email}) = ${fromEmail.toLowerCase()}`)
     .limit(1);
   if (!by || by.role !== 'admin') throw new Error(`${fromEmail} is not an officer.`);
-  const r = await invite(
-    { email, name: opt('--name') ?? '', role: opt('--role') === 'admin' ? 'admin' : 'member' },
-    {
-      userId: by.id,
-      authUserId: by.authUserId,
-      email: by.email,
-      name: by.name ?? by.email,
-      role: by.role,
-      memberId: by.memberId,
-    },
-  );
+  const session = toAppSession(by, {});
+  if (!session) throw new Error(`${fromEmail} is disabled.`);
+  const role = opt('--role') === 'admin' ? 'admin' : 'member';
+  // Same rule as the portal: only the Admin invites an officer.
+  if (role === 'admin' && !session.siteAdmin)
+    throw new Error(`${fromEmail} is not the Admin, so cannot invite an officer.`);
+  const r = await invite({ email, name: opt('--name') ?? '', role }, session);
   console.log(
     `Invitation for ${r.row.email} (${r.row.role}): ${r.emailed ? 'emailed' : `NOT emailed (${r.mailError})`}`,
   );

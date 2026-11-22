@@ -349,6 +349,18 @@ export const taskSchema = z.object({
 /** Moving a card or editing part of one. No defaults, so absent fields stay untouched. */
 export const taskPatchSchema = z.object(taskFields).partial();
 
+/* ------------------------------------------------------------- app users */
+export const userPatchSchema = z
+  .object({
+    role: z.enum(['admin', 'member']),
+    title: trimmed(80),
+    disabled: z.boolean(),
+    siteAdmin: z.boolean(),
+  })
+  .partial()
+  .strict()
+  .refine((p) => Object.keys(p).length > 0, 'Nothing to change.');
+
 /* -------------------------------------------------------- service hours */
 export const SERVICE_HOURS_GOAL = 16;
 

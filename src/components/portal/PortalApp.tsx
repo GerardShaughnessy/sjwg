@@ -17,6 +17,8 @@ import AidApplicationsPanel from './admin/AidApplicationsPanel';
 import { MyListing, TradesmanHome } from './pages/MemberPages';
 import Dashboard from './pages/Dashboard';
 import TradesmenPage from './pages/Tradesmen';
+import OfficersPage from './pages/Officers';
+import { SessionContext } from './session-context';
 
 interface Props {
   session: Session;
@@ -51,7 +53,11 @@ const OLD_ADMIN: Record<string, [string, string?]> = {
 };
 
 /** Query params that belong to one page and should not follow you to another. */
-const PAGE_PARAMS: Record<string, string[]> = { tasks: ['task'], aid: ['aid'], tradesmen: ['show'] };
+const PAGE_PARAMS: Record<string, string[]> = {
+  tasks: ['task'],
+  aid: ['aid'],
+  tradesmen: ['show'],
+};
 
 /**
  * The portal for a logged-in Guild member. The page that renders this island
@@ -162,6 +168,16 @@ export default function PortalApp({ session, events, areas }: Props) {
       content: <TradesmenPage areas={areas} initial={sub} />,
     },
     {
+      id: 'officers',
+      label: 'Officers',
+      group: 'People',
+      title: 'Officers',
+      lede: session.siteAdmin
+        ? 'Every Guild officer. As the Admin, you make and remove officers, set titles, and disable accounts.'
+        : 'Every Guild officer, with their title and how to reach them.',
+      content: <OfficersPage session={session} />,
+    },
+    {
       id: 'aid',
       label: 'Help requests',
       group: 'Charity',
@@ -265,21 +281,26 @@ export default function PortalApp({ session, events, areas }: Props) {
       </p>
     );
 
+  const fallbackLabel = isAdmin
+    ? session.title || (session.siteAdmin ? 'Admin' : 'Guild officer')
+    : '';
   return (
-    <PortalShell
-      session={session}
-      roleLabel={s?.roleLabel ?? (isAdmin ? 'Guild officer' : '')}
-      items={items}
-      active={active}
-      onChange={(id) => go(id)}
-      onLogout={async () => {
-        try {
-          await authClient().signOut();
-        } catch {
-          // Go home anyway; the session check there shows whether it worked.
-        }
-        window.location.assign('/');
-      }}
-    />
+    <SessionContext.Provider value={session}>
+      <PortalShell
+        session={session}
+        roleLabel={s?.roleLabel ?? fallbackLabel}
+        items={items}
+        active={active}
+        onChange={(id) => go(id)}
+        onLogout={async () => {
+          try {
+            await authClient().signOut();
+          } catch {
+            // Go home anyway; the session check there shows whether it worked.
+          }
+          window.location.assign('/');
+        }}
+      />
+    </SessionContext.Provider>
   );
 }
