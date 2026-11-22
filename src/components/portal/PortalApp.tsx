@@ -14,6 +14,7 @@ import EmailListPanel from './admin/EmailListPanel';
 import AnnouncementsPanel from './admin/AnnouncementsPanel';
 import TasksBoard from './admin/TasksBoard';
 import AidApplicationsPanel from './admin/AidApplicationsPanel';
+import RsvpListPanel from './admin/RsvpList';
 import { MyListing, TradesmanHome } from './pages/MemberPages';
 import Dashboard from './pages/Dashboard';
 import TradesmenPage from './pages/Tradesmen';
@@ -50,6 +51,7 @@ const OLD_ADMIN: Record<string, [string, string?]> = {
   donors: ['giving', 'donors'],
   sponsors: ['giving', 'sponsors'],
   calendar: ['events', 'calendar'],
+  rsvps: ['events', 'rsvps'],
 };
 
 /** Query params that belong to one page and should not follow you to another. */
@@ -200,6 +202,7 @@ export default function PortalApp({ session, events, areas }: Props) {
           tabs={[
             { id: 'edit', label: 'Events', content: <EventsEditor /> },
             { id: 'calendar', label: 'Calendar', content: <MemberCalendar initial={events} /> },
+            { id: 'rsvps', label: 'Christmas RSVPs', content: <RsvpListPanel /> },
           ]}
         />
       ),
