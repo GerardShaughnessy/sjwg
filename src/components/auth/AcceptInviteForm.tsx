@@ -38,8 +38,23 @@ export default function AcceptInviteForm({ token, email, name: initialName, need
     if (needsEntry && !trade) next.trade = 'Pick your trade.';
     if (password.length < MIN_PASSWORD) next.password = `Use at least ${MIN_PASSWORD} characters.`;
     if (confirm !== password) next.confirm = 'The two passwords do not match.';
-    setErrors(next);
-    if (Object.keys(next).length) return;
+    const firstBad = Object.keys(next)[0];
+    if (firstBad) {
+      // Say so by the button and take the person to the field, so a phone
+      // user never sees a button that seems to do nothing.
+      const count = Object.keys(next).length;
+      setErrors({
+        ...next,
+        form:
+          count === 1 ? 'Check the field marked above.' : `Check the ${count} fields marked above.`,
+      });
+      const id = firstBad === 'trade' ? 'trade' : firstBad;
+      const el = document.getElementById(id);
+      el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      el?.focus({ preventScroll: true });
+      return;
+    }
+    setErrors({});
     setPending(true);
     const { error } = await signUpWithInvite({ email, password, name: name.trim(), token });
     if (error) {
