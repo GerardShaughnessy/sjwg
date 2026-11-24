@@ -171,6 +171,11 @@ function Officer({
           <p className={u.title ? 'font-semibold' : 'text-ash italic'}>
             {u.title || 'No title yet'}
           </p>
+          {u.director && (
+            <p className="mt-1">
+              <Badge tone="neutral">Board{u.boardTitle ? `: ${u.boardTitle}` : ''}</Badge>
+            </p>
+          )}
         </div>
       </div>
       <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[0.95rem]">

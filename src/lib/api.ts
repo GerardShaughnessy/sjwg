@@ -421,6 +421,9 @@ export interface UserView {
   title: string;
   disabled: boolean;
   siteAdmin: boolean;
+  /** On the board of directors. Independent of officer access. */
+  director: boolean;
+  boardTitle: string;
   lastLoginAt: string | null;
   member: { id: string; name: string; trade: string; privatePhone: string } | null;
 }
@@ -429,6 +432,19 @@ export interface UserPatch {
   title?: string;
   disabled?: boolean;
   siteAdmin?: boolean;
+  director?: boolean;
+  boardTitle?: string;
+}
+/** One director on the Board page. */
+export interface BoardMember {
+  id: string;
+  name: string;
+  email: string;
+  boardTitle: string;
+  officer: boolean;
+  officerTitle: string;
+  phone: string;
+  lastLoginAt: string | null;
 }
 
 export const users = {
@@ -436,6 +452,8 @@ export const users = {
   list: () => call<{ users: UserView[] }>('/api/users').then((r) => r.users),
   /** Every active officer. Any officer. */
   officers: () => call<{ officers: UserView[] }>('/api/users/officers').then((r) => r.officers),
+  /** Every enabled director. Officers and directors. */
+  board: () => call<{ board: BoardMember[] }>('/api/users/board').then((r) => r.board),
   update: (id: string, patch: UserPatch) =>
     mutate<{ user: UserView }>(`/api/users/${id}`, json('PATCH', patch)).then((r) => r.user),
 };

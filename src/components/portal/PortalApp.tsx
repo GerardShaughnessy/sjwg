@@ -19,6 +19,7 @@ import { MyListing, TradesmanHome } from './pages/MemberPages';
 import Dashboard from './pages/Dashboard';
 import TradesmenPage from './pages/Tradesmen';
 import OfficersPage from './pages/Officers';
+import BoardPage from './pages/Board';
 import { SessionContext } from './session-context';
 
 interface Props {
@@ -117,6 +118,16 @@ export default function PortalApp({ session, events, areas }: Props) {
   const s = summary.data;
   const err = summary.error;
 
+  /** Officers and directors both see the board. Board membership is separate from officer access. */
+  const boardItem: NavItem = {
+    id: 'board',
+    label: 'Board',
+    group: 'People',
+    title: 'Board',
+    lede: 'The board of directors. Some directors are also officers for now; the two will separate as the Guild grows.',
+    content: <BoardPage session={session} />,
+  };
+
   const memberItems: NavItem[] = [
     {
       id: 'home',
@@ -149,6 +160,8 @@ export default function PortalApp({ session, events, areas }: Props) {
       lede: 'Write a post for the Guild blog. An officer reviews it before it goes up.',
       content: <PostEditor session={session} />,
     },
+    // A director who is not an officer keeps the tradesman pages, plus the board.
+    ...(session.director ? [boardItem] : []),
   ];
 
   const adminItems: NavItem[] = [
@@ -179,6 +192,7 @@ export default function PortalApp({ session, events, areas }: Props) {
         : 'Every Guild officer, with their title and how to reach them.',
       content: <OfficersPage session={session} />,
     },
+    boardItem,
     {
       id: 'aid',
       label: 'Help requests',
