@@ -171,6 +171,8 @@ describe('the board list', () => {
     siteAdmin: false,
     director: true,
     boardTitle: 'Treasurer',
+    vendor: false,
+    vendorService: '',
     lastLoginAt: null,
     member: { id: 'm1', name: 'Dee', trade: 'Plumber', privatePhone: '555-0100' },
   };

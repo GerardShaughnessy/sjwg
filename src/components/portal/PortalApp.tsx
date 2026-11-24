@@ -20,6 +20,7 @@ import Dashboard from './pages/Dashboard';
 import TradesmenPage from './pages/Tradesmen';
 import OfficersPage from './pages/Officers';
 import BoardPage from './pages/Board';
+import VendorsPage from './pages/Vendors';
 import { SessionContext } from './session-context';
 
 interface Props {
@@ -193,6 +194,14 @@ export default function PortalApp({ session, events, areas }: Props) {
       content: <OfficersPage session={session} />,
     },
     boardItem,
+    {
+      id: 'vendors',
+      label: 'Vendors',
+      group: 'People',
+      title: 'Vendors',
+      lede: 'Outside people and businesses who provide services to the Guild.',
+      content: <VendorsPage session={session} />,
+    },
     {
       id: 'aid',
       label: 'Help requests',

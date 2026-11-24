@@ -424,6 +424,9 @@ export interface UserView {
   /** On the board of directors. Independent of officer access. */
   director: boolean;
   boardTitle: string;
+  /** An outside person or business providing services. Independent of officer and board status. */
+  vendor: boolean;
+  vendorService: string;
   lastLoginAt: string | null;
   member: { id: string; name: string; trade: string; privatePhone: string } | null;
 }
@@ -434,6 +437,16 @@ export interface UserPatch {
   siteAdmin?: boolean;
   director?: boolean;
   boardTitle?: string;
+  vendor?: boolean;
+  vendorService?: string;
+}
+/** One vendor on the Vendors page. */
+export interface Vendor {
+  id: string;
+  name: string;
+  email: string;
+  vendorService: string;
+  lastLoginAt: string | null;
 }
 /** One director on the Board page. */
 export interface BoardMember {
@@ -454,6 +467,8 @@ export const users = {
   officers: () => call<{ officers: UserView[] }>('/api/users/officers').then((r) => r.officers),
   /** Every enabled director. Officers and directors. */
   board: () => call<{ board: BoardMember[] }>('/api/users/board').then((r) => r.board),
+  /** Every enabled vendor. Officers and the Admin. */
+  vendors: () => call<{ vendors: Vendor[] }>('/api/users/vendors').then((r) => r.vendors),
   update: (id: string, patch: UserPatch) =>
     mutate<{ user: UserView }>(`/api/users/${id}`, json('PATCH', patch)).then((r) => r.user),
 };
