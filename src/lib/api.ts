@@ -602,28 +602,66 @@ export interface Task {
   sortOrder: number;
   createdBy: string | null;
   updatedAt: string;
+  /** Total minutes logged on the task. */
+  minutes: number;
 }
-export type TaskInput = Omit<Task, 'id' | 'createdBy' | 'updatedAt' | 'assigneeId'>;
+export type TaskInput = Omit<Task, 'id' | 'createdBy' | 'updatedAt' | 'assigneeId' | 'minutes'>;
+export type AccountGroup = 'officers' | 'board' | 'tradesmen' | 'vendors';
 export interface Assignee {
   id: string;
   name: string | null;
+  /** Empty for anyone who is not an officer. */
   email: string;
+  groups: AccountGroup[];
+  /** "Admin", an officer or board title, "Tradesman", or a vendor's service. */
+  detail: string;
+  disabled: boolean;
 }
 type SendStatus = 'sent' | 'failed' | 'skipped';
 export interface TaskSaved {
   task: Task;
-  /** One entry per person emailed about being added. */
-  emailed: { id: string; status: SendStatus }[];
+  /** People queued for the batched "new task" email, about 15 minutes out. */
+  queued: string[];
   /** The hello@ email, when the task was finished for the first time. */
   finished: SendStatus | null;
 }
+export interface TimeEntry {
+  id: string;
+  taskId: string;
+  taskTitle?: string;
+  userId: string | null;
+  name: string;
+  minutes: number;
+  workedOn: string;
+  note: string;
+  createdAt: string;
+}
+export interface TimeSummary {
+  monthStart: string;
+  people: { userId: string | null; name: string; monthMinutes: number; totalMinutes: number }[];
+  recent: TimeEntry[];
+}
 
 export const tasks = {
-  list: () => call<{ tasks: Task[]; assignees: Assignee[] }>('/api/tasks'),
+  list: () => call<{ tasks: Task[]; assignees: Assignee[]; canManage: boolean }>('/api/tasks'),
   create: (input: TaskInput) => mutate<TaskSaved>('/api/tasks', json('POST', input)),
-  update: (id: string, patch: Partial<TaskInput>) =>
+  update: (id: string, patch: Partial<TaskInput> & { addNote?: string }) =>
     mutate<TaskSaved>(`/api/tasks/${id}`, json('PATCH', patch)),
   remove: (id: string) => mutate<{ ok: true }>(`/api/tasks/${id}`, { method: 'DELETE' }),
+  time: (id: string) =>
+    call<{ entries: TimeEntry[] }>(`/api/tasks/${id}/time`).then((r) => r.entries),
+  logTime: (
+    id: string,
+    input: { hours: number; minutes: number; workedOn: string; note: string },
+  ) =>
+    mutate<{ entry: { id: string; minutes: number } }>(
+      `/api/tasks/${id}/time`,
+      json('POST', input),
+    ),
+  deleteTime: (entryId: string) =>
+    mutate<{ ok: true }>(`/api/tasks/time/${entryId}`, { method: 'DELETE' }),
+  timeSummary: (person?: string) =>
+    call<TimeSummary>(`/api/tasks/time${person ? `?person=${encodeURIComponent(person)}` : ''}`),
 };
 
 export type SubscriberView = {

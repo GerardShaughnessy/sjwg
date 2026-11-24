@@ -12,7 +12,7 @@ import EventsEditor from './admin/EventsEditor';
 import SponsorsEditor from './admin/SponsorsEditor';
 import EmailListPanel from './admin/EmailListPanel';
 import AnnouncementsPanel from './admin/AnnouncementsPanel';
-import TasksBoard from './admin/TasksBoard';
+import TasksPage from './tasks/TasksPage';
 import AidApplicationsPanel from './admin/AidApplicationsPanel';
 import RsvpListPanel from './admin/RsvpList';
 import { MyListing, TradesmanHome } from './pages/MemberPages';
@@ -59,7 +59,7 @@ const OLD_ADMIN: Record<string, [string, string?]> = {
 
 /** Query params that belong to one page and should not follow you to another. */
 const PAGE_PARAMS: Record<string, string[]> = {
-  tasks: ['task'],
+  tasks: ['task', 'view', 'person', 'mine', 'overdue', 'section'],
   aid: ['aid'],
   tradesmen: ['show'],
 };
@@ -162,6 +162,15 @@ export default function PortalApp({ session, events, areas }: Props) {
       lede: 'Write a post for the Guild blog. An officer reviews it before it goes up.',
       content: <PostEditor session={session} />,
     },
+    {
+      id: 'tasks',
+      label: 'Tasks',
+      count: badges.tasks,
+      countLabel: n('tasks', 'open task', 'open tasks'),
+      title: 'Tasks',
+      lede: 'Your Guild tasks. Move them along, add notes, and log your time.',
+      content: <TasksPage session={session} initial={sub} />,
+    },
     // A director who is not an officer keeps the tradesman pages, plus the board.
     ...(session.director ? [boardItem] : []),
   ];
@@ -241,7 +250,7 @@ export default function PortalApp({ session, events, areas }: Props) {
       countLabel: n('tasks', 'open task', 'open tasks'),
       title: 'Tasks',
       lede: 'Who is doing what for the Guild.',
-      content: <TasksBoard session={session} />,
+      content: <TasksPage session={session} initial={sub} />,
     },
     {
       id: 'comms',
