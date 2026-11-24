@@ -383,6 +383,8 @@ export const userPatchSchema = z
     siteAdmin: z.boolean(),
     director: z.boolean(),
     boardTitle: trimmed(80),
+    vendor: z.boolean(),
+    vendorService: trimmed(120),
   })
   .partial()
   .strict()

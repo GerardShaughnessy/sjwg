@@ -15,6 +15,9 @@ export interface UserPatch {
   /** On the board of directors. Independent of officer access. */
   director?: boolean;
   boardTitle?: string;
+  /** An outside person or business providing services. Independent of officer and board status. */
+  vendor?: boolean;
+  vendorService?: string;
 }
 
 /**
@@ -23,10 +26,11 @@ export interface UserPatch {
  */
 export function assertUserPatchAllowed(
   actor: AppSession,
-  target: { id: string; role: Role; disabled?: boolean; director?: boolean },
+  target: { id: string; role: Role; disabled?: boolean; director?: boolean; vendor?: boolean },
   patch: UserPatch,
 ): void {
   assertBoardPatchAllowed(target, patch);
+  assertVendorPatchAllowed(target, patch);
   if (target.id === actor.userId) {
     if (patch.siteAdmin === false)
       throw badRequest("You can't remove your own Admin access. Ask another Admin to do it.");
@@ -56,9 +60,26 @@ export function assertBoardPatchAllowed(
 }
 
 /**
- * The columns a checked patch writes. Officer access and board membership
- * are separate: removing one never touches the other. Leaving the board
- * clears the board title; losing officer access drops the Admin flag.
+ * Vendor rules, the same shape as the board rules. A vendor needs an enabled
+ * account, and a service only means something for a vendor.
+ */
+export function assertVendorPatchAllowed(
+  target: { disabled?: boolean; vendor?: boolean },
+  patch: UserPatch,
+): void {
+  const disabledAfter = patch.disabled ?? target.disabled ?? false;
+  const vendorAfter = patch.vendor ?? target.vendor ?? false;
+  if (patch.vendor === true && disabledAfter)
+    throw badRequest('Enable their account first. Only an enabled account can be a vendor.');
+  if (patch.vendorService && !vendorAfter)
+    throw badRequest('Add them as a vendor first. Only a vendor has a service.');
+}
+
+/**
+ * The columns a checked patch writes. Officer access, board membership and
+ * vendor status are separate: removing one never touches the others. Leaving
+ * the board clears the board title, leaving the vendor list clears the
+ * service, and losing officer access drops the Admin flag.
  */
 export function userPatchSet(patch: UserPatch) {
   const set: {
@@ -68,6 +89,8 @@ export function userPatchSet(patch: UserPatch) {
     siteAdmin?: boolean;
     director?: boolean;
     boardTitle?: string;
+    vendor?: boolean;
+    vendorService?: string;
   } = {};
   if (patch.role !== undefined) set.role = patch.role;
   if (patch.title !== undefined) set.title = patch.title;
@@ -75,12 +98,17 @@ export function userPatchSet(patch: UserPatch) {
   if (patch.siteAdmin !== undefined) set.siteAdmin = patch.siteAdmin;
   if (patch.director !== undefined) set.director = patch.director;
   if (patch.boardTitle !== undefined) set.boardTitle = patch.boardTitle;
+  if (patch.vendor !== undefined) set.vendor = patch.vendor;
+  if (patch.vendorService !== undefined) set.vendorService = patch.vendorService;
   if (patch.role === 'member') set.siteAdmin = false;
   if (patch.director === false) set.boardTitle = '';
-  // A disabled account leaves the board, so the Board page never hides a seat.
+  if (patch.vendor === false) set.vendorService = '';
+  // A disabled account leaves the board and the vendor list, so neither page hides anyone.
   if (patch.disabled === true) {
     set.director = false;
     set.boardTitle = '';
+    set.vendor = false;
+    set.vendorService = '';
   }
   return set;
 }

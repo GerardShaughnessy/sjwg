@@ -8,7 +8,8 @@ export const prerender = false;
 
 /**
  * Make or remove an officer, set a title, disable or enable, set the Admin flag,
- * add to or remove from the board, set a board title. Admin only.
+ * add to or remove from the board, set a board title, add or remove a vendor
+ * and set what they provide. Admin only.
  */
 export const PATCH: APIRoute = route(async (ctx) => {
   const actor = requireSiteAdmin(ctx);

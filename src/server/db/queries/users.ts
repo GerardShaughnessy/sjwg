@@ -14,6 +14,8 @@ export interface UserView {
   siteAdmin: boolean;
   director: boolean;
   boardTitle: string;
+  vendor: boolean;
+  vendorService: string;
   lastLoginAt: string | null;
   member: { id: string; name: string; trade: string; privatePhone: string } | null;
 }
@@ -39,6 +41,8 @@ async function selectUsers(where?: ReturnType<typeof eq>) {
     siteAdmin: u.role === 'admin' && u.siteAdmin,
     director: u.director,
     boardTitle: u.boardTitle,
+    vendor: u.vendor,
+    vendorService: u.vendorService,
     lastLoginAt: u.lastLoginAt?.toISOString() ?? null,
     member: u.memberId
       ? {
@@ -59,9 +63,7 @@ export const listUsers = () => selectUsers();
  * keeps role 'admin' for access but is not an officer, so is left out.
  */
 export async function listOfficers() {
-  return (await selectUsers(eq(appUsers.role, 'admin'))).filter(
-    (u) => !u.disabled && !u.siteAdmin,
-  );
+  return (await selectUsers(eq(appUsers.role, 'admin'))).filter((u) => !u.disabled && !u.siteAdmin);
 }
 
 /** One director on the Board page. Officers and directors can read it. */
@@ -99,6 +101,28 @@ export async function listBoard(forOfficer = true): Promise<BoardMemberView[]> {
   return (await selectUsers(eq(appUsers.director, true)))
     .filter((u) => !u.disabled)
     .map((u) => toBoardMember(u, forOfficer));
+}
+
+/** One vendor on the Vendors page. Officers and the Admin can read it. */
+export interface VendorView {
+  id: string;
+  name: string;
+  email: string;
+  vendorService: string;
+  lastLoginAt: string | null;
+}
+
+/** Every enabled vendor, for the Vendors page. */
+export async function listVendors(): Promise<VendorView[]> {
+  return (await selectUsers(eq(appUsers.vendor, true)))
+    .filter((u) => !u.disabled)
+    .map((u) => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      vendorService: u.vendorService,
+      lastLoginAt: u.lastLoginAt,
+    }));
 }
 
 export async function getUser(id: string) {
