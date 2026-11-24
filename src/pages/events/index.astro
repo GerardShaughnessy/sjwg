@@ -7,6 +7,10 @@ import { splitEvents } from '@/lib/events';
 
 const all = (await getCollection('events')).map((e) => e.data);
 const { upcoming, past } = splitEvents(all);
+// The newest blog post, always linked from Events.
+const latestPost = (await getCollection('blog'))
+  .filter((p) => !p.data.draft)
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())[0];
 ---
 
 <BaseLayout
@@ -31,6 +35,25 @@ const { upcoming, past } = splitEvents(all);
           </span>
         </span>
         <span class="font-sans font-semibold text-brass-glow">RSVP →</span>
+      </a>
+    </div>
+  )}
+  {latestPost && (
+    <div class="wrap pt-4">
+      <a
+        href={`/blog/${latestPost.id}`}
+        class="flex flex-col gap-1 border-l-4 border-brass-glow bg-brick px-6 py-5 text-stone no-underline hover:bg-kiln sm:flex-row sm:items-center sm:justify-between sm:gap-6"
+      >
+        <span>
+          <span class="block font-sans text-[0.8rem] font-semibold tracking-[0.12em] text-brass-glow uppercase">
+            From the blog
+          </span>
+          <span class="block font-serif text-[1.35rem]">{latestPost.data.title}</span>
+          {latestPost.data.author && (
+            <span class="font-sans text-[0.95rem] text-stone/85">By {latestPost.data.author}</span>
+          )}
+        </span>
+        <span class="font-sans font-semibold text-brass-glow">Read →</span>
       </a>
     </div>
   )}
