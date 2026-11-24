@@ -71,6 +71,13 @@
       "when": 1795311399185,
       "tag": "0009_officers_tasks",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1795545043092,
+      "tag": "0010_board",
+      "breakpoints": true
     }
   ]
 }

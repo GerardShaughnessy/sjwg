@@ -111,6 +111,10 @@ export const appUsers = pgTable(
     siteAdmin: boolean('site_admin').notNull().default(false),
     /** Officer title shown in the portal header, e.g. "Vice President". Empty until set. */
     title: text('title').notNull().default(''),
+    /** On the board of directors. Independent of officer access. */
+    director: boolean('director').notNull().default(false),
+    /** Board title, e.g. "Chair" or "Treasurer". Empty until set; cleared when they leave the board. */
+    boardTitle: text('board_title').notNull().default(''),
     lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
     createdAt: createdAt(),
   },
