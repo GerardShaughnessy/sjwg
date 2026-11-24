@@ -75,13 +75,7 @@ export default function TrackRequest({
           <span className="text-ash mt-1 block font-sans text-[0.95rem]">{s.detail}</span>
         </p>
         <p className="mt-4 font-sans text-[0.95rem] leading-relaxed">
-          <span
-            className="sample"
-            data-tk={TK.responseCommitment.text}
-            title={`Sample copy. Needed: ${TK.responseCommitment.text}`}
-          >
             {TK.responseCommitment.sample}
-          </span>
         </p>
         <dl className="border-mortar mt-8 grid grid-cols-[minmax(6rem,auto)_1fr] gap-x-6 gap-y-3 border-t pt-4 font-sans text-[1rem]">
           <dt className="text-ash">Sent</dt>

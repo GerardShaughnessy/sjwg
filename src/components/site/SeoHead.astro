@@ -9,6 +9,8 @@ interface Props {
 const { title, description = SITE_DESCRIPTION, noindex = false } = Astro.props;
 const fullTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+/** The share card shown when a page is linked on Facebook, in texts, or in the press. */
+const image = new URL('/og-default.png', Astro.site);
 ---
 
 <title>{fullTitle}</title>
@@ -19,5 +21,10 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 <meta property="og:title" content={fullTitle} />
 <meta property="og:description" content={description} />
 <meta property="og:url" content={canonical} />
-<meta name="twitter:card" content="summary" />
+<meta property="og:image" content={image} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="St. Joseph the Worker Guild seal and wordmark: Faith. Works. Solidarity. Catholic tradesmen serving St. Louis." />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content={image} />
 {noindex && <meta name="robots" content="noindex, nofollow" />}

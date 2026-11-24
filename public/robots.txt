@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /portal
 Disallow: /login
-Sitemap: https://sjwg.netlify.app/sitemap-index.xml
+Sitemap: https://sjwg.org/sitemap-index.xml

@@ -4,9 +4,7 @@ import PageHeader from '@/components/ui/PageHeader.astro';
 import Section from '@/components/ui/Section.astro';
 import Button from '@/components/ui/Button.astro';
 import Picture from '@/components/ui/Picture.astro';
-import Tk from '@/components/ui/Tk.astro';
 import InquiryForm from '@/components/forms/InquiryForm';
-import { TK } from '@/config/site';
 ---
 
 <BaseLayout
@@ -71,7 +69,7 @@ import { TK } from '@/config/site';
       <div class="border-t-4 border-brass bg-paper p-6 md:p-10">
         <h3 class="text-h3">Ask About Listing</h3>
         <p class="mt-2 max-w-[48ch] font-sans text-[0.95rem] text-ash">
-          <Tk {...TK.whoReplies} />
+          A Guild officer replies within two business days.
         </p>
         <div class="mt-6">
           <InquiryForm
@@ -125,7 +123,7 @@ import { TK } from '@/config/site';
             ]}
           >
             <p slot="successBody">
-              <Tk {...TK.whoReplies} />
+              A Guild officer replies within two business days.
             </p>
           </InquiryForm>
         </div>

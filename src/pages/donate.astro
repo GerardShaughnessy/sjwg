@@ -3,13 +3,12 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import PageHeader from '@/components/ui/PageHeader.astro';
 import Section from '@/components/ui/Section.astro';
 import Button from '@/components/ui/Button.astro';
-import Tk from '@/components/ui/Tk.astro';
 import SponsorStrip from '@/components/home/SponsorStrip.astro';
 import GiveForm from '@/components/donate/GiveForm';
 
 // Built at deploy time: the give form appears once DONATIONS_LIVE is true and Stripe keys exist.
 const live = (import.meta.env.DONATIONS_LIVE ?? process.env.DONATIONS_LIVE) === 'true';
-import { DONATE_URL, TK } from '@/config/site';
+import { DONATE_URL } from '@/config/site';
 
 const uses = [
   {
@@ -105,7 +104,7 @@ const giveHref = DONATE_URL;
           Where a Gift Goes
         </h2>
         <p class="mt-4 max-w-[44ch] leading-relaxed">
-          The Guild's <Tk {...TK.fundingGoalPeriod} /> funding goal is $60,000, allocated to four
+          The Guild's first-year funding goal is $60,000, allocated to four
           lines of work.
         </p>
       </div>
@@ -197,7 +196,7 @@ const giveHref = DONATE_URL;
               <>
                 <h3 class="text-h3">Online</h3>
                 <p class="mt-2">
-                  <Tk {...TK.onlineGiving} />
+                  Online giving opens soon. Until then, give by check or in person.
                 </p>
               </>
             )}
