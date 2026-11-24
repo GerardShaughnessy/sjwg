@@ -115,6 +115,10 @@ export const appUsers = pgTable(
     director: boolean('director').notNull().default(false),
     /** Board title, e.g. "Chair" or "Treasurer". Empty until set; cleared when they leave the board. */
     boardTitle: text('board_title').notNull().default(''),
+    /** An outside person or business providing services to the Guild. Independent of officer and board status. */
+    vendor: boolean('vendor').notNull().default(false),
+    /** What a vendor provides, e.g. "Website, design, and photography". Cleared when they stop being a vendor. */
+    vendorService: text('vendor_service').notNull().default(''),
     lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
     createdAt: createdAt(),
   },
