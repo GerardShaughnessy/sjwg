@@ -302,7 +302,14 @@ export const donationPatchSchema = z.object({
   note: trimmed(500).optional(),
 });
 
+/** Directory-facing contact. The tradesman and officers both edit these. */
+export const publicContactFields = {
+  publicEmail: z.union([z.literal(''), emailField]).default(''),
+  publicPhone: phoneField,
+};
+
 export const memberAdminSchema = profileSchema.extend({
+  ...publicContactFields,
   featured: z.boolean().default(false),
   sortOrder: z.number().int().min(0).max(9999).default(0),
   privatePhone: trimmed(40).default(''),

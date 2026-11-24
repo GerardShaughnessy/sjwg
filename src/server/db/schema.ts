@@ -83,6 +83,10 @@ export const members = pgTable(
     photoKey: text('photo_key'),
     privatePhone: text('private_phone'),
     privateEmail: text('private_email'),
+    /** Shown in the directory instead of the private email when set (and show_contact is on). */
+    publicEmail: text('public_email').notNull().default(''),
+    /** Shown in the directory instead of the private phone when set (and show_contact is on). */
+    publicPhone: text('public_phone').notNull().default(''),
     /** The tradesman agreed to show his phone and email to visitors who affirm the directory terms. */
     showContact: boolean('show_contact').notNull().default(false),
     sortOrder: integer('sort_order').notNull().default(0),

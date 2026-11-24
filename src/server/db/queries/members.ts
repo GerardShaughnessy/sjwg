@@ -27,6 +27,8 @@ export function memberView(m: typeof members.$inferSelect, accountEmail: string 
     sortOrder: m.sortOrder,
     privatePhone: m.privatePhone ?? '',
     privateEmail: m.privateEmail ?? '',
+    publicPhone: m.publicPhone,
+    publicEmail: m.publicEmail,
     showContact: m.showContact,
     sample: Boolean(m.legacyId),
     accountEmail,
@@ -70,6 +72,8 @@ function toRow(input: MemberInput) {
     sortOrder: input.sortOrder,
     privatePhone: input.privatePhone || null,
     privateEmail: input.privateEmail || null,
+    publicPhone: input.publicPhone,
+    publicEmail: input.publicEmail,
     ...(input.showContact === undefined ? {} : { showContact: input.showContact }),
   };
 }

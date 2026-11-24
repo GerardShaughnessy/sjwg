@@ -31,6 +31,15 @@ const isCurrent = (href: string) => current === href || current.startsWith(href 
         </a>
       ))}
       <a
+        href="/portal"
+        data-portal-link
+        hidden
+        aria-current={isCurrent('/portal') ? 'page' : undefined}
+        class="font-sans text-[1rem] font-semibold text-brick no-underline hover:underline decoration-brass decoration-2 underline-offset-[6px]"
+      >
+        My portal
+      </a>
+      <a
         href="/login"
         data-auth-link
         class="font-sans text-[1rem] font-medium text-ash no-underline hover:underline"
@@ -83,6 +92,15 @@ const isCurrent = (href: string) => current === href || current.startsWith(href 
           </a>
         </li>
       ))}
+      <li class="border-b border-mortar" data-portal-link hidden>
+        <a
+          href="/portal"
+          aria-current={isCurrent('/portal') ? 'page' : undefined}
+          class="block py-4 font-sans text-[1.125rem] font-semibold text-brick no-underline"
+        >
+          My portal
+        </a>
+      </li>
       <li class="border-b border-mortar">
         <a
           href="/login"
@@ -103,11 +121,14 @@ const isCurrent = (href: string) => current === href || current.startsWith(href 
 
 <script>
   // Pages are prerendered, so the header asks once whether this browser is
-  // signed in. If it is, Log In becomes Log Out.
+  // signed in. If it is, Log In becomes Log Out and My portal appears.
   fetch('/api/session', { credentials: 'same-origin' })
     .then((r) => (r.ok ? r.json() : null))
     .then((b: { signedIn?: boolean } | null) => {
       if (!b?.signedIn) return;
+      document.querySelectorAll<HTMLElement>('[data-portal-link]').forEach((el) => {
+        el.hidden = false;
+      });
       document.querySelectorAll<HTMLAnchorElement>('[data-auth-link]').forEach((a) => {
         a.textContent = 'Log Out';
         a.href = '/';

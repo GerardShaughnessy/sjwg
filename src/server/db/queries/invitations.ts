@@ -179,6 +179,8 @@ export async function complete(
       sortOrder: 0,
       privatePhone: setup.phone,
       privateEmail: row.email,
+      publicPhone: '',
+      publicEmail: '',
       showContact: undefined,
     });
     memberId = entry.id;

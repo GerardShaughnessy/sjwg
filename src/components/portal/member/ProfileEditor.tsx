@@ -2,16 +2,25 @@ import { useEffect, useState } from 'react';
 import type { Member } from '@/lib/types';
 import { me, members as membersApi } from '@/lib/api';
 import MemberCard from '@/components/members/MemberCard';
+import { directoryContact } from '@/lib/contact';
+import { isEmail, isPhone } from '@/lib/validate';
 import ServiceHours from './ServiceHours';
 import { btnPrimary, ErrorStrip, inputCls, Loading, msg, rebuildNote, Status } from '../ui';
 
-type Draft = Omit<Member, 'id' | 'photo' | 'featured'> & { public: boolean; showContact: boolean };
+type Draft = Omit<Member, 'id' | 'photo' | 'featured'> & {
+  public: boolean;
+  showContact: boolean;
+  publicEmail: string;
+  publicPhone: string;
+};
 /** /api/me returns the whole row; these are the private fields the editor reads. */
 type MeMember = Member & {
   public?: boolean;
   showContact?: boolean;
   privatePhone?: string | null;
   privateEmail?: string | null;
+  publicEmail?: string | null;
+  publicPhone?: string | null;
 };
 
 /** A member edits his own directory row. Nothing is public until he says so. */
@@ -22,6 +31,7 @@ export default function ProfileEditor({ areas }: { areas: string[] }) {
   const [error, setError] = useState('');
   const [pending, setPending] = useState(false);
   const [photoBusy, setPhotoBusy] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<ContactErrors>({});
 
   useEffect(() => {
     me.get()
@@ -37,6 +47,8 @@ export default function ProfileEditor({ areas }: { areas: string[] }) {
             bio: m.bio,
             public: Boolean(m.public),
             showContact: Boolean(m.showContact),
+            publicEmail: m.publicEmail ?? '',
+            publicPhone: m.publicPhone ?? '',
           });
       })
       .catch((err) => {
@@ -71,6 +83,13 @@ export default function ProfileEditor({ areas }: { areas: string[] }) {
   async function save(e: React.FormEvent) {
     e.preventDefault();
     if (!draft) return;
+    const bad = contactErrors(draft);
+    setFieldErrors(bad);
+    if (bad.publicEmail || bad.publicPhone) {
+      setStatus('');
+      setError(bad.publicEmail || bad.publicPhone || '');
+      return;
+    }
     setPending(true);
     setError('');
     setStatus('Saving.');
@@ -98,15 +117,22 @@ export default function ProfileEditor({ areas }: { areas: string[] }) {
     yearsInTrade: draft.yearsInTrade,
     bio: draft.bio,
   };
-  const myPhone = (member.privatePhone ?? '').trim();
-  const myEmail = (member.privateEmail ?? '').trim();
-  const shown = [myPhone, myEmail].filter(Boolean).join(' and ');
+  const { phone: myPhone, email: myEmail } = directoryContact({
+    publicPhone: draft.publicPhone,
+    publicEmail: draft.publicEmail,
+    privatePhone: member.privatePhone,
+    privateEmail: member.privateEmail,
+  });
+  const source = (pub: string) => (pub.trim() ? 'your public' : 'the private');
+  const shownParts = [
+    myPhone && `${myPhone} (${source(draft.publicPhone)} phone)`,
+    myEmail && `${myEmail} (${source(draft.publicEmail)} email)`,
+  ].filter(Boolean);
   const missing =
     !myPhone && !myEmail ? 'phone or email' : !myPhone ? 'phone' : !myEmail ? 'email' : '';
   const contactHint = [
-    shown && `Visitors would see ${shown}.`,
-    missing && `No ${missing} is on file.`,
-    'To change them, ask an officer.',
+    shownParts.length > 0 && `Visitors would see ${shownParts.join(' and ')}.`,
+    missing && `No ${missing} is on file. Add a public one above.`,
   ]
     .filter(Boolean)
     .join(' ');
@@ -203,6 +229,43 @@ export default function ProfileEditor({ areas }: { areas: string[] }) {
               className={inputCls}
             />
           </label>
+          <fieldset className="flex flex-col gap-4">
+            <legend className="font-semibold">Contact for the directory</legend>
+            <p className="text-ash text-[0.9rem]">
+              Leave these blank to use the phone and email the Guild has on file. Your private phone
+              and email stay with the Guild; an officer can change those for you.
+            </p>
+            <label className="flex flex-col gap-1">
+              <span className="font-semibold">Public email (shown in the directory)</span>
+              <input
+                type="email"
+                value={draft.publicEmail}
+                onChange={(e) => setDraft({ ...draft, publicEmail: e.target.value })}
+                aria-invalid={Boolean(fieldErrors.publicEmail)}
+                className={inputCls}
+              />
+              {fieldErrors.publicEmail && (
+                <span className="text-brick text-[0.95rem] font-semibold">
+                  {fieldErrors.publicEmail}
+                </span>
+              )}
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="font-semibold">Public phone</span>
+              <input
+                type="tel"
+                value={draft.publicPhone}
+                onChange={(e) => setDraft({ ...draft, publicPhone: e.target.value })}
+                aria-invalid={Boolean(fieldErrors.publicPhone)}
+                className={`${inputCls} w-64`}
+              />
+              {fieldErrors.publicPhone && (
+                <span className="text-brick text-[0.95rem] font-semibold">
+                  {fieldErrors.publicPhone}
+                </span>
+              )}
+            </label>
+          </fieldset>
           <label className="border-brass bg-paper flex items-start gap-3 border-l-4 px-4 py-3">
             <input
               type="checkbox"
@@ -282,6 +345,17 @@ export default function ProfileEditor({ areas }: { areas: string[] }) {
       </div>
     </div>
   );
+}
+
+type ContactErrors = { publicEmail?: string; publicPhone?: string };
+
+function contactErrors(d: { publicEmail: string; publicPhone: string }): ContactErrors {
+  const out: ContactErrors = {};
+  if (d.publicEmail.trim() && !isEmail(d.publicEmail))
+    out.publicEmail = 'That email does not look right, like name@example.com.';
+  if (d.publicPhone.trim() && !isPhone(d.publicPhone))
+    out.publicPhone = 'Ten digits with area code.';
+  return out;
 }
 
 function AddArea({ onAdd }: { onAdd: (a: string) => void }) {

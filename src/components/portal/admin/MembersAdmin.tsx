@@ -6,6 +6,7 @@ import {
   type MemberInput as MemberInputBase,
 } from '@/lib/api';
 import ServiceHours from '../member/ServiceHours';
+import { directoryContact } from '@/lib/contact';
 import InvitationsPanel, { type InvitePrefill } from './InvitationsPanel';
 import { useResource } from '@/lib/hooks';
 import { byTradeThenName, COMMON_TRADES, OTHER_TRADE } from '@/lib/trades';
@@ -38,6 +39,8 @@ const toInput = (m: MemberAdmin): MemberInput => ({
   sortOrder: m.sortOrder,
   privatePhone: m.privatePhone,
   privateEmail: m.privateEmail,
+  publicPhone: m.publicPhone ?? '',
+  publicEmail: m.publicEmail ?? '',
   showContact: Boolean(m.showContact),
 });
 
@@ -61,6 +64,13 @@ export function MemberEditForm({
   const [status, setStatus] = useState(`Editing ${member.name}.`);
   const [formError, setFormError] = useState('');
   const [fields, setFields] = useState<Record<string, string>>({});
+  const dc = directoryContact(form);
+  const shownContact = [
+    dc.phone && `${dc.phone} (${form.publicPhone.trim() ? 'public' : 'private'} phone)`,
+    dc.email && `${dc.email} (${form.publicEmail.trim() ? 'public' : 'private'} email)`,
+  ]
+    .filter(Boolean)
+    .join(' and ');
   const [pending, setPending] = useState(false);
   const isCommon = (COMMON_TRADES as readonly string[]).includes(form.trade);
   const [otherTrade, setOtherTrade] = useState(false);
@@ -190,7 +200,7 @@ export function MemberEditForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <Labeled
           label="Phone (private)"
-          hint="Officers only. Shown in the directory only if the tradesman turns on that setting."
+          hint="Officers only. Shown in the directory only if there is no public phone and the tradesman turns on that setting."
           error={fields.privatePhone}
         >
           <input
@@ -202,13 +212,39 @@ export function MemberEditForm({
         </Labeled>
         <Labeled
           label="Email (private)"
-          hint="Used for paperwork and contact if they have no login yet."
+          hint="Officers only. Used for paperwork and contact if they have no login yet. Shown in the directory only if there is no public email and the tradesman turns on that setting."
           error={fields.privateEmail}
         >
           <input
             type="email"
             value={form.privateEmail}
             onChange={(e) => setForm({ ...form, privateEmail: e.target.value })}
+            className={inputCls}
+          />
+        </Labeled>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Labeled
+          label="Public email (shown in the directory)"
+          hint="Shown instead of the private email when the tradesman shows their contact."
+          error={fields.publicEmail}
+        >
+          <input
+            type="email"
+            value={form.publicEmail}
+            onChange={(e) => setForm({ ...form, publicEmail: e.target.value })}
+            className={inputCls}
+          />
+        </Labeled>
+        <Labeled
+          label="Public phone"
+          hint="Shown instead of the private phone. Leave blank to use the private one."
+          error={fields.publicPhone}
+        >
+          <input
+            type="tel"
+            value={form.publicPhone}
+            onChange={(e) => setForm({ ...form, publicPhone: e.target.value })}
             className={inputCls}
           />
         </Labeled>
@@ -225,9 +261,12 @@ export function MemberEditForm({
       <p className="text-[0.95rem]">
         <span className="font-semibold">Phone and email in the directory: </span>
         {form.showContact ? 'Shown' : 'Not shown'}
+        {form.showContact && shownContact && (
+          <span className="block">Visitors see {shownContact}.</span>
+        )}
         <span className="text-ash block text-[0.9rem]">
-          Only the tradesman can change this, from My entry in their portal, because it needs
-          their consent.
+          Only the tradesman can change this, from My entry in their portal, because it needs their
+          consent.
         </span>
       </p>
       <label className="border-brass bg-paper flex items-start gap-3 border-l-4 px-4 py-3">
@@ -240,8 +279,8 @@ export function MemberEditForm({
         <span>
           <span className="font-semibold">Listed in the public directory.</span>
           <span className="text-ash block text-[0.9rem]">
-            Only with their consent. Name, trade, areas, years, and the line above are shown.
-            The phone and email are shown only if they turn on that setting.
+            Only with their consent. Name, trade, areas, years, and the line above are shown. The
+            phone and email are shown only if they turn on that setting.
           </span>
         </span>
       </label>

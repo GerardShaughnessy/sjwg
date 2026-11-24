@@ -238,8 +238,13 @@ export interface ReminderPrefs {
 
 export const me = {
   get: () => call<{ session: unknown; member: Member | null }>('/api/me'),
-  updateProfile: (patch: Omit<Member, 'id' | 'photo' | 'featured'> & { public: boolean }) =>
-    mutate<{ member: Member; rebuild: Rebuild }>('/api/me/profile', json('PUT', patch)),
+  updateProfile: (
+    patch: Omit<Member, 'id' | 'photo' | 'featured'> & {
+      public: boolean;
+      publicEmail: string;
+      publicPhone: string;
+    },
+  ) => mutate<{ member: Member; rebuild: Rebuild }>('/api/me/profile', json('PUT', patch)),
 };
 
 export const reminders = {
@@ -514,6 +519,8 @@ export interface MemberAdmin extends Member {
   sortOrder: number;
   privatePhone: string;
   privateEmail: string;
+  publicPhone: string;
+  publicEmail: string;
   sample: boolean;
   accountEmail: string | null;
 }

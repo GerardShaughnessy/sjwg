@@ -1,7 +1,7 @@
 import { z } from 'astro/zod';
 import { isEmail } from '@/lib/validate';
 import { AFFIRMATION_IDS } from '@/config/directory-terms';
-import { memberAdminSchema, profileSchema } from './schemas';
+import { memberAdminSchema, profileSchema, publicContactFields } from './schemas';
 
 /* Directory gate and contact opt-in. Kept out of schemas.ts on purpose. */
 
@@ -74,6 +74,7 @@ export type AffirmInput = z.output<typeof affirmSchema>;
 
 /** A tradesman saving his own entry. Availability is no longer edited. */
 export const profileUpdateSchema = profileSchema.omit({ availability: true }).extend({
+  ...publicContactFields,
   showContact: z.boolean().optional(),
 });
 
