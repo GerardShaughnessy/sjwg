@@ -344,7 +344,7 @@ describe('activity feed', () => {
       },
       NOW,
     );
-    expect(item.text).toBe("Greg moved 'Order shirts' to In progress.");
+    expect(item.text).toBe("Greg moved 'Order shirts' to Doing.");
     expect(item).not.toHaveProperty('query');
   });
 });

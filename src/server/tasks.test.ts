@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { resolveAssigneeIds, taskPatchSchema, taskSchema } from './schemas';
-import { taskAssigned, taskFinished, tasksAssignedDigest } from './email/templates/task';
+import { taskAssigned, taskFinished, tasksAssignedBatch } from './email/templates/task';
 import { confirmPlan, taskEmailPlan, taskEventText, joinNames } from './task-rules';
 
 const ME = '11111111-1111-4111-8111-111111111111';
@@ -150,7 +150,7 @@ describe('task feed lines', () => {
       ...extra,
     });
   it('reads like a sentence', () => {
-    expect(e('moved', { toStatus: 'doing' })).toBe("Max moved 'Order RSVP cards' to In progress.");
+    expect(e('moved', { toStatus: 'doing' })).toBe("Max moved 'Order RSVP cards' to Doing.");
     expect(e('finished', { actorName: 'Paul', meta: { title: 'Banner to Hi-Tech' } })).toBe(
       "Paul finished 'Banner to Hi-Tech'.",
     );
@@ -207,10 +207,29 @@ describe('task emails', () => {
     expect(e.html).toContain('&lt;articles&gt;');
     expect(e.text + e.html).not.toMatch(/—/);
   });
-  it('the digest lists every title once', () => {
-    const e = tasksAssignedDigest({ titles: ['A', 'B'], assignedBy: 'Gerard', name: 'Greg' });
-    expect(e.subject).toBe('2 tasks for you on the Guild board');
-    expect(e.text).toContain('- A\n- B');
+  it('one pending task reads as that task', () => {
+    const e = tasksAssignedBatch({
+      name: 'Greg',
+      items: [{ id: 'abc', title: 'Get the EIN', dueDate: '2026-10-05', assignedBy: 'Gerard' }],
+    });
+    expect(e.subject).toBe('New task: Get the EIN');
+    expect(e.text).toContain('Due Monday, October 5. From Gerard.');
+    expect(e.text).toContain('/portal?tab=tasks&task=abc');
+  });
+  it('several pending tasks read as "You have N new tasks", each with a link', () => {
+    const e = tasksAssignedBatch({
+      name: 'Greg',
+      items: [
+        { id: 'a1', title: 'A <b>', dueDate: '', assignedBy: 'Gerard' },
+        { id: 'b2', title: 'B', dueDate: '2026-10-05', assignedBy: '' },
+      ],
+    });
+    expect(e.subject).toBe('You have 2 new tasks on the Guild board');
+    expect(e.text).toContain('task=a1');
+    expect(e.text).toContain('task=b2');
+    expect(e.text).toContain('No due date. From Gerard.');
+    expect(e.html).toContain('A &lt;b&gt;');
+    expect(e.text + e.html).not.toMatch(/—/);
   });
 });
 

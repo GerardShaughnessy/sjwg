@@ -1,19 +1,178 @@
-/** Pure rules for the task board: who hears about a save, and how the feed reads it. */
+/** Pure rules for the task board: who may do what, who hears about a save, and how the feed reads it. */
+import { HttpError } from './http';
 export type TaskStatus = 'todo' | 'doing' | 'waiting' | 'done';
 
 export const STATUS_LABEL: Record<TaskStatus, string> = {
   todo: 'To do',
-  doing: 'In progress',
-  waiting: 'Waiting on someone',
+  doing: 'Doing',
+  waiting: 'Waiting',
   done: 'Done',
 };
+
+/* ------------------------------------------------------------ who may do what */
+type Who = { userId: string; role: 'admin' | 'member' };
+
+/** Officers and the Admin see and manage every task. Everyone else works their own. */
+export const isTaskManager = (s: Who) => s.role === 'admin';
+
+/** Fields someone on a task may change without being an officer: the column, and a note. */
+export const ASSIGNEE_PATCH_FIELDS = ['status', 'addNote'] as const;
+
+/**
+ * A save on a task. Officers may change anything. Anyone else must be on the
+ * task and may only move it or add a note: no title, due date, or people.
+ */
+export function assertTaskPatchAllowed(s: Who, onTask: boolean, fields: string[]): void {
+  if (isTaskManager(s)) return;
+  if (!onTask) throw new HttpError(404, 'That task was not found.');
+  const extra = fields.filter((f) => !(ASSIGNEE_PATCH_FIELDS as readonly string[]).includes(f));
+  if (extra.length)
+    throw new HttpError(
+      403,
+      'Only an officer can change that. You can move the task or add a note.',
+    );
+}
+
+/** Creating, deleting, and assigning tasks. */
+export function assertTaskManager(s: Who): void {
+  if (!isTaskManager(s)) throw new HttpError(403, 'Only an officer can do that.');
+}
+
+/** Logging time: people on the task, or any officer. */
+export function assertCanLogTime(s: Who, onTask: boolean): void {
+  if (isTaskManager(s)) return;
+  if (!onTask) throw new HttpError(403, 'You can log time only on your own tasks.');
+}
+
+/** Deleting a time entry: your own, or any if you are an officer. */
+export function assertCanDeleteTime(s: Who, entry: { userId: string | null }): void {
+  if (isTaskManager(s)) return;
+  if (entry.userId !== s.userId)
+    throw new HttpError(403, 'You can delete only your own time entries.');
+}
+
+/** "2h", "1h 30m", "45m" */
+export function formatMinutes(m: number): string {
+  const h = Math.floor(m / 60);
+  const r = m % 60;
+  if (!h) return `${r}m`;
+  return r ? `${h}h ${r}m` : `${h}h`;
+}
+
+/** A note added to a task, stamped with who wrote it and when. */
+export function appendNote(notes: string, by: string, text: string, day: string): string {
+  const line = `${by}, ${day}: ${text.trim()}`;
+  return notes.trim() ? `${notes.trimEnd()}\n\n${line}` : line;
+}
+
+/* --------------------------------------------------------- account groups */
+export type AccountGroup = 'officers' | 'board' | 'tradesmen' | 'vendors';
+export const GROUP_LABEL: Record<AccountGroup, string> = {
+  officers: 'Officers',
+  board: 'Board',
+  tradesmen: 'Tradesmen',
+  vendors: 'Vendors',
+};
+
+/**
+ * Which views a person counts toward. A person can be in several (an officer
+ * on the board). Officers include the Admin. A tradesman is any other account
+ * with a directory entry, or with no other role.
+ */
+export function accountGroups(u: {
+  role: 'admin' | 'member';
+  director: boolean;
+  vendor: boolean;
+  memberId: string | null;
+}): AccountGroup[] {
+  const g: AccountGroup[] = [];
+  if (u.role === 'admin') g.push('officers');
+  if (u.director) g.push('board');
+  if (u.role === 'member' && (u.memberId || (!u.vendor && !u.director))) g.push('tradesmen');
+  if (u.vendor) g.push('vendors');
+  return g;
+}
+
+/* ------------------------------------------------------ batched assignments */
+/** A new assignment waits this long, so several land in one email. */
+export const DIGEST_WAIT_MS = 15 * 60 * 1000;
+
+export interface PendingNotification {
+  id: string;
+  userId: string;
+  email: string;
+  name: string | null;
+  disabled: boolean;
+  /** False when the person was taken off the task since. */
+  stillAssigned: boolean;
+  taskId: string;
+  title: string;
+  dueDate: string | null;
+  addedByName: string | null;
+  createdAt: Date;
+}
+
+export interface TaskDigest {
+  userId: string;
+  email: string;
+  name: string | null;
+  /** The notification rows this email covers. */
+  ids: string[];
+  items: {
+    notificationId: string;
+    taskId: string;
+    title: string;
+    dueDate: string | null;
+    addedBy: string | null;
+  }[];
+}
+
+/**
+ * Who gets an email now. Rows for disabled people or tasks they were taken
+ * off are dropped (and marked handled). The rest are grouped by person; a
+ * person is ready once their OLDEST unsent row is 15 minutes old, and then
+ * every pending task of theirs goes in one email.
+ */
+export function planTaskDigests(
+  rows: PendingNotification[],
+  now: Date,
+): { digests: TaskDigest[]; discard: string[] } {
+  const discard: string[] = [];
+  const byUser = new Map<string, PendingNotification[]>();
+  for (const r of rows) {
+    if (r.disabled || !r.stillAssigned || !r.email) {
+      discard.push(r.id);
+      continue;
+    }
+    byUser.set(r.userId, [...(byUser.get(r.userId) ?? []), r]);
+  }
+  const digests: TaskDigest[] = [];
+  for (const [userId, list] of byUser) {
+    const sorted = [...list].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+    if (now.getTime() - sorted[0].createdAt.getTime() < DIGEST_WAIT_MS) continue;
+    digests.push({
+      userId,
+      email: sorted[0].email,
+      name: sorted[0].name,
+      ids: sorted.map((r) => r.id),
+      items: sorted.map((r) => ({
+        notificationId: r.id,
+        taskId: r.taskId,
+        title: r.title,
+        dueDate: r.dueDate,
+        addedBy: r.addedByName,
+      })),
+    });
+  }
+  return { digests, discard };
+}
 
 export interface TaskEmailPlan {
   /** People newly on the task. */
   added: string[];
   /** People taken off the task. */
   removed: string[];
-  /** Who gets the task-assigned email: everyone added except the actor. */
+  /** Who is queued for the batched task-assigned email: everyone added except the actor. */
   notify: string[];
   /** True when hello@ gets the one "finished" email. */
   finished: boolean;
@@ -75,7 +234,7 @@ export interface TaskEventLike {
   type: string;
   actorName: string;
   toStatus: string | null;
-  meta: { title?: string; names?: string[]; self?: boolean };
+  meta: { title?: string; names?: string[]; self?: boolean; minutes?: number };
 }
 
 /** One feed line for a task event, or null for a type the feed does not show. */
@@ -102,6 +261,8 @@ export function taskEventText(e: TaskEventLike): string | null {
       return `${who} took ${joinNames(names)} off ${title}.`;
     case 'deleted':
       return `${who} deleted ${title}.`;
+    case 'time_logged':
+      return `${who} logged ${formatMinutes(e.meta.minutes ?? 0)} on ${title}.`;
     default:
       return null;
   }

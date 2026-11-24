@@ -1,49 +1,29 @@
+import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import { INBOX } from '@/config/contact-routing';
 import type { AppSession } from './auth/server';
+import { db } from './db/client';
 import {
   addFinishedEvent,
   addTaskEvents,
-  getAssignee,
   namesFor,
+  queueTaskNotifications,
   wasFinished,
   type NewTaskEvent,
 } from './db/queries/tasks';
-import { confirmPlan, taskEmailPlan, type TaskStatus } from './task-rules';
-import type { tasks } from './db/schema';
+import {
+  confirmPlan,
+  planTaskDigests,
+  taskEmailPlan,
+  type PendingNotification,
+  type TaskStatus,
+} from './task-rules';
+import { appUsers, taskAssignees, taskNotifications, tasks } from './db/schema';
 import { sendEmail } from './email/send';
-import { taskAssigned, taskFinished } from './email/templates/task';
+import { taskFinished, tasksAssignedBatch } from './email/templates/task';
 
 type Task = typeof tasks.$inferSelect;
 export type SendStatus = 'sent' | 'failed' | 'skipped';
-
-/** Emails an officer that they are now on a task. Returns the send status; never throws. */
-export async function notifyAssignee(
-  task: Task,
-  assigneeId: string,
-  assignedBy: string,
-): Promise<SendStatus> {
-  try {
-    const who = await getAssignee(assigneeId);
-    const res = await sendEmail({
-      to: who.email,
-      email: taskAssigned({
-        id: task.id,
-        title: task.title,
-        notes: task.notes,
-        section: task.section,
-        dueDate: task.dueDate ?? '',
-        assignedBy,
-        name: who.name?.split(' ')[0] ?? '',
-      }),
-      template: 'task_assigned',
-      related: { type: 'task', id: task.id },
-    });
-    return res.status;
-  } catch (err) {
-    console.error('[tasks] could not notify assignee', err);
-    return 'failed';
-  }
-}
 
 /** One email to hello@ the first time a task reaches Done. Never throws. */
 export async function notifyFinished(task: Task, by: string): Promise<SendStatus> {
@@ -62,8 +42,8 @@ export async function notifyFinished(task: Task, by: string): Promise<SendStatus
 }
 
 export interface TaskSaveResult {
-  /** One entry per person emailed about being added. */
-  emailed: { id: string; status: SendStatus }[];
+  /** People queued for the batched "new task" email (sent about 15 minutes later). */
+  queued: string[];
   /** Status of the hello@ email, when the task was finished for the first time. */
   finished: SendStatus | null;
 }
@@ -155,9 +135,85 @@ export async function afterTaskSave(o: {
   }
   await addTaskEvents(events).catch((err) => console.error('[tasks] could not log events', err));
 
-  const emailed = await Promise.all(
-    plan.notify.map(async (id) => ({ id, status: await notifyAssignee(row, id, actor.name) })),
-  );
+  const queued = await queueTaskNotifications(row.id, plan.notify, actor.userId).catch((err) => {
+    console.error('[tasks] could not queue the assignment emails', err);
+    return [] as string[];
+  });
   const finished = plan.finished ? await notifyFinished(row, actor.name) : null;
-  return { emailed, finished };
+  return { queued, finished };
+}
+
+/**
+ * The scheduled job (netlify/functions/task-digest). One email per person
+ * whose oldest unsent row is 15 minutes old, listing every pending task.
+ * Rows are claimed with UPDATE ... WHERE sent_at IS NULL RETURNING before
+ * the email goes out, so two runs at once never send the same task twice.
+ */
+export async function sendTaskDigests(now = new Date()) {
+  const adder = alias(appUsers, 'adder');
+  const rows = await db()
+    .select({
+      id: taskNotifications.id,
+      userId: taskNotifications.userId,
+      email: appUsers.email,
+      name: appUsers.name,
+      disabled: appUsers.disabled,
+      stillAssigned: sql<boolean>`exists (select 1 from ${taskAssignees} where ${taskAssignees.taskId} = ${taskNotifications.taskId} and ${taskAssignees.userId} = ${taskNotifications.userId})`,
+      taskId: taskNotifications.taskId,
+      title: tasks.title,
+      dueDate: tasks.dueDate,
+      addedByName: adder.name,
+      createdAt: taskNotifications.createdAt,
+    })
+    .from(taskNotifications)
+    .innerJoin(appUsers, eq(appUsers.id, taskNotifications.userId))
+    .innerJoin(tasks, eq(tasks.id, taskNotifications.taskId))
+    .leftJoin(adder, eq(adder.id, taskNotifications.addedBy))
+    .where(isNull(taskNotifications.sentAt));
+  const pending: PendingNotification[] = rows.map((r) => ({
+    ...r,
+    stillAssigned: Boolean(r.stillAssigned),
+    createdAt: r.createdAt ?? now,
+  }));
+  const { digests, discard } = planTaskDigests(pending, now);
+
+  const claim = (ids: string[]) =>
+    ids.length
+      ? db()
+          .update(taskNotifications)
+          .set({ sentAt: now })
+          .where(and(inArray(taskNotifications.id, ids), isNull(taskNotifications.sentAt)))
+          .returning({ id: taskNotifications.id })
+      : Promise.resolve([] as { id: string }[]);
+
+  // Disabled people and tasks they were taken off: marked handled, never emailed.
+  await claim(discard);
+
+  let sent = 0;
+  let failed = 0;
+  for (const d of digests) {
+    const won = new Set((await claim(d.ids)).map((r) => r.id));
+    const items = d.items.filter((i) => won.has(i.notificationId));
+    if (items.length === 0) continue;
+    const res = await sendEmail({
+      to: d.email,
+      email: tasksAssignedBatch({
+        name: d.name?.split(' ')[0] ?? '',
+        items: items.map((i) => ({
+          id: i.taskId,
+          title: i.title,
+          dueDate: i.dueDate ?? '',
+          assignedBy: i.addedBy ?? '',
+        })),
+      }),
+      template: items.length === 1 ? 'task_assigned' : 'tasks_assigned',
+      related: { type: 'task', id: items[0].taskId },
+    }).catch((err) => {
+      console.error('[task-digest] send failed for', d.userId, err);
+      return { status: 'failed' as const };
+    });
+    if (res.status === 'sent') sent++;
+    else failed++;
+  }
+  return { people: digests.length, sent, failed, discarded: discard.length };
 }

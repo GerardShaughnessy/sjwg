@@ -351,8 +351,26 @@ export const taskSchema = z.object({
   sortOrder: taskFields.sortOrder.default(0),
 });
 
-/** Moving a card or editing part of one. No defaults, so absent fields stay untouched. */
-export const taskPatchSchema = z.object(taskFields).partial();
+/**
+ * Moving a card or editing part of one. No defaults, so absent fields stay
+ * untouched. `addNote` appends a stamped line to the notes.
+ */
+export const taskPatchSchema = z
+  .object({ ...taskFields, addNote: trimmed(2000).min(1, 'Write a note first.') })
+  .partial();
+
+/** POST /api/tasks/[id]/time */
+export const taskTimeSchema = z
+  .object({
+    hours: z.coerce.number().int('Whole hours.').min(0).max(24, 'Up to 24 hours at a time.'),
+    minutes: z.coerce.number().int('Whole minutes.').min(0).max(59, 'Minutes from 0 to 59.'),
+    workedOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date as YYYY-MM-DD.'),
+    note: trimmed(500).default(''),
+  })
+  .refine((t) => t.hours * 60 + t.minutes > 0, {
+    message: 'Log at least one minute.',
+    path: ['minutes'],
+  });
 
 /**
  * Who a task is for after this save: assigneeIds wins, the old single

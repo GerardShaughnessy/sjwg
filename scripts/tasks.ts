@@ -18,7 +18,7 @@ import { and, eq, sql } from 'drizzle-orm';
 import { db } from '../src/server/db/client';
 import * as t from '../src/server/db/schema';
 import { sendEmail } from '../src/server/email/send';
-import { tasksAssignedDigest } from '../src/server/email/templates/task';
+import { tasksAssignedBatch } from '../src/server/email/templates/task';
 
 const args = process.argv.slice(2);
 const opt = (f: string) => {
@@ -270,7 +270,12 @@ async function handover() {
     .update(t.tasks)
     .set({ assigneeId: to.id, waitingOn: '', updatedAt: new Date() })
     .where(and(eq(t.tasks.waitingOn, waitingOn), sql`${t.tasks.status} <> 'done'`))
-    .returning({ id: t.tasks.id, title: t.tasks.title, sortOrder: t.tasks.sortOrder });
+    .returning({
+      id: t.tasks.id,
+      title: t.tasks.title,
+      sortOrder: t.tasks.sortOrder,
+      dueDate: t.tasks.dueDate,
+    });
   // Each task stays assigned to anyone already on it, plus the new person.
   if (rows.length)
     await db()
@@ -281,10 +286,11 @@ async function handover() {
   if (!rows.length) return;
   const res = await sendEmail({
     to: to.email,
-    email: tasksAssignedDigest({
-      titles: rows.sort((a, b) => a.sortOrder - b.sortOrder).map((r) => r.title),
-      assignedBy: from,
+    email: tasksAssignedBatch({
       name: to.name?.split(' ')[0] ?? '',
+      items: rows
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .map((r) => ({ id: r.id, title: r.title, dueDate: r.dueDate ?? '', assignedBy: from })),
     }),
     template: 'tasks_digest',
     related: { type: 'user', id: to.id },

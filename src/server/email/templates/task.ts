@@ -9,7 +9,7 @@ function longDate(iso: string): string {
   return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 }
 
-/** One task handed to an officer by another officer. */
+/** One task handed to someone, with its notes. Kept for a direct, one-off send. */
 export function taskAssigned(o: {
   id: string;
   title: string;
@@ -37,28 +37,68 @@ Open the board: ${link}${textFooter()}`;
   return { subject: `Task for you: ${o.title}`, text, html };
 }
 
-/** Several tasks handed over at once, as one email instead of one each. */
-export function tasksAssignedDigest(o: {
-  titles: string[];
+export interface BatchItem {
+  id: string;
+  title: string;
+  dueDate: string;
+  /** Who put them on it. Empty when unknown. */
   assignedBy: string;
-  name: string;
-}): Email {
-  const link = boardLink();
-  const n = o.titles.length;
+}
+
+/** "Due Monday, December 1. From Greg." */
+function itemLine(i: BatchItem): string {
+  return [
+    i.dueDate ? `Due ${longDate(i.dueDate)}.` : 'No due date.',
+    i.assignedBy ? `From ${i.assignedBy}.` : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+}
+
+/**
+ * The batched "new task" email, sent by the task-digest job about 15
+ * minutes after the first assignment. One task reads as that task; several
+ * read as "You have 5 new tasks", each with its own link.
+ */
+export function tasksAssignedBatch(o: { name: string; items: BatchItem[] }): Email {
   const greeting = o.name ? `${o.name},` : 'Hello,';
-  const intro = `${o.assignedBy} put ${n} ${n === 1 ? 'task' : 'tasks'} in your name on the Guild board:`;
+  const n = o.items.length;
+  if (n === 1) {
+    const i = o.items[0];
+    const link = boardLink(i.id);
+    const intro = `${i.assignedBy || 'An officer'} put you on a task on the Guild board.`;
+    const text = `${greeting}
+
+${intro}
+
+${i.title}
+${itemLine(i)}
+
+Open the task: ${link}${textFooter()}`;
+    const html = shell({
+      title: i.title,
+      bodyHtml: `${paragraphs(`${greeting}\n\n${intro}`)}<div style="border-left:3px solid #a37820;padding:4px 0 4px 14px;margin:0 0 8px 0">${paragraphs(`${i.title}\n${itemLine(i)}`)}</div>${button(link, 'Open the task')}`,
+    });
+    return { subject: `New task: ${i.title}`, text, html };
+  }
+  const intro = `You have ${n} new tasks on the Guild board:`;
   const text = `${greeting}
 
 ${intro}
 
-${o.titles.map((t) => `- ${t}`).join('\n')}
+${o.items.map((i) => `- ${i.title}\n  ${itemLine(i)}\n  ${boardLink(i.id)}`).join('\n\n')}
 
-Open the board: ${link}${textFooter()}`;
+Open the board: ${boardLink()}${textFooter()}`;
   const html = shell({
-    title: `${n} ${n === 1 ? 'task' : 'tasks'} for you`,
-    bodyHtml: `${paragraphs(`${greeting}\n\n${intro}`)}<ul style="margin:0 0 8px 0;padding-left:22px;font-size:17px;line-height:1.55;color:#43402a">${o.titles.map((t) => `<li>${escapeHtml(t)}</li>`).join('')}</ul>${button(link, 'Open the board')}`,
+    title: `You have ${n} new tasks`,
+    bodyHtml: `${paragraphs(`${greeting}\n\n${intro}`)}<ul style="margin:0 0 8px 0;padding-left:22px;font-size:17px;line-height:1.55;color:#43402a">${o.items
+      .map(
+        (i) =>
+          `<li style="margin-bottom:10px"><a href="${escapeHtml(boardLink(i.id))}" style="color:#7c2d1f;font-weight:600">${escapeHtml(i.title)}</a><br><span style="font-size:15px;color:#6b6450">${escapeHtml(itemLine(i))}</span></li>`,
+      )
+      .join('')}</ul>${button(boardLink(), 'Open the board')}`,
   });
-  return { subject: `${n} ${n === 1 ? 'task' : 'tasks'} for you on the Guild board`, text, html };
+  return { subject: `You have ${n} new tasks on the Guild board`, text, html };
 }
 
 /** The one email when a task is finished for the first time. Goes to hello@. */

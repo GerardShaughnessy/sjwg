@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { json, readJson, requireRole, route } from '@/server/http';
+import { json, readJson, requireSession, route } from '@/server/http';
 import {
   addTaskEvents,
   checkAssignees,
@@ -11,22 +11,39 @@ import {
 } from '@/server/db/queries/tasks';
 import { parseOrThrow, resolveAssigneeIds, taskPatchSchema } from '@/server/schemas';
 import { afterTaskSave } from '@/server/tasks';
+import { appendNote, assertTaskManager, assertTaskPatchAllowed } from '@/server/task-rules';
 
 export const prerender = false;
 
+const noteDay = () =>
+  new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'America/Chicago',
+  }).format(new Date());
+
 /**
  * Edit part or all of a task. A drag between columns sends only { status }.
- * assigneeIds replaces the list of people on it; the old assigneeId does too,
- * unless the task has several people, in which case it only adds one.
+ * Officers may change anything. Someone on the task may only move it or add
+ * a note (addNote). assigneeIds replaces the list of people on it; the old
+ * assigneeId does too, unless the task has several people, in which case it
+ * only adds one.
  */
 export const PATCH: APIRoute = route(async (ctx) => {
-  const session = requireRole(ctx, 'admin');
+  const session = requireSession(ctx);
   const before = await getTask(ctx.params.id!);
   const patch = parseOrThrow(taskPatchSchema, await readJson(ctx));
   const beforeIds = await getAssigneeIds(before.id);
+  const fields = Object.keys(patch).filter((k) => patch[k as keyof typeof patch] !== undefined);
+  assertTaskPatchAllowed(session, beforeIds.includes(session.userId), fields);
   const ids = resolveAssigneeIds(patch, beforeIds);
   if (ids) await checkAssignees(ids, beforeIds);
-  const { row, inserted } = await updateTask(before.id, patch, ids, session.userId);
+  const save = { ...patch };
+  if (patch.addNote) {
+    const by = session.name.split(' ')[0] || session.name;
+    save.notes = appendNote(patch.notes ?? before.notes, by, patch.addNote, noteDay());
+  }
+  const { row, inserted } = await updateTask(before.id, save, ids, session.userId);
   const result = await afterTaskSave({
     row,
     before: { status: before.status, assigneeIds: beforeIds },
@@ -37,9 +54,10 @@ export const PATCH: APIRoute = route(async (ctx) => {
   return json({ task: taskView(row, ids ?? beforeIds), ...result });
 });
 
-/** The feed keeps the title: the deleted event has no task id, since the task is gone. */
+/** Officers only. The feed keeps the title: the deleted event has no task id, since the task is gone. */
 export const DELETE: APIRoute = route(async (ctx) => {
-  const session = requireRole(ctx, 'admin');
+  const session = requireSession(ctx);
+  assertTaskManager(session);
   const row = await deleteTask(ctx.params.id!);
   await addTaskEvents([
     {

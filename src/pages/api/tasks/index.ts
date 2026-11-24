@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { json, readJson, requireRole, route } from '@/server/http';
+import { json, readJson, requireSession, route } from '@/server/http';
 import {
   checkAssignees,
   createTask,
@@ -9,19 +9,28 @@ import {
 } from '@/server/db/queries/tasks';
 import { parseOrThrow, resolveAssigneeIds, taskSchema } from '@/server/schemas';
 import { afterTaskSave } from '@/server/tasks';
+import { assertTaskManager, isTaskManager } from '@/server/task-rules';
 
 export const prerender = false;
 
-/** The officers' board: every task, plus who a task can be assigned to. */
+/**
+ * The board. Officers and the Admin get every task and everyone a task can
+ * go to. Everyone else gets only the tasks they are on, and the names of the
+ * people on them.
+ */
 export const GET: APIRoute = route(async (ctx) => {
-  requireRole(ctx, 'admin');
-  const [tasks, assignees] = await Promise.all([listTasks(), listAssignees()]);
-  return json({ tasks, assignees });
+  const s = requireSession(ctx);
+  const manager = isTaskManager(s);
+  const tasks = await listTasks(manager ? undefined : s.userId);
+  const onTasks = [...new Set(tasks.flatMap((t) => t.assigneeIds))];
+  const assignees = await listAssignees({ manager, onTasks });
+  return json({ tasks, assignees, canManage: manager });
 });
 
-/** Accepts assigneeIds, or the old single assigneeId. */
+/** Officers only. Accepts assigneeIds, or the old single assigneeId. */
 export const POST: APIRoute = route(async (ctx) => {
-  const session = requireRole(ctx, 'admin');
+  const session = requireSession(ctx);
+  assertTaskManager(session);
   const input = parseOrThrow(taskSchema, await readJson(ctx));
   const ids = resolveAssigneeIds(input) ?? [];
   await checkAssignees(ids);

@@ -1,7 +1,8 @@
-import { and, asc, desc, eq, inArray } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, sql, sum } from 'drizzle-orm';
 import { db } from '../client';
-import { appUsers, taskAssignees, taskEvents, tasks } from '../schema';
+import { appUsers, taskAssignees, taskEvents, taskNotifications, taskTime, tasks } from '../schema';
 import { HttpError, badRequest } from '../../http';
+import { accountGroups, type AccountGroup } from '../../task-rules';
 import type { z } from 'astro/zod';
 import type { taskPatchSchema, taskSchema } from '../../schemas';
 
@@ -9,7 +10,7 @@ type TaskInput = z.output<typeof taskSchema>;
 type TaskPatch = z.output<typeof taskPatchSchema>;
 type TaskRow = typeof tasks.$inferSelect;
 
-export function taskView(t: TaskRow, assigneeIds: string[]) {
+export function taskView(t: TaskRow, assigneeIds: string[], minutes = 0) {
   return {
     id: t.id,
     title: t.title,
@@ -23,6 +24,8 @@ export function taskView(t: TaskRow, assigneeIds: string[]) {
     sortOrder: t.sortOrder,
     createdBy: t.createdBy,
     updatedAt: t.updatedAt.toISOString(),
+    /** Total time logged on the task. */
+    minutes,
   };
 }
 
@@ -45,37 +48,95 @@ export async function getAssigneeIds(taskId: string): Promise<string[]> {
   return (await assigneeMap([taskId])).get(taskId) ?? [];
 }
 
-export async function listTasks() {
-  const [rows, byTask] = await Promise.all([
-    db().select().from(tasks).orderBy(asc(tasks.sortOrder), asc(tasks.createdAt)),
-    assigneeMap(),
+/** Minutes logged per task. */
+async function minutesMap(taskIds?: string[]) {
+  if (taskIds && taskIds.length === 0) return new Map<string, number>();
+  const q = db()
+    .select({ taskId: taskTime.taskId, n: sum(taskTime.minutes) })
+    .from(taskTime)
+    .groupBy(taskTime.taskId);
+  const rows = await (taskIds ? q.where(inArray(taskTime.taskId, taskIds)) : q);
+  return new Map(rows.map((r) => [r.taskId, Number(r.n ?? 0)]));
+}
+
+/** Every task (officers), or only the tasks with `onlyFor` on them. */
+export async function listTasks(onlyFor?: string) {
+  const ids = onlyFor
+    ? (
+        await db()
+          .select({ taskId: taskAssignees.taskId })
+          .from(taskAssignees)
+          .where(eq(taskAssignees.userId, onlyFor))
+      ).map((r) => r.taskId)
+    : undefined;
+  if (ids && ids.length === 0) return [];
+  const q = db().select().from(tasks);
+  const [rows, byTask, mins] = await Promise.all([
+    (ids ? q.where(inArray(tasks.id, ids)) : q).orderBy(asc(tasks.sortOrder), asc(tasks.createdAt)),
+    assigneeMap(ids),
+    minutesMap(ids),
   ]);
-  return rows.map((t) => taskView(t, byTask.get(t.id) ?? []));
+  return rows.map((t) => taskView(t, byTask.get(t.id) ?? [], mins.get(t.id) ?? 0));
 }
 
-/** Officers a task can be assigned to. */
-export async function listAssignees() {
-  return db()
-    .select({ id: appUsers.id, name: appUsers.name, email: appUsers.email })
-    .from(appUsers)
-    .where(and(eq(appUsers.role, 'admin'), eq(appUsers.disabled, false)))
-    .orderBy(asc(appUsers.name));
-}
-
-export async function getAssignee(id: string) {
-  const [row] = await db()
-    .select({ id: appUsers.id, name: appUsers.name, email: appUsers.email })
-    .from(appUsers)
-    .where(and(eq(appUsers.id, id), eq(appUsers.role, 'admin'), eq(appUsers.disabled, false)))
-    .limit(1);
-  if (!row)
-    throw badRequest('Tasks can only go to an officer.', { assigneeIds: 'Pick officers only.' });
-  return row;
+export interface AssigneeView {
+  id: string;
+  name: string | null;
+  email: string;
+  groups: AccountGroup[];
+  /** "Admin", the officer title, the board title, the trade, or the service. */
+  detail: string;
+  disabled: boolean;
 }
 
 /**
- * Checks newly added people are active officers. People already on the task
- * may stay even if they have since lost officer access.
+ * People for the board. Officers get every enabled account (anyone can be
+ * assigned) plus anyone already on a task. Others get only the people on
+ * their own tasks, without email addresses.
+ */
+export async function listAssignees(opts: { manager: boolean; onTasks: string[] }) {
+  const rows = await db()
+    .select({
+      id: appUsers.id,
+      name: appUsers.name,
+      email: appUsers.email,
+      role: appUsers.role,
+      siteAdmin: appUsers.siteAdmin,
+      title: appUsers.title,
+      director: appUsers.director,
+      boardTitle: appUsers.boardTitle,
+      vendor: appUsers.vendor,
+      vendorService: appUsers.vendorService,
+      memberId: appUsers.memberId,
+      disabled: appUsers.disabled,
+    })
+    .from(appUsers)
+    .orderBy(asc(appUsers.name), asc(appUsers.email));
+  const onTasks = new Set(opts.onTasks);
+  return rows
+    .filter((u) => (opts.manager ? !u.disabled || onTasks.has(u.id) : onTasks.has(u.id)))
+    .map((u): AssigneeView => ({
+      id: u.id,
+      name: u.name,
+      email: opts.manager ? u.email : '',
+      groups: accountGroups(u),
+      detail:
+        u.role === 'admin' && u.siteAdmin
+          ? 'Admin'
+          : u.role === 'admin'
+            ? u.title || 'Officer'
+            : u.director
+              ? u.boardTitle || 'Director'
+              : u.vendor
+                ? u.vendorService || 'Vendor'
+                : 'Tradesman',
+      disabled: u.disabled,
+    }));
+}
+
+/**
+ * Checks newly added people have enabled accounts. People already on the
+ * task may stay even if their account has since been disabled.
  */
 export async function checkAssignees(ids: string[], keep: string[] = []) {
   const fresh = ids.filter((id) => !keep.includes(id));
@@ -83,11 +144,21 @@ export async function checkAssignees(ids: string[], keep: string[] = []) {
   const ok = await db()
     .select({ id: appUsers.id })
     .from(appUsers)
-    .where(
-      and(inArray(appUsers.id, fresh), eq(appUsers.role, 'admin'), eq(appUsers.disabled, false)),
-    );
+    .where(and(inArray(appUsers.id, fresh), eq(appUsers.disabled, false)));
   if (ok.length !== fresh.length)
-    throw badRequest('Tasks can only go to an officer.', { assigneeIds: 'Pick officers only.' });
+    throw badRequest('Pick people with an enabled account.', {
+      assigneeIds: 'Pick people with an enabled account.',
+    });
+}
+
+/** True when this person is on this task. */
+export async function isOnTask(taskId: string, userId: string): Promise<boolean> {
+  const [row] = await db()
+    .select({ u: taskAssignees.userId })
+    .from(taskAssignees)
+    .where(and(eq(taskAssignees.taskId, taskId), eq(taskAssignees.userId, userId)))
+    .limit(1);
+  return Boolean(row);
 }
 
 /** First names (or emails) for the feed, in the order given. */
@@ -148,7 +219,7 @@ export async function updateTask(
   assigneeIds: string[] | undefined,
   actorId: string,
 ) {
-  const { assigneeIds: _ids, assigneeId: _id, ...rest } = patch;
+  const { assigneeIds: _ids, assigneeId: _id, addNote: _note, ...rest } = patch;
   const set: Partial<typeof tasks.$inferInsert> = { updatedAt: new Date() };
   for (const [k, v] of Object.entries(rest)) {
     if (v === undefined) continue;
@@ -162,10 +233,21 @@ export async function updateTask(
     const before = await getAssigneeIds(id);
     const gone = before.filter((u) => !assigneeIds.includes(u));
     const fresh = assigneeIds.filter((u) => !before.includes(u));
-    if (gone.length)
+    if (gone.length) {
       await db()
         .delete(taskAssignees)
         .where(and(eq(taskAssignees.taskId, id), inArray(taskAssignees.userId, gone)));
+      // Taken off before the batched email went out: nothing to tell them.
+      await db()
+        .delete(taskNotifications)
+        .where(
+          and(
+            eq(taskNotifications.taskId, id),
+            inArray(taskNotifications.userId, gone),
+            isNull(taskNotifications.sentAt),
+          ),
+        );
+    }
     inserted = await insertAssignees(id, fresh, actorId);
   }
   return { row, inserted };
@@ -179,7 +261,7 @@ export async function deleteTask(id: string) {
 
 /* ---------------------------------------------------------------- events */
 export type TaskEventType =
-  'created' | 'moved' | 'assigned' | 'unassigned' | 'finished' | 'deleted';
+  'created' | 'moved' | 'assigned' | 'unassigned' | 'finished' | 'deleted' | 'time_logged';
 
 export interface NewTaskEvent {
   taskId: string | null;
@@ -187,7 +269,14 @@ export interface NewTaskEvent {
   actor: { userId: string; name: string };
   fromStatus?: string | null;
   toStatus?: string | null;
-  meta: { title: string; names?: string[]; userIds?: string[]; self?: boolean; taskId?: string };
+  meta: {
+    title: string;
+    names?: string[];
+    userIds?: string[];
+    self?: boolean;
+    taskId?: string;
+    minutes?: number;
+  };
 }
 
 export async function addTaskEvents(list: NewTaskEvent[]) {
@@ -252,4 +341,133 @@ export async function recentTaskEvents(limit = 12) {
     .from(taskEvents)
     .orderBy(desc(taskEvents.at))
     .limit(limit);
+}
+
+/* ------------------------------------------------------- batched emails */
+/**
+ * Queue the "added to a task" email for each person. One unsent row per
+ * person and task (a partial unique index), so adding someone twice in the
+ * window queues them once.
+ */
+export async function queueTaskNotifications(taskId: string, userIds: string[], addedBy: string) {
+  if (userIds.length === 0) return [];
+  const rows = await db()
+    .insert(taskNotifications)
+    .values(userIds.map((userId) => ({ userId, taskId, addedBy })))
+    .onConflictDoNothing()
+    .returning({ userId: taskNotifications.userId });
+  return rows.map((r) => r.userId);
+}
+
+/* ---------------------------------------------------------------- time */
+export interface TimeEntryView {
+  id: string;
+  taskId: string;
+  taskTitle?: string;
+  userId: string | null;
+  name: string;
+  minutes: number;
+  workedOn: string;
+  note: string;
+  createdAt: string;
+}
+
+const personName = (name: string | null, email: string | null) => name || email || 'Former account';
+
+export async function listTaskTime(taskId: string): Promise<TimeEntryView[]> {
+  const rows = await db()
+    .select({ t: taskTime, name: appUsers.name, email: appUsers.email })
+    .from(taskTime)
+    .leftJoin(appUsers, eq(appUsers.id, taskTime.userId))
+    .where(eq(taskTime.taskId, taskId))
+    .orderBy(desc(taskTime.workedOn), desc(taskTime.createdAt));
+  return rows.map(({ t, name, email }) => ({
+    id: t.id,
+    taskId: t.taskId,
+    userId: t.userId,
+    name: personName(name, email),
+    minutes: t.minutes,
+    workedOn: t.workedOn,
+    note: t.note ?? '',
+    createdAt: t.createdAt.toISOString(),
+  }));
+}
+
+export async function addTaskTime(input: {
+  taskId: string;
+  userId: string;
+  minutes: number;
+  workedOn: string;
+  note: string;
+}) {
+  const [row] = await db().insert(taskTime).values(input).returning();
+  return row;
+}
+
+export async function getTimeEntry(id: string) {
+  const [row] = await db().select().from(taskTime).where(eq(taskTime.id, id)).limit(1);
+  if (!row) throw new HttpError(404, 'That time entry was not found.');
+  return row;
+}
+
+export async function deleteTimeEntry(id: string) {
+  await db().delete(taskTime).where(eq(taskTime.id, id));
+}
+
+export interface TimeSummaryRow {
+  userId: string | null;
+  name: string;
+  monthMinutes: number;
+  totalMinutes: number;
+}
+
+/**
+ * Hours per person, this month and all time. `monthStart` is the first of
+ * this month on the Guild's clock. `person` narrows it to one account.
+ */
+export async function timeSummary(monthStart: string, person?: string) {
+  const where = person ? eq(taskTime.userId, person) : undefined;
+  const [people, recent] = await Promise.all([
+    db()
+      .select({
+        userId: taskTime.userId,
+        name: appUsers.name,
+        email: appUsers.email,
+        total: sum(taskTime.minutes),
+        month: sql<string>`coalesce(sum(${taskTime.minutes}) filter (where ${taskTime.workedOn} >= ${monthStart}::date), 0)`,
+      })
+      .from(taskTime)
+      .leftJoin(appUsers, eq(appUsers.id, taskTime.userId))
+      .where(where)
+      .groupBy(taskTime.userId, appUsers.name, appUsers.email),
+    db()
+      .select({ t: taskTime, name: appUsers.name, email: appUsers.email, title: tasks.title })
+      .from(taskTime)
+      .innerJoin(tasks, eq(tasks.id, taskTime.taskId))
+      .leftJoin(appUsers, eq(appUsers.id, taskTime.userId))
+      .where(where)
+      .orderBy(desc(taskTime.workedOn), desc(taskTime.createdAt))
+      .limit(50),
+  ]);
+  return {
+    people: people
+      .map((p): TimeSummaryRow => ({
+        userId: p.userId,
+        name: personName(p.name, p.email),
+        monthMinutes: Number(p.month ?? 0),
+        totalMinutes: Number(p.total ?? 0),
+      }))
+      .sort((a, b) => b.totalMinutes - a.totalMinutes),
+    recent: recent.map(({ t, name, email, title }): TimeEntryView => ({
+      id: t.id,
+      taskId: t.taskId,
+      taskTitle: title,
+      userId: t.userId,
+      name: personName(name, email),
+      minutes: t.minutes,
+      workedOn: t.workedOn,
+      note: t.note ?? '',
+      createdAt: t.createdAt.toISOString(),
+    })),
+  };
 }

@@ -13,6 +13,10 @@
 [functions."event-reminders"]
   schedule = "0 14 * * *"
 
+# Every 5 minutes. Sends batched "new task" emails once a person's oldest pending assignment is 15 minutes old.
+[functions."task-digest"]
+  schedule = "*/5 * * * *"
+
 # Hourly. Fires the publish build hook if a content change was coalesced.
 [functions."rebuild-if-pending"]
   schedule = "@hourly"
