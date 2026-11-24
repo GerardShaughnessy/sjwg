@@ -317,7 +317,7 @@ function AddDirector({ candidates }: { candidates: UserView[] }) {
               id="add-director"
               value={pick}
               onChange={(e) => setPick(e.target.value)}
-              className={`${inputCls} min-w-0`}
+              className={`${inputCls} h-11 min-w-0`}
             >
               <option value="">
                 {candidates.length ? 'Pick someone' : 'Everyone with an account is on the board'}
@@ -340,10 +340,15 @@ function AddDirector({ candidates }: { candidates: UserView[] }) {
               onChange={(e) => setTitle(e.target.value)}
               maxLength={80}
               placeholder="e.g. Treasurer"
-              className={`${inputCls} min-w-0`}
+              className={`${inputCls} h-11 min-w-0`}
             />
           </div>
-          <button type="submit" className={pBtn} disabled={!pick || busy} aria-busy={busy}>
+          <button
+            type="submit"
+            className={`${pBtn} h-11`}
+            disabled={!pick || busy}
+            aria-busy={busy}
+          >
             {busy ? 'Adding…' : 'Add to the board'}
           </button>
         </div>
