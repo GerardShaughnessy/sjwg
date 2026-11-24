@@ -72,8 +72,8 @@ function toRow(input: MemberInput) {
     sortOrder: input.sortOrder,
     privatePhone: input.privatePhone || null,
     privateEmail: input.privateEmail || null,
-    publicPhone: input.publicPhone,
-    publicEmail: input.publicEmail,
+    ...(input.publicPhone === undefined ? {} : { publicPhone: input.publicPhone }),
+    ...(input.publicEmail === undefined ? {} : { publicEmail: input.publicEmail }),
     ...(input.showContact === undefined ? {} : { showContact: input.showContact }),
   };
 }

@@ -304,8 +304,9 @@ export const donationPatchSchema = z.object({
 
 /** Directory-facing contact. The tradesman and officers both edit these. */
 export const publicContactFields = {
-  publicEmail: z.union([z.literal(''), emailField]).default(''),
-  publicPhone: phoneField,
+  // Optional: a save from a page opened before these fields existed leaves them alone.
+  publicEmail: z.union([z.literal(''), emailField.pipe(z.string().max(200))]).optional(),
+  publicPhone: phoneField.optional(),
 };
 
 export const memberAdminSchema = profileSchema.extend({
