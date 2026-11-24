@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { tasks as api, type Assignee, type Task } from '@/lib/api';
 import { useResource } from '@/lib/hooks';
 import type { Session } from '@/lib/types';
@@ -73,6 +73,8 @@ export default function TasksArchive({ session }: { session: Session }) {
     person: filters.person,
     view: filters.view === 'all' ? '' : filters.view,
   };
+  const queryRef = useRef(query);
+  queryRef.current = query;
   const { data, loading, error } = useResource(
     () => (ready ? api.archive(query) : new Promise<never>(() => {})),
     [ready, query.q, query.section, query.person, query.view],
@@ -123,8 +125,11 @@ export default function TasksArchive({ session }: { session: Session }) {
     if (next == null) return;
     setLoadingMore(true);
     setMoreError('');
+    const asked = JSON.stringify(query);
     try {
       const page = await api.archive({ ...query, offset: next });
+      // Filters changed while this page loaded: drop it rather than mix lists.
+      if (JSON.stringify(queryRef.current) !== asked) return;
       setExtra((e) => ({
         tasks: [...e.tasks, ...page.tasks],
         assignees: [...e.assignees, ...page.assignees],

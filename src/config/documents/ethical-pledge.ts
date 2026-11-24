@@ -22,7 +22,7 @@ export const ethicalPledge: GuildDocument = {
           'The St. Joseph the Worker Guild seeks to cultivate a community of faithful Catholic tradesmen and tradeswomen who understand their work not merely as a living, but as a vocation through which they honor God, serve their neighbors, support their families, and contribute to the common good.',
         ),
         p(
-          "Being listed in the Guild's Tradesmen Directory is a commitment to uphold the moral, spiritual, and professional standards in this pledge. Each listed tradesman is expected to act in keeping with Catholic teaching, professional integrity, and the example of St. Joseph the Worker.",
+          "Being listed in the Guild's Tradesmen Directory is a commitment to uphold the moral, spiritual, and professional standards in this pledge. Each person listed is expected to act in keeping with Catholic teaching, professional integrity, and the example of St. Joseph the Worker.",
         ),
         p('By signing this pledge, I affirm the following:'),
       ],
@@ -96,7 +96,7 @@ export const ethicalPledge: GuildDocument = {
           'I will strive to become a holier worker, a more faithful spouse and parent where that applies, and a more responsible steward of my community.',
           "I see my trade as a share in God's creative work: a way to provide honestly for my household, serve my neighbors, and practice diligence, prudence, justice, fortitude, and charity.",
           'I will conduct myself in a way that reflects well on the Catholic faith and the Guild, knowing my work shapes how others see both.',
-          'I will treat other tradesmen as brothers and sisters rather than mere competitors, and encourage their professional, spiritual, and personal growth.',
+          'I will treat others in the trades as brothers and sisters rather than mere competitors, and encourage their professional, spiritual, and personal growth.',
           'As my time and means allow, I will help those learning the trade, and where I can, teach the next generation, including my own children.',
         ),
       ],

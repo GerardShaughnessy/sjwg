@@ -48,7 +48,7 @@ export default function AcceptInviteForm({ token, email, name: initialName, need
         form:
           count === 1 ? 'Check the field marked above.' : `Check the ${count} fields marked above.`,
       });
-      const id = firstBad === 'trade' ? 'trade' : firstBad;
+      const id = firstBad === 'trade' && tradeChoice === OTHER_TRADE ? 'other-trade' : firstBad;
       const el = document.getElementById(id);
       el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
       el?.focus({ preventScroll: true });
