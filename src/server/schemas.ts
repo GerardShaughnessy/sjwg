@@ -381,6 +381,8 @@ export const userPatchSchema = z
     title: trimmed(80),
     disabled: z.boolean(),
     siteAdmin: z.boolean(),
+    director: z.boolean(),
+    boardTitle: trimmed(80),
   })
   .partial()
   .strict()

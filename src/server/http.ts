@@ -66,6 +66,17 @@ export function requireSiteAdmin(ctx: APIContext): AppSession {
   return s;
 }
 
+/**
+ * The Board page: officers and directors. A director need not be an officer,
+ * so this is the one officer-level read a non-officer can make.
+ */
+export function requireBoardAccess(ctx: APIContext): AppSession {
+  const s = requireSession(ctx);
+  if (s.role !== 'admin' && !s.director)
+    throw new HttpError(403, 'Only officers and directors can see the board.');
+  return s;
+}
+
 export async function readJson<T = unknown>(ctx: APIContext): Promise<T> {
   try {
     return (await ctx.request.json()) as T;

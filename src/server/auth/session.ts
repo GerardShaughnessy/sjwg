@@ -13,6 +13,8 @@ export interface AppSession {
   siteAdmin: boolean;
   /** Officer title, e.g. "Vice President". Empty when not set. */
   title: string;
+  /** On the board of directors. Independent of officer access. */
+  director: boolean;
 }
 
 export interface AppUserRow {
@@ -25,6 +27,7 @@ export interface AppUserRow {
   disabled: boolean;
   siteAdmin: boolean;
   title: string;
+  director: boolean;
 }
 
 /** An app_users row as a session. A missing or disabled row gets no session. */
@@ -42,6 +45,7 @@ export function toAppSession(
     memberId: row.memberId,
     siteAdmin: row.role === 'admin' && row.siteAdmin,
     title: row.role === 'admin' ? row.title : '',
+    director: row.director,
   };
 }
 

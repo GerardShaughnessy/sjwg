@@ -14,6 +14,7 @@ const base: AppSession = {
   memberId: null,
   siteAdmin: true,
   title: '',
+  director: false,
 };
 const ADMIN = base;
 const OFFICER: AppSession = { ...base, userId: 'off-1', siteAdmin: false, title: 'Secretary' };
@@ -91,6 +92,7 @@ describe('sessions', () => {
     disabled: false,
     siteAdmin: true,
     title: 'Clerk',
+    director: false,
   };
   it('a disabled user gets no session', () => {
     expect(toAppSession({ ...row, disabled: true }, {})).toBeNull();

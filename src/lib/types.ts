@@ -65,6 +65,8 @@ export interface Session {
   siteAdmin: boolean;
   /** Officer title, e.g. "Vice President". Empty when not set. */
   title: string;
+  /** On the board of directors. A director who is not an officer still sees the Board page. */
+  director: boolean;
 }
 
 export type FormKind = 'contact' | 'partner' | 'membership' | 'interest' | 'rsvp';

@@ -2,7 +2,7 @@ import { and, asc, eq, sql } from 'drizzle-orm';
 import { db } from '../client';
 import { appUsers, members } from '../schema';
 import { HttpError } from '../../http';
-import { dropsAdmin, LAST_ADMIN_MESSAGE, type UserPatch } from '../../permissions';
+import { dropsAdmin, LAST_ADMIN_MESSAGE, userPatchSet, type UserPatch } from '../../permissions';
 
 export interface UserView {
   id: string;
@@ -12,6 +12,8 @@ export interface UserView {
   title: string;
   disabled: boolean;
   siteAdmin: boolean;
+  director: boolean;
+  boardTitle: string;
   lastLoginAt: string | null;
   member: { id: string; name: string; trade: string; privatePhone: string } | null;
 }
@@ -35,6 +37,8 @@ async function selectUsers(where?: ReturnType<typeof eq>) {
     title: u.title,
     disabled: u.disabled,
     siteAdmin: u.role === 'admin' && u.siteAdmin,
+    director: u.director,
+    boardTitle: u.boardTitle,
     lastLoginAt: u.lastLoginAt?.toISOString() ?? null,
     member: u.memberId
       ? {
@@ -55,6 +59,41 @@ export async function listOfficers() {
   return (await selectUsers(eq(appUsers.role, 'admin'))).filter((u) => !u.disabled);
 }
 
+/** One director on the Board page. Officers and directors can read it. */
+export interface BoardMemberView {
+  id: string;
+  name: string;
+  email: string;
+  boardTitle: string;
+  /** Also an officer, and their officer title if so. */
+  officer: boolean;
+  officerTitle: string;
+  /** From the linked tradesman entry, if any. */
+  phone: string;
+  lastLoginAt: string | null;
+}
+
+export function toBoardMember(u: UserView): BoardMemberView {
+  const officer = u.role === 'admin';
+  return {
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    boardTitle: u.boardTitle,
+    officer,
+    officerTitle: officer ? u.title : '',
+    phone: u.member?.privatePhone ?? '',
+    lastLoginAt: u.lastLoginAt,
+  };
+}
+
+/** Every enabled director, for the Board page. */
+export async function listBoard(): Promise<BoardMemberView[]> {
+  return (await selectUsers(eq(appUsers.director, true)))
+    .filter((u) => !u.disabled)
+    .map(toBoardMember);
+}
+
 export async function getUser(id: string) {
   const [row] = await db().select().from(appUsers).where(eq(appUsers.id, id)).limit(1);
   if (!row) throw new HttpError(404, 'That account was not found.');
@@ -67,7 +106,8 @@ export function anotherAdminExists(id: string) {
 }
 
 /**
- * Applies a checked patch. Losing officer access also drops the Admin flag.
+ * Applies a checked patch. Losing officer access also drops the Admin flag
+ * but keeps board membership; leaving the board clears the board title.
  * Taking the Admin level from the current Admin only goes through while
  * another enabled Admin exists, so the site never ends up with none.
  */
@@ -75,12 +115,7 @@ export async function updateUser(
   target: { id: string; role: 'admin' | 'member'; siteAdmin: boolean; disabled: boolean },
   patch: UserPatch,
 ) {
-  const set: Partial<typeof appUsers.$inferInsert> = {};
-  if (patch.role !== undefined) set.role = patch.role;
-  if (patch.title !== undefined) set.title = patch.title;
-  if (patch.disabled !== undefined) set.disabled = patch.disabled;
-  if (patch.siteAdmin !== undefined) set.siteAdmin = patch.siteAdmin;
-  if (patch.role === 'member') set.siteAdmin = false;
+  const set: Partial<typeof appUsers.$inferInsert> = userPatchSet(patch);
   const guard = dropsAdmin(target, patch);
   const [row] = await db()
     .update(appUsers)
