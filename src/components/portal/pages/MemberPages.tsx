@@ -4,6 +4,7 @@ import ProfileEditor from '../member/ProfileEditor';
 import MyDocuments from '../member/MyDocuments';
 import { ErrorStrip, Loading } from '../ui';
 import { Badge, Card, Checklist, EventList, ProgressBar, pBtn, pBtnQuiet, pLink } from '../layout';
+import { AgreementTodo } from '../agreements';
 
 export type Go = (tab: string, query?: string) => void;
 
@@ -61,6 +62,11 @@ export function TradesmanHome({
   const m = summary.mine;
   return (
     <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+      {summary.agreements.some((a) => a.state === 'sent') && (
+        <div className="lg:col-span-2">
+          <AgreementTodo agreements={summary.agreements} />
+        </div>
+      )}
       <Card title="To do">
         {m ? (
           <TodoList todos={m.todos} go={go} />

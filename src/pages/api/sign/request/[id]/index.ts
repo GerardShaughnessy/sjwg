@@ -3,15 +3,19 @@ import { HttpError, clientIp, json, readJson, requireSession, route } from '@/se
 import { parseOrThrow } from '@/server/schemas';
 import { signSchema } from '@/server/esign-schemas';
 import { completeSignature, getSignRequest } from '@/server/esign';
+import { assertCanSignInPortal } from '@/server/agreement-rules';
 
 export const prerender = false;
 
-/** A logged-in tradesman signs a request addressed to his own directory entry. */
+/**
+ * A logged-in person signs their own request: a tradesman's, addressed to
+ * their directory entry, or an officer's or director's, sent to their account.
+ */
 export const POST: APIRoute = route(async (ctx) => {
   const s = requireSession(ctx);
   const row = await getSignRequest(ctx.params.id ?? '');
-  if (!row || !s.memberId || row.memberId !== s.memberId)
-    throw new HttpError(404, 'That paperwork was not found.');
+  if (!row) throw new HttpError(404, 'That paperwork was not found.');
+  assertCanSignInPortal(s, row);
   const input = parseOrThrow(signSchema, await readJson(ctx));
   const out = await completeSignature(row, input, {
     ip: clientIp(ctx),

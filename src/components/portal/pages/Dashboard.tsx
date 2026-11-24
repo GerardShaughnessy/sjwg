@@ -2,6 +2,7 @@ import type { PortalSummary, Tone } from '@/lib/api-portal';
 import { ErrorStrip, Loading } from '../ui';
 import { Card, DOT, EventList, pLink } from '../layout';
 import type { Go } from './MemberPages';
+import { AgreementTodo } from '../agreements';
 
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
@@ -56,6 +57,7 @@ export default function Dashboard({
   ];
   return (
     <div className="flex flex-col gap-6">
+      <AgreementTodo agreements={summary.agreements} />
       <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {tiles.map((t) => (
           <li key={t.label}>

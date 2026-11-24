@@ -427,6 +427,7 @@ export interface UserView {
   /** An outside person or business providing services. Independent of officer and board status. */
   vendor: boolean;
   vendorService: string;
+  duties: string;
   lastLoginAt: string | null;
   member: { id: string; name: string; trade: string; privatePhone: string } | null;
 }
@@ -439,6 +440,7 @@ export interface UserPatch {
   boardTitle?: string;
   vendor?: boolean;
   vendorService?: string;
+  duties?: string;
 }
 /** One vendor on the Vendors page. */
 export interface Vendor {
@@ -458,6 +460,7 @@ export interface BoardMember {
   officerTitle: string;
   phone: string;
   lastLoginAt: string | null;
+  duties: string;
 }
 
 export const users = {
@@ -471,6 +474,35 @@ export const users = {
   vendors: () => call<{ vendors: Vendor[] }>('/api/users/vendors').then((r) => r.vendors),
   update: (id: string, patch: UserPatch) =>
     mutate<{ user: UserView }>(`/api/users/${id}`, json('PATCH', patch)).then((r) => r.user),
+};
+
+/* ------------------------------------------------- officer + board agreements */
+export type AgreementKind = 'officer-agreement' | 'board-agreement';
+export type { AgreementStatus } from '@/server/agreement-rules';
+import type { AgreementStatus } from '@/server/agreement-rules';
+
+export const agreements = {
+  /** Every officer's and director's status. Admin only. */
+  list: () => call<{ statuses: AgreementStatus[] }>('/api/agreements').then((r) => r.statuses),
+  /** Your own required agreements. */
+  mine: () =>
+    call<{ agreements: AgreementStatus[] }>('/api/agreements/mine').then((r) => r.agreements),
+  send: (kind: AgreementKind, userId: string) =>
+    mutate<{ emailed: boolean; mailError: string | null }>(
+      '/api/agreements',
+      json('POST', { kind, userId }),
+    ),
+  sendAll: (kind: AgreementKind) =>
+    mutate<{ sent: string[]; resent: string[]; failed: string[] }>(
+      '/api/agreements/send-all',
+      json('POST', { kind }),
+    ),
+  resend: (requestId: string) =>
+    mutate<{ emailed: boolean }>(`/api/sign/requests/${requestId}/resend`, json('POST', {})),
+  void: (requestId: string) =>
+    mutate<{ ok?: true }>(`/api/sign/requests/${requestId}/void`, json('POST', {})),
+  pdfUrl: (requestId: string) => `/api/sign/requests/${requestId}/pdf`,
+  signUrl: (requestId: string) => `/sign/request/${requestId}`,
 };
 
 /* ---------------------------------------------------------------- members */

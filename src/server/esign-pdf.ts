@@ -1,5 +1,5 @@
 import { PDFDocument, StandardFonts, degrees, rgb, type PDFFont, type PDFPage } from 'pdf-lib';
-import { DRAFT_NOTICE } from '@/config/documents/types';
+import { DRAFT_NOTICE, LETTERHEAD } from '@/config/documents/types';
 import { guildTime, htmlToParagraphs } from './esign-core';
 
 /**
@@ -109,6 +109,30 @@ export async function buildSignedPdf(input: SignedPdfInput): Promise<Uint8Array>
       y -= lead;
     }
   };
+
+  // Letterhead, drawn here for every document (older frozen copies included)
+  const center = (raw: string, f: PDFFont, size: number, color: typeof ink) => {
+    const t = pdfSafe(raw);
+    page.drawText(t, {
+      x: (PAGE_W - f.widthOfTextAtSize(t, size)) / 2,
+      y: y - size,
+      size,
+      font: f,
+      color,
+    });
+    y -= size * 1.35;
+  };
+  center(LETTERHEAD.name, bold, 15, ink);
+  center(LETTERHEAD.address, sans, 9, muted);
+  center(`${LETTERHEAD.email}  |  ${LETTERHEAD.web}`, sans, 9, muted);
+  y -= 4;
+  page.drawLine({
+    start: { x: MARGIN, y },
+    end: { x: PAGE_W - MARGIN, y },
+    thickness: 0.5,
+    color: muted,
+  });
+  y -= 10;
 
   // Document text
   for (const para of htmlToParagraphs(input.frozenHtml)) {

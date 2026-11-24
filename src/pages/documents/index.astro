@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import PageHeader from '@/components/ui/PageHeader.astro';
-import { DOCUMENTS, DRAFT_NOTICE } from '@/config/documents';
+import { TRADESMAN_DOCUMENTS, DRAFT_NOTICE } from '@/config/documents';
 ---
 
 <BaseLayout
@@ -14,7 +14,7 @@ import { DOCUMENTS, DRAFT_NOTICE } from '@/config/documents';
   />
   <div class="wrap py-12 md:py-16">
     <ul class="flex max-w-[60ch] flex-col gap-8 font-sans">
-      {DOCUMENTS.map((d) => (
+      {TRADESMAN_DOCUMENTS.map((d) => (
         <li class="border-mortar border-b pb-8">
           <h2 class="text-h3 font-serif">
             <a

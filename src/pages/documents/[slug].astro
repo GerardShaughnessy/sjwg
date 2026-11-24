@@ -2,7 +2,7 @@
 import type { GetStaticPaths } from 'astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import PrintStyles from '@/components/sign/PrintStyles.astro';
-import { DOCUMENTS, DRAFT_NOTICE, renderDocHtml, type GuildDocument } from '@/config/documents';
+import { DOCUMENTS, DRAFT_NOTICE, printableDoc, renderDocHtml, type GuildDocument } from '@/config/documents';
 
 export const getStaticPaths = (() =>
   DOCUMENTS.map((doc) => ({
@@ -11,7 +11,7 @@ export const getStaticPaths = (() =>
   }))) satisfies GetStaticPaths;
 
 const { doc } = Astro.props as { doc: GuildDocument };
-const html = renderDocHtml(doc);
+const html = renderDocHtml(printableDoc(doc));
 ---
 
 <BaseLayout title={doc.title} description={doc.summary} noindex={doc.draft}>
@@ -46,7 +46,7 @@ const html = renderDocHtml(doc);
       <Fragment set:html={html} />
 
       <section class="doc-signatures not-prose mt-12 font-sans">
-        <p class="mb-8 text-[0.95rem]">Signed by the tradesman:</p>
+        <p class="mb-8 text-[0.95rem]">{doc.signer ?? 'Signed by the tradesman:'}</p>
         <div class="grid gap-10">
           {['Name (print)', 'Signature', 'Date'].map((label) => (
             <div>

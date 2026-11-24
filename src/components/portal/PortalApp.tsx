@@ -22,6 +22,7 @@ import OfficersPage from './pages/Officers';
 import BoardPage from './pages/Board';
 import VendorsPage from './pages/Vendors';
 import { SessionContext } from './session-context';
+import { AgreementBanner } from './agreements';
 
 interface Props {
   session: Session;
@@ -169,6 +170,8 @@ export default function PortalApp({ session, events, areas }: Props) {
     {
       id: 'dashboard',
       label: 'Dashboard',
+      count: badges.dashboard,
+      countLabel: n('dashboard', 'agreement to sign', 'agreements to sign'),
       title: 'Dashboard',
       lede: 'Everything waiting on an officer, at a glance.',
       content: <Dashboard summary={s} error={err} go={go} />,
@@ -320,6 +323,7 @@ export default function PortalApp({ session, events, areas }: Props) {
         items={items}
         active={active}
         onChange={(id) => go(id)}
+        banner={<AgreementBanner agreements={s?.agreements} />}
         onLogout={async () => {
           try {
             await authClient().signOut();

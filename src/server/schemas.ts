@@ -385,6 +385,8 @@ export const userPatchSchema = z
     boardTitle: trimmed(80),
     vendor: z.boolean(),
     vendorService: trimmed(120),
+    /** Primary duties, one per line, merged into the officer and board agreements. */
+    duties: trimmed(4000),
   })
   .partial()
   .strict()

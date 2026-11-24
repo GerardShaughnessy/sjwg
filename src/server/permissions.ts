@@ -18,6 +18,8 @@ export interface UserPatch {
   /** An outside person or business providing services. Independent of officer and board status. */
   vendor?: boolean;
   vendorService?: string;
+  /** Primary duties, one per line. */
+  duties?: string;
 }
 
 /**
@@ -91,6 +93,7 @@ export function userPatchSet(patch: UserPatch) {
     boardTitle?: string;
     vendor?: boolean;
     vendorService?: string;
+    duties?: string;
   } = {};
   if (patch.role !== undefined) set.role = patch.role;
   if (patch.title !== undefined) set.title = patch.title;
@@ -100,6 +103,7 @@ export function userPatchSet(patch: UserPatch) {
   if (patch.boardTitle !== undefined) set.boardTitle = patch.boardTitle;
   if (patch.vendor !== undefined) set.vendor = patch.vendor;
   if (patch.vendorService !== undefined) set.vendorService = patch.vendorService;
+  if (patch.duties !== undefined) set.duties = patch.duties;
   if (patch.role === 'member') set.siteAdmin = false;
   if (patch.director === false) set.boardTitle = '';
   if (patch.vendor === false) set.vendorService = '';

@@ -16,6 +16,7 @@ export interface UserView {
   boardTitle: string;
   vendor: boolean;
   vendorService: string;
+  duties: string;
   lastLoginAt: string | null;
   member: { id: string; name: string; trade: string; privatePhone: string } | null;
 }
@@ -43,6 +44,7 @@ async function selectUsers(where?: ReturnType<typeof eq>) {
     boardTitle: u.boardTitle,
     vendor: u.vendor,
     vendorService: u.vendorService,
+    duties: u.duties,
     lastLoginAt: u.lastLoginAt?.toISOString() ?? null,
     member: u.memberId
       ? {
@@ -78,6 +80,8 @@ export interface BoardMemberView {
   /** From the linked tradesman entry, if any. */
   phone: string;
   lastLoginAt: string | null;
+  /** Primary duties, one per line. Officers see them; other directors do not. */
+  duties: string;
 }
 
 /** Phone and last sign-in are officer-only details; other directors see name, title and email. */
@@ -93,6 +97,7 @@ export function toBoardMember(u: UserView, forOfficer = true): BoardMemberView {
     officerTitle: officer ? u.title : '',
     phone: forOfficer ? (u.member?.privatePhone ?? '') : '',
     lastLoginAt: forOfficer ? u.lastLoginAt : null,
+    duties: forOfficer ? u.duties : '',
   };
 }
 

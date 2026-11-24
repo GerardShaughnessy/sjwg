@@ -10,6 +10,7 @@ import {
   invitations,
   members,
   signRequests,
+  taskAssignees,
   tasks,
 } from './db/schema';
 import { roleLabelFor, type AppSession } from './auth/session';
@@ -18,6 +19,8 @@ import { taskEventText, type TaskEventLike } from './task-rules';
 import { photoUrl } from './db/queries/members';
 import { listMemberDocs, type MemberDocView } from './member-docs';
 import { memberSignRequests, requestsForMember, type SignRequestView } from './esign';
+import { myAgreements } from './agreements';
+import type { AgreementStatus } from './agreement-rules';
 import {
   buildActivity,
   doneCount,
@@ -74,6 +77,8 @@ export interface PortalSummary {
   officer: { counts: OfficerCounts; activity: ActivityItem[] } | null;
   /** Sidebar badges by tab id. */
   badges: Record<string, number>;
+  /** The caller's own officer or board agreements, for the banner and the to-do. */
+  agreements: AgreementStatus[];
 }
 
 export interface TradesmanRow {
@@ -214,6 +219,16 @@ export async function tradesmenRoster(now: Date): Promise<TradesmanRow[]> {
   return out;
 }
 
+/** Open tasks with this person on them: the Tasks badge for everyone who is not an officer. */
+async function countMyOpenTasks(userId: string): Promise<number> {
+  const [row] = await db()
+    .select({ n: count() })
+    .from(tasks)
+    .innerJoin(taskAssignees, eq(taskAssignees.taskId, tasks.id))
+    .where(and(eq(taskAssignees.userId, userId), ne(tasks.status, 'done')));
+  return Number(row?.n ?? 0);
+}
+
 function group<T>(list: T[], key: (t: T) => string): Map<string, T[]> {
   const m = new Map<string, T[]>();
   for (const t of list) m.set(key(t), [...(m.get(key(t)) ?? []), t]);
@@ -342,11 +357,14 @@ async function officerActivity(now: Date): Promise<ActivityItem[]> {
 /** Everything the sidebar badges, the officer Dashboard, and the tradesman Home need. */
 export async function portalSummary(s: AppSession, now = new Date()): Promise<PortalSummary> {
   const isAdmin = s.role === 'admin';
-  const [upcoming, mine, roster] = await Promise.all([
+  const [upcoming, mine, roster, agreements, myOpenTasks] = await Promise.all([
     upcomingEvents(now),
     s.memberId ? mySummary(s.memberId, now) : Promise.resolve(null),
     isAdmin ? tradesmenRoster(now) : Promise.resolve([] as TradesmanRow[]),
+    myAgreements(s),
+    isAdmin ? Promise.resolve(0) : countMyOpenTasks(s.userId),
   ]);
+  const unsigned = agreements.filter((a) => a.state === 'sent').length;
   const officer = isAdmin
     ? await Promise.all([officerCounts(now, roster), officerActivity(now)]).then(
         ([counts, activity]) => ({ counts, activity }),
@@ -357,8 +375,9 @@ export async function portalSummary(s: AppSession, now = new Date()): Promise<Po
         tradesmen: officer.counts.tradesmenNeedingAction,
         aid: officer.counts.aidNew,
         tasks: officer.counts.tasksOpen,
+        ...(unsigned ? { dashboard: unsigned } : {}),
       }
-    : { home: mine?.todos.length ?? 0 };
+    : { home: (mine?.todos.length ?? 0) + unsigned, tasks: myOpenTasks };
   return {
     role: s.role,
     roleLabel: roleLabelFor(s, mine?.trade),
@@ -366,5 +385,6 @@ export async function portalSummary(s: AppSession, now = new Date()): Promise<Po
     mine,
     officer,
     badges,
+    agreements,
   };
 }

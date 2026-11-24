@@ -23,6 +23,8 @@ interface Props {
   active: string;
   onChange: (id: string) => void;
   onLogout: () => void;
+  /** Shown above every page, e.g. an agreement waiting for a signature. */
+  banner?: ReactNode;
 }
 
 /**
@@ -37,6 +39,7 @@ export default function PortalShell({
   active,
   onChange,
   onLogout,
+  banner,
 }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const current = items.find((i) => i.id === active) ?? items[0];
@@ -182,6 +185,7 @@ export default function PortalShell({
         </nav>
 
         <main id="main" className="min-w-0 flex-1" ref={headingRef}>
+          {banner}
           <PageHead title={current.title} lede={current.lede} />
           <div key={current.id}>{current.content}</div>
         </main>

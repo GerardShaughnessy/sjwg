@@ -173,6 +173,7 @@ describe('the board list', () => {
     boardTitle: 'Treasurer',
     vendor: false,
     vendorService: '',
+    duties: 'Keep the minutes',
     lastLoginAt: null,
     member: { id: 'm1', name: 'Dee', trade: 'Plumber', privatePhone: '555-0100' },
   };
@@ -186,6 +187,7 @@ describe('the board list', () => {
       officerTitle: 'Secretary',
       phone: '555-0100',
       lastLoginAt: null,
+      duties: 'Keep the minutes',
     });
     expect(toBoardMember({ ...view, role: 'member', member: null })).toMatchObject({
       officer: false,

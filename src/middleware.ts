@@ -9,7 +9,7 @@ import { authConfig, getAuthSession, resolveAppSession } from '@/server/auth/ser
 /** Pages and API prefixes that need a logged-in Guild member (or officer). */
 const PROTECTED = [
   /^\/portal(\/|$)/,
-  /^\/api\/(requests|me|posts|events|sponsors|donations|invitations|members|announcements|hours|portal|users|tasks|files\/requests)(\/|$)/,
+  /^\/api\/(requests|me|posts|events|sponsors|donations|invitations|members|announcements|hours|portal|users|tasks|agreements|files\/requests)(\/|$)/,
 ];
 
 /** Method-specific holes in the protected prefixes. */

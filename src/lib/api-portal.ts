@@ -13,6 +13,7 @@ export type {
   OfficerCounts,
 } from '@/server/portal-summary';
 export type { ChecklistItem, Todo, Tone, ActivityItem } from '@/server/portal-status';
+export type { AgreementStatus, AgreementState } from '@/server/agreement-rules';
 
 export const portal = {
   summary: () => call<PortalSummary>('/api/portal/summary'),

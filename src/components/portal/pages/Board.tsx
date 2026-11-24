@@ -1,10 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
-import { users as api, type BoardMember, type UserView } from '@/lib/api';
+import {
+  agreements,
+  users as api,
+  type AgreementStatus,
+  type BoardMember,
+  type UserView,
+} from '@/lib/api';
 import { useResource } from '@/lib/hooks';
 import { formatShortDate } from '@/lib/events';
 import type { Session } from '@/lib/types';
 import { ErrorStrip, inputCls, Loading, msg, Status } from '../ui';
 import { Badge, Card, pBtn, pBtnQuiet } from '../layout';
+import { AgreementControls, DutiesEditor, MyAgreementLine, SendAllAgreements } from '../agreements';
 
 const initials = (name: string) =>
   name
@@ -23,6 +30,12 @@ export default function BoardPage({ session }: { session: Session }) {
   const admin = session.role === 'admin' && session.siteAdmin;
   const board = useResource(() => api.board(), []);
   const accounts = useResource(() => (admin ? api.list() : Promise.resolve([])), [admin]);
+  const statuses = useResource(
+    () => (admin ? agreements.list() : Promise.resolve([] as AgreementStatus[])),
+    [admin],
+  );
+  const statusFor = (id: string) =>
+    statuses.data?.find((st) => st.userId === id && st.kind === 'board-agreement');
   const directors = board.data ?? [];
   const candidates = (accounts.data ?? []).filter((u) => !u.disabled && !u.director);
 
@@ -52,6 +65,10 @@ export default function BoardPage({ session }: { session: Session }) {
       </p>
       {admin && accounts.error && <ErrorStrip>{accounts.error}</ErrorStrip>}
       {admin && accounts.data && <AddDirector candidates={candidates} />}
+      {admin && statuses.error && <ErrorStrip>{statuses.error}</ErrorStrip>}
+      {admin && statuses.data && (
+        <SendAllAgreements kind="board-agreement" statuses={statuses.data} who="director" />
+      )}
       <Card
         title={
           board.data
@@ -74,6 +91,7 @@ export default function BoardPage({ session }: { session: Session }) {
                 admin={admin}
                 officerView={session.role === 'admin'}
                 onGone={announce}
+                agreement={statusFor(d.id)}
               />
             ))}
           </ul>
@@ -94,7 +112,9 @@ function Director({
   admin,
   officerView,
   onGone,
+  agreement,
 }: {
+  agreement?: AgreementStatus;
   d: BoardMember;
   me: boolean;
   admin: boolean;
@@ -212,6 +232,10 @@ function Director({
         )}
       </dl>
 
+      {me && !admin && <MyAgreementLine kind="board-agreement" />}
+      {admin && (
+        <AgreementControls kind="board-agreement" userId={d.id} name={d.name} status={agreement} />
+      )}
       {admin && (
         <div className="border-mortar flex flex-col gap-3 border-t pt-3">
           <form className="flex flex-col gap-1" onSubmit={saveTitle}>
@@ -236,6 +260,7 @@ function Director({
               </button>
             </div>
           </form>
+          <DutiesEditor userId={d.id} duties={d.duties} />
           <div className="flex flex-wrap items-center gap-2">
             {confirm ? (
               <div

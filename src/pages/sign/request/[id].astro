@@ -1,14 +1,15 @@
 ---
 /**
- * The same signing page for a logged-in tradesman, reached from "Paperwork
- * to sign" in the portal. Only the hash of the emailed token is stored, so
- * the portal cannot rebuild that link; instead the session proves who he is
- * and the request must be addressed to his own directory entry.
+ * The same signing page for a logged-in person, reached from the portal. Only
+ * the hash of the emailed token is stored, so the portal cannot rebuild that
+ * link; instead the session proves who they are, and the request must be
+ * addressed to their own directory entry or sent to their own account.
  */
 import SignPage from '@/components/sign/SignPage.astro';
 import { getSignRequest, recordView } from '@/server/esign';
 import type { APIContext } from 'astro';
 import { clientIp } from '@/server/http';
+import { canSignInPortal } from '@/server/agreement-rules';
 
 export const prerender = false;
 
@@ -19,7 +20,7 @@ if (!session)
 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 let row = uuid.test(id) ? await getSignRequest(id) : null;
-if (row && (!session.memberId || row.memberId !== session.memberId)) row = null;
+if (row && !canSignInPortal(session, row)) row = null;
 // The emailed link's expiry does not apply here; the session is the proof.
 let state: 'open' | 'signed' | 'voided' | 'expired' | 'missing' = !row
   ? 'missing'

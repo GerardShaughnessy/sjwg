@@ -168,3 +168,20 @@
 @utility measure {
   max-width: 64ch;
 }
+
+/* Letterhead at the top of every Guild document: the printable pages and the signing page. */
+.doc-letterhead {
+  margin: 0 0 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-mortar);
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--color-ash);
+}
+.doc-letterhead .doc-letterhead-name {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  color: var(--color-charcoal);
+}

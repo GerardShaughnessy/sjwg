@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { users as api, type UserView } from '@/lib/api';
+import { agreements, users as api, type AgreementStatus, type UserView } from '@/lib/api';
 import { useResource } from '@/lib/hooks';
 import { formatShortDate } from '@/lib/events';
 import type { Session } from '@/lib/types';
 import InvitationsPanel from '../admin/InvitationsPanel';
 import { ErrorStrip, inputCls, Loading, msg, Status } from '../ui';
 import { Badge, Card, pBtn, pBtnQuiet } from '../layout';
+import { AgreementControls, DutiesEditor, MyAgreementLine, SendAllAgreements } from '../agreements';
 
 const initials = (name: string) =>
   name
@@ -25,6 +26,12 @@ export default function OfficersPage({ session }: { session: Session }) {
     () => (admin ? api.list() : api.officers()),
     [admin],
   );
+  const statuses = useResource(
+    () => (admin ? agreements.list() : Promise.resolve([] as AgreementStatus[])),
+    [admin],
+  );
+  const statusFor = (id: string) =>
+    statuses.data?.find((st) => st.userId === id && st.kind === 'officer-agreement');
   const all = data ?? [];
   // The Admin keeps officer access under the hood but is not listed as an officer.
   const officers = all.filter((u) => u.role === 'admin' && !u.disabled && !u.siteAdmin);
@@ -63,6 +70,10 @@ export default function OfficersPage({ session }: { session: Session }) {
           <DisabledAccounts list={disabled} onDone={announce} />
         </div>
       )}
+      {admin && statuses.error && <ErrorStrip>{statuses.error}</ErrorStrip>}
+      {admin && statuses.data && (
+        <SendAllAgreements kind="officer-agreement" statuses={statuses.data} who="officer" />
+      )}
       <Card
         title={
           data ? `${officers.length} ${officers.length === 1 ? 'officer' : 'officers'}` : 'Officers'
@@ -80,6 +91,7 @@ export default function OfficersPage({ session }: { session: Session }) {
                 me={u.id === session.userId}
                 admin={admin}
                 onGone={announce}
+                agreement={statusFor(u.id)}
               />
             ))}
           </ul>
@@ -99,12 +111,15 @@ function Officer({
   me,
   admin,
   onGone,
+  agreement,
 }: {
   u: UserView;
   me: boolean;
   admin: boolean;
   /** Page-level message for a change that takes this card off the list. */
   onGone: (text: string) => void;
+  /** Their officer agreement, for the Admin. */
+  agreement?: AgreementStatus;
 }) {
   const [title, setTitle] = useState(u.title);
   const [status, setStatus] = useState('');
@@ -202,6 +217,15 @@ function Officer({
         <dd>{u.lastLoginAt ? formatShortDate(u.lastLoginAt) : 'Not yet'}</dd>
       </dl>
 
+      {me && !admin && <MyAgreementLine kind="officer-agreement" />}
+      {admin && (
+        <AgreementControls
+          kind="officer-agreement"
+          userId={u.id}
+          name={u.name}
+          status={agreement}
+        />
+      )}
       {admin && (
         <div className="border-mortar flex flex-col gap-3 border-t pt-3">
           <form
@@ -232,6 +256,7 @@ function Officer({
               </button>
             </div>
           </form>
+          <DutiesEditor userId={u.id} duties={u.duties} />
           {!me && (
             <div className="flex flex-wrap items-center gap-2">
               {confirm ? (

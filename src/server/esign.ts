@@ -1,7 +1,13 @@
 import { and, desc, eq, inArray, isNotNull, isNull, gt, ne } from 'drizzle-orm';
 import { db } from './db/client';
 import { members, signEvents, signRequests } from './db/schema';
-import { composeForSigning, docKindLabel, PACKET_KIND, type SignDocKind } from '@/config/documents';
+import {
+  composeForSigning,
+  docKindLabel,
+  PACKET_KIND,
+  type MergeVars,
+  type SignDocKind,
+} from '@/config/documents';
 import type { AppSession } from './auth/server';
 import { siteUrl } from './env';
 import { HttpError } from './http';
@@ -38,6 +44,7 @@ export interface SignRequestView {
   signerName: string;
   signerEmail: string;
   memberId: string | null;
+  userId: string | null;
   status: string;
   sentByName: string;
   sentAt: string;
@@ -61,6 +68,7 @@ const VIEW_COLUMNS = {
   signerName: signRequests.signerName,
   signerEmail: signRequests.signerEmail,
   memberId: signRequests.memberId,
+  userId: signRequests.userId,
   status: signRequests.status,
   sentByName: signRequests.sentByName,
   sentAt: signRequests.sentAt,
@@ -82,6 +90,7 @@ export function toView(r: ViewRow): SignRequestView {
     signerName: r.signerName,
     signerEmail: r.signerEmail,
     memberId: r.memberId,
+    userId: r.userId,
     status: r.status,
     sentByName: r.sentByName,
     sentAt: r.sentAt.toISOString(),
@@ -155,6 +164,9 @@ async function emailLink(row: SignRow, token: string, by: string) {
 export async function sendForSignature(input: {
   docKind: SignDocKind;
   memberId?: string | null;
+  /** An account's own agreement: who it is for, and what is merged into it. */
+  userId?: string | null;
+  vars?: MergeVars;
   name?: string;
   email?: string;
   sentBy: Pick<AppSession, 'userId' | 'name'>;
@@ -173,7 +185,7 @@ export async function sendForSignature(input: {
       email: 'An email address is needed.',
     });
 
-  const frozen = composeForSigning(input.docKind);
+  const frozen = composeForSigning(input.docKind, input.vars);
   const { token, tokenHash, expiresAt } = newSignToken();
   const [row] = await db()
     .insert(signRequests)
@@ -185,6 +197,7 @@ export async function sendForSignature(input: {
       signerName: name,
       signerEmail: email,
       memberId: input.memberId ?? null,
+      userId: input.userId ?? null,
       tokenHash,
       tokenExpiresAt: expiresAt,
       status: 'sent',
@@ -473,6 +486,21 @@ export async function memberSignRequests(): Promise<SignRequestView[]> {
         isNotNull(signRequests.memberId),
         isNull(signRequests.voidedAt),
         ne(signRequests.status, 'voided'),
+      ),
+    )
+    .orderBy(desc(signRequests.sentAt));
+  return rows.map(toView);
+}
+
+/** Every live request sent to an account (officer and board agreements). */
+export async function accountSignRequests(userId?: string): Promise<SignRequestView[]> {
+  const rows = await db()
+    .select(VIEW_COLUMNS)
+    .from(signRequests)
+    .where(
+      and(
+        userId ? eq(signRequests.userId, userId) : isNotNull(signRequests.userId),
+        isNull(signRequests.voidedAt),
       ),
     )
     .orderBy(desc(signRequests.sentAt));
