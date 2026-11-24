@@ -43,6 +43,8 @@ export default function PortalShell({
   const headingRef = useRef<HTMLHeadingElement>(null);
   const first = useRef(true);
   const isAdmin = session.role === 'admin';
+  /** The Admin runs the site and is not presented as an officer. */
+  const portalName = session.siteAdmin ? 'Admin' : isAdmin ? 'Officer' : 'Tradesman';
   const menuBtnRef = useRef<HTMLButtonElement>(null);
   const navListRef = useRef<HTMLUListElement>(null);
 
@@ -69,11 +71,11 @@ export default function PortalShell({
   }
 
   useEffect(() => {
-    document.title = `${current.label} | ${isAdmin ? 'Officer' : 'Tradesman'} portal | St. Joseph the Worker Guild`;
+    document.title = `${current.label} | ${portalName} portal | St. Joseph the Worker Guild`;
     // Move focus to the new page's title after a change, not on first load.
     if (first.current) first.current = false;
     else headingRef.current?.querySelector('h1')?.focus();
-  }, [current.id, current.label, isAdmin]);
+  }, [current.id, current.label, portalName]);
 
   function go(id: string) {
     onChange(id);
@@ -100,7 +102,7 @@ export default function PortalShell({
             <span className="min-w-0 leading-tight">
               <span className="block font-serif text-[1rem] sm:text-[1.15rem]">St. Joseph the Worker Guild</span>
               <span className="text-brass-ink block font-sans text-[0.8rem] font-semibold tracking-[0.12em] uppercase">
-                {isAdmin ? 'Officer portal' : 'Tradesman portal'}
+                {portalName} portal
               </span>
             </span>
           </a>

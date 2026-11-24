@@ -105,8 +105,11 @@ describe('sessions', () => {
       title: '',
     });
   });
-  it('the header shows the title, then Admin, then Guild officer', () => {
+  it('the header shows Admin for the Admin, then the title, then Guild officer', () => {
     expect(roleLabelFor({ role: 'admin', siteAdmin: true, title: 'Vice President' })).toBe(
+      'Admin',
+    );
+    expect(roleLabelFor({ role: 'admin', siteAdmin: false, title: 'Vice President' })).toBe(
       'Vice President',
     );
     expect(roleLabelFor({ role: 'admin', siteAdmin: true, title: '' })).toBe('Admin');

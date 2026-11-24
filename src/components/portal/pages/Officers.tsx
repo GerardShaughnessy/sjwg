@@ -26,7 +26,8 @@ export default function OfficersPage({ session }: { session: Session }) {
     [admin],
   );
   const all = data ?? [];
-  const officers = all.filter((u) => u.role === 'admin' && !u.disabled);
+  // The Admin keeps officer access under the hood but is not listed as an officer.
+  const officers = all.filter((u) => u.role === 'admin' && !u.disabled && !u.siteAdmin);
   const others = all.filter((u) => u.role !== 'admin' && !u.disabled);
   const disabled = all.filter((u) => u.disabled);
 
@@ -166,7 +167,6 @@ function Officer({
           <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className="font-serif text-[1.25rem] leading-tight">{u.name}</span>
             {me && <span className="text-ash text-[0.85rem]">(you)</span>}
-            {u.siteAdmin && <Badge tone="waiting">Admin</Badge>}
           </p>
           <p className={u.title ? 'font-semibold' : 'text-ash italic'}>
             {u.title || 'No title yet'}
@@ -397,7 +397,7 @@ function DisabledAccounts({
               <span className="min-w-0">
                 <span className="block font-semibold">{u.name}</span>
                 <span className="text-ash text-[0.85rem] break-words">
-                  {u.email} · {u.role === 'admin' ? 'Officer' : 'Tradesman'}
+                  {u.email} · {u.siteAdmin ? 'Admin' : u.role === 'admin' ? 'Officer' : 'Tradesman'}
                 </span>
               </span>
               <button

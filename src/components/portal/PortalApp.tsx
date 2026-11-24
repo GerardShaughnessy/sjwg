@@ -299,7 +299,9 @@ export default function PortalApp({ session, events, areas }: Props) {
     );
 
   const fallbackLabel = isAdmin
-    ? session.title || (session.siteAdmin ? 'Admin' : 'Guild officer')
+    ? session.siteAdmin
+      ? 'Admin'
+      : session.title || 'Guild officer'
     : '';
   return (
     <SessionContext.Provider value={session}>

@@ -54,9 +54,14 @@ async function selectUsers(where?: ReturnType<typeof eq>) {
 /** Every account on the site. Admin only. */
 export const listUsers = () => selectUsers();
 
-/** Every active officer, for the Officers page all officers can see. */
+/**
+ * Every active officer, for the Officers page all officers can see. The Admin
+ * keeps role 'admin' for access but is not an officer, so is left out.
+ */
 export async function listOfficers() {
-  return (await selectUsers(eq(appUsers.role, 'admin'))).filter((u) => !u.disabled);
+  return (await selectUsers(eq(appUsers.role, 'admin'))).filter(
+    (u) => !u.disabled && !u.siteAdmin,
+  );
 }
 
 /** One director on the Board page. Officers and directors can read it. */
@@ -75,7 +80,8 @@ export interface BoardMemberView {
 
 /** Phone and last sign-in are officer-only details; other directors see name, title and email. */
 export function toBoardMember(u: UserView, forOfficer = true): BoardMemberView {
-  const officer = u.role === 'admin';
+  // The Admin keeps officer access under the hood but is not shown as an officer.
+  const officer = u.role === 'admin' && !u.siteAdmin;
   return {
     id: u.id,
     name: u.name,

@@ -49,11 +49,15 @@ export function toAppSession(
   };
 }
 
-/** The line under the name in the portal header. */
+/**
+ * The line under the name in the portal header. The Admin runs the site and
+ * is not presented as an officer, so their label is always "Admin".
+ */
 export function roleLabelFor(
   s: Pick<AppSession, 'role' | 'siteAdmin' | 'title'>,
   trade = '',
 ): string {
   if (s.role !== 'admin') return trade || 'Guild member';
-  return s.title || (s.siteAdmin ? 'Admin' : 'Guild officer');
+  if (s.siteAdmin) return 'Admin';
+  return s.title || 'Guild officer';
 }
