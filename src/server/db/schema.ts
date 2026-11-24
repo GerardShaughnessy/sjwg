@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import {
   boolean,
+  check,
   date,
   index,
   integer,
@@ -119,6 +120,8 @@ export const appUsers = pgTable(
     vendor: boolean('vendor').notNull().default(false),
     /** What a vendor provides, e.g. "Website, design, and photography". Cleared when they stop being a vendor. */
     vendorService: text('vendor_service').notNull().default(''),
+    /** Primary duties, one per line. Merged into the officer and board agreements. */
+    duties: text('duties').notNull().default(''),
     lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
     createdAt: createdAt(),
   },
@@ -528,6 +531,56 @@ export const taskEvents = pgTable(
   ],
 );
 
+/** Time worked on a task. Stored in minutes. Anyone on the task logs their own; officers log on any. */
+export const taskTime = pgTable(
+  'task_time',
+  {
+    id: id(),
+    taskId: uuid('task_id')
+      .notNull()
+      .references(() => tasks.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').references(() => appUsers.id, { onDelete: 'set null' }),
+    minutes: integer('minutes').notNull(),
+    workedOn: date('worked_on').notNull().default(sql`current_date`),
+    note: text('note').default(''),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index('task_time_task_idx').on(t.taskId),
+    index('task_time_user_idx').on(t.userId, t.workedOn),
+    check('task_time_minutes_positive', sql`${t.minutes} > 0`),
+  ],
+);
+
+/**
+ * "You were added to a task" emails, batched. A row per new assignment; the
+ * scheduled task-digest function sends one email per person once their oldest
+ * unsent row is 15 minutes old, then stamps sent_at.
+ */
+export const taskNotifications = pgTable(
+  'task_notifications',
+  {
+    id: id(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => appUsers.id, { onDelete: 'cascade' }),
+    taskId: uuid('task_id')
+      .notNull()
+      .references(() => tasks.id, { onDelete: 'cascade' }),
+    addedBy: uuid('added_by'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+    sentAt: timestamp('sent_at', { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex('task_notifications_pending_once')
+      .on(t.userId, t.taskId)
+      .where(sql`${t.sentAt} is null`),
+    index('task_notifications_unsent_idx')
+      .on(t.createdAt)
+      .where(sql`${t.sentAt} is null`),
+  ],
+);
+
 /* ---------------------------------------------------------- service hours */
 /**
  * Designated charity work toward the yearly requirement (16 hours, 6 for Guild
@@ -676,6 +729,8 @@ export const signRequests = pgTable(
     signerName: text('signer_name').notNull(),
     signerEmail: text('signer_email').notNull(),
     memberId: uuid('member_id').references(() => members.id, { onDelete: 'set null' }),
+    /** An account's own agreement (officer or board). Officers and directors may have no member row. */
+    userId: uuid('user_id').references(() => appUsers.id, { onDelete: 'set null' }),
     tokenHash: text('token_hash').notNull(),
     tokenExpiresAt: timestamp('token_expires_at', { withTimezone: true }).notNull(),
     /** sent, viewed, signed, voided */
@@ -697,6 +752,7 @@ export const signRequests = pgTable(
   (t) => [
     uniqueIndex('sign_requests_token_idx').on(t.tokenHash),
     index('sign_requests_member_idx').on(t.memberId),
+    index('sign_requests_user_idx').on(t.userId),
   ],
 );
 
