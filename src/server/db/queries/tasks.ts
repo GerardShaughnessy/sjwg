@@ -1,8 +1,8 @@
-import { and, asc, desc, eq, inArray, isNull, sql, sum } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, ne, or, sql, sum, type SQL } from 'drizzle-orm';
 import { db } from '../client';
 import { appUsers, taskAssignees, taskEvents, taskNotifications, taskTime, tasks } from '../schema';
 import { HttpError, badRequest } from '../../http';
-import { accountGroups, type AccountGroup } from '../../task-rules';
+import { accountGroups, archiveCutoff, type AccountGroup } from '../../task-rules';
 import type { z } from 'astro/zod';
 import type { taskPatchSchema, taskSchema } from '../../schemas';
 
@@ -10,7 +10,12 @@ type TaskInput = z.output<typeof taskSchema>;
 type TaskPatch = z.output<typeof taskPatchSchema>;
 type TaskRow = typeof tasks.$inferSelect;
 
-export function taskView(t: TaskRow, assigneeIds: string[], minutes = 0) {
+export function taskView(
+  t: TaskRow,
+  assigneeIds: string[],
+  minutes = 0,
+  finishedAt: Date | null = null,
+) {
   return {
     id: t.id,
     title: t.title,
@@ -26,6 +31,8 @@ export function taskView(t: TaskRow, assigneeIds: string[], minutes = 0) {
     updatedAt: t.updatedAt.toISOString(),
     /** Total time logged on the task. */
     minutes,
+    /** When a Done task was last finished; null for anything not Done. */
+    finishedAt: finishedAt ? finishedAt.toISOString() : null,
   };
 }
 
@@ -59,24 +66,133 @@ async function minutesMap(taskIds?: string[]) {
   return new Map(rows.map((r) => [r.taskId, Number(r.n ?? 0)]));
 }
 
-/** Every task (officers), or only the tasks with `onlyFor` on them. */
-export async function listTasks(onlyFor?: string) {
-  const ids = onlyFor
-    ? (
-        await db()
-          .select({ taskId: taskAssignees.taskId })
-          .from(taskAssignees)
-          .where(eq(taskAssignees.userId, onlyFor))
-      ).map((r) => r.taskId)
-    : undefined;
-  if (ids && ids.length === 0) return [];
-  const q = db().select().from(tasks);
-  const [rows, byTask, mins] = await Promise.all([
-    (ids ? q.where(inArray(tasks.id, ids)) : q).orderBy(asc(tasks.sortOrder), asc(tasks.createdAt)),
-    assigneeMap(ids),
-    minutesMap(ids),
+/**
+ * When a Done task was finished: the latest 'finished' event, or the latest
+ * move back into Done (a task is only ever 'finished' once; finishing it again
+ * after a reopen logs a move). Tasks that predate the feed fall back to
+ * updated_at. Null for anything not Done. One correlated subquery on
+ * task_events_task_idx, so no query per task.
+ */
+const finishedAtSql = sql`case when ${tasks.status} = 'done' then coalesce(
+  (select max(e.at) from ${taskEvents} e
+    where e.task_id = ${tasks.id}
+      and (e.type = 'finished' or (e.type = 'moved' and e.to_status = 'done'))),
+  ${tasks.updatedAt}) end`;
+/** finishedAtSql as epoch milliseconds, so the driver hands back a plain number. */
+const finishedMs = sql<number | null>`(extract(epoch from ${finishedAtSql}) * 1000)::float8`;
+const msToDate = (ms: unknown) => (ms == null ? null : new Date(Number(ms)));
+
+/** Only tasks `userId` is on. */
+const isOn = (userId: string) =>
+  sql`exists (select 1 from ${taskAssignees} ta where ta.task_id = ${tasks.id} and ta.user_id = ${userId})`;
+
+/** Finished before the cutoff: these live in the Archive, not on the board. */
+const archivedBefore = (cutoff: Date) =>
+  and(eq(tasks.status, 'done'), sql`${finishedAtSql} < ${cutoff.toISOString()}::timestamptz`)!;
+
+/** Someone in this group is on the task (the SQL twin of accountGroups). */
+function inGroup(g: AccountGroup): SQL {
+  const who = {
+    officers: sql`u.role = 'admin'`,
+    board: sql`u.director`,
+    tradesmen: sql`u.role = 'member' and (u.member_id is not null or (not u.vendor and not u.director))`,
+    vendors: sql`u.vendor`,
+  }[g];
+  return sql`exists (select 1 from ${taskAssignees} ta join ${appUsers} u on u.id = ta.user_id
+    where ta.task_id = ${tasks.id} and ${who})`;
+}
+
+async function withPeopleAndTime(rows: { t: TaskRow; ms: number | null }[]) {
+  const ids = rows.map((r) => r.t.id);
+  const [byTask, mins] = await Promise.all([assigneeMap(ids), minutesMap(ids)]);
+  return rows.map(({ t, ms }) =>
+    taskView(t, byTask.get(t.id) ?? [], mins.get(t.id) ?? 0, msToDate(ms)),
+  );
+}
+
+/**
+ * The board: every task not Done, plus Done tasks finished in the last 7
+ * days. Every task (officers), or only the tasks `onlyFor` is on.
+ * `archived` counts the older Done tasks the same person could see.
+ */
+export async function listTasks(onlyFor?: string, now = new Date()) {
+  const cutoff = archiveCutoff(now);
+  const mine = onlyFor ? isOn(onlyFor) : undefined;
+  const [rows, [count]] = await Promise.all([
+    db()
+      .select({ t: tasks, ms: finishedMs })
+      .from(tasks)
+      .where(
+        and(
+          mine,
+          or(
+            ne(tasks.status, 'done'),
+            sql`${finishedAtSql} >= ${cutoff.toISOString()}::timestamptz`,
+          ),
+        ),
+      )
+      .orderBy(asc(tasks.sortOrder), asc(tasks.createdAt)),
+    db()
+      .select({ n: sql<number>`count(*)::int` })
+      .from(tasks)
+      .where(and(mine, archivedBefore(cutoff))),
   ]);
-  return rows.map((t) => taskView(t, byTask.get(t.id) ?? [], mins.get(t.id) ?? 0));
+  return { tasks: await withPeopleAndTime(rows), archived: Number(count?.n ?? 0) };
+}
+
+export const ARCHIVE_PAGE = 50;
+
+export interface ArchiveQuery {
+  onlyFor?: string;
+  q?: string;
+  section?: string;
+  person?: string;
+  group?: AccountGroup;
+  offset?: number;
+  limit?: number;
+  now?: Date;
+}
+
+/**
+ * Done tasks finished more than 7 days ago, newest first, a page at a time.
+ * `q` searches the title and notes. `next` is the offset of the next page,
+ * or null on the last one. `people` is everyone on any archived task this
+ * person can see, for the Person filter.
+ */
+export async function listArchive(o: ArchiveQuery) {
+  const cutoff = archiveCutoff(o.now);
+  const limit = o.limit ?? ARCHIVE_PAGE;
+  const offset = o.offset ?? 0;
+  const mine = o.onlyFor ? isOn(o.onlyFor) : undefined;
+  const like = o.q ? `%${o.q.replace(/[\\%_]/g, (c) => `\\${c}`)}%` : null;
+  const where = and(
+    archivedBefore(cutoff),
+    mine,
+    o.section ? eq(tasks.section, o.section) : undefined,
+    o.person ? isOn(o.person) : undefined,
+    o.group ? inGroup(o.group) : undefined,
+    like ? sql`(${tasks.title} ilike ${like} or ${tasks.notes} ilike ${like})` : undefined,
+  );
+  const [rows, people] = await Promise.all([
+    db()
+      .select({ t: tasks, ms: finishedMs })
+      .from(tasks)
+      .where(where)
+      .orderBy(desc(finishedAtSql), desc(tasks.id))
+      .limit(limit + 1)
+      .offset(offset),
+    db()
+      .selectDistinct({ userId: taskAssignees.userId })
+      .from(taskAssignees)
+      .innerJoin(tasks, eq(tasks.id, taskAssignees.taskId))
+      .where(and(archivedBefore(cutoff), mine)),
+  ]);
+  const page = rows.slice(0, limit);
+  return {
+    tasks: await withPeopleAndTime(page),
+    next: rows.length > limit ? offset + limit : null,
+    people: people.map((p) => p.userId),
+  };
 }
 
 export interface AssigneeView {

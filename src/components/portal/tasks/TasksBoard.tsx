@@ -1,11 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  tasks as api,
-  type AccountGroup,
-  type Assignee,
-  type Task,
-  type TaskStatus,
-} from '@/lib/api';
+import { tasks as api, type Assignee, type Task, type TaskStatus } from '@/lib/api';
 import { useResource } from '@/lib/hooks';
 import type { Session } from '@/lib/types';
 import { ErrorStrip, Loading, msg } from '../ui';
@@ -13,64 +7,45 @@ import { pBtn, TONE } from '../layout';
 import TaskPanel from './TaskPanel';
 import {
   Avatars,
+  chip,
   COLUMNS,
   columnLabel,
   dueState,
+  type Filters,
   formatMinutes,
   GROUPS,
   Icon,
   PersonCombo,
   personName,
+  readFilters,
   SECTIONS,
   shortDate,
+  type View,
+  writeFilters,
 } from './shared';
 
-type View = 'all' | AccountGroup;
-interface Filters {
-  view: View;
-  person: string;
-  mine: boolean;
-  overdue: boolean;
-  section: string;
-}
-const NO_FILTERS: Filters = { view: 'all', person: '', mine: false, overdue: false, section: '' };
-
-/** Filters live in the address bar, so a reload or a shared link keeps them. */
-function readFilters(): Filters {
-  const p = new URLSearchParams(window.location.search);
-  const view = p.get('view') as View | null;
-  return {
-    view: view && (view === 'all' || GROUPS.some((g) => g.id === view)) ? view : 'all',
-    person: p.get('person') ?? '',
-    mine: p.get('mine') === '1',
-    overdue: p.get('overdue') === '1',
-    section: SECTIONS.includes(p.get('section') ?? '') ? p.get('section')! : '',
-  };
-}
-function writeFilters(f: Filters) {
-  const p = new URLSearchParams(window.location.search);
-  const set = (k: string, v: string | false) => (v ? p.set(k, v) : p.delete(k));
-  set('view', f.view !== 'all' && f.view);
-  set('person', f.person);
-  set('mine', f.mine && '1');
-  set('overdue', f.overdue && '1');
-  set('section', f.section);
-  window.history.replaceState(window.history.state, '', `${window.location.pathname}?${p}`);
-}
-
-const chip = (on: boolean) =>
-  `inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-sans text-[0.9rem] font-semibold whitespace-nowrap ${
-    on
-      ? 'bg-brick border-brick text-paper'
-      : 'border-mortar bg-paper text-charcoal hover:border-brass'
-  }`;
+const NO_FILTERS: Filters = {
+  view: 'all',
+  person: '',
+  mine: false,
+  overdue: false,
+  section: '',
+  q: '',
+};
 
 /**
  * The task board. Officers and the Admin see and manage every task; everyone
  * else sees the tasks they are on, moves them, adds notes, and logs time.
  * Drag a card between columns, or use its Move menu (keyboard and phones).
  */
-export default function TasksBoard({ session }: { session: Session }) {
+export default function TasksBoard({
+  session,
+  onArchive,
+}: {
+  session: Session;
+  /** Opens the Archive sub-tab. */
+  onArchive?: () => void;
+}) {
   const { data, loading, error } = useResource(() => api.list(), []);
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   const [ready, setReady] = useState(false);
@@ -87,7 +62,8 @@ export default function TasksBoard({ session }: { session: Session }) {
     setReady(true);
   }, []);
   useEffect(() => {
-    if (ready) writeFilters(filters);
+    // The Archive search is not on the board: leave it alone.
+    if (ready) writeFilters({ ...filters, q: undefined });
   }, [filters, ready]);
 
   const all = data?.tasks ?? [];
@@ -370,6 +346,21 @@ export default function TasksBoard({ session }: { session: Session }) {
                     />
                   ))}
                 </ul>
+              )}
+              {col.id === 'done' && (data?.archived ?? 0) > 0 && (
+                <p className="border-mortar border-t px-3.5 py-2.5 text-[0.85rem]">
+                  <a
+                    href="?sub=archive"
+                    onClick={(e) => {
+                      if (!onArchive) return;
+                      e.preventDefault();
+                      onArchive();
+                    }}
+                    className="text-ash hover:text-charcoal decoration-mortar font-semibold underline underline-offset-4"
+                  >
+                    Older finished tasks are in the Archive ({data!.archived})
+                  </a>
+                </p>
               )}
             </section>
           );

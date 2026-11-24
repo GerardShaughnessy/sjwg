@@ -3,12 +3,15 @@ import {
   DIGEST_WAIT_MS,
   accountGroups,
   appendNote,
+  ARCHIVE_AFTER_DAYS,
+  archiveCutoff,
   assertCanDeleteTime,
   assertCanLogTime,
   assertTaskManager,
   assertTaskPatchAllowed,
   formatMinutes,
   MAX_DIGEST_ATTEMPTS,
+  onBoard,
   planTaskDigests,
   taskEventText,
   type PendingNotification,
@@ -219,5 +222,36 @@ describe('batched assignment emails', () => {
       now,
     );
     expect(digests).toHaveLength(0);
+  });
+});
+
+describe('the Done column keeps a week, then the Archive', () => {
+  const now = new Date('2026-11-24T18:00:00Z');
+  const daysAgo = (d: number, ms = 0) =>
+    new Date(now.getTime() - d * 24 * 3600 * 1000 - ms).toISOString();
+  const done = (finishedAt: string) => ({ status: 'done' as const, finishedAt });
+
+  it('the cutoff is exactly 7 days back', () => {
+    expect(ARCHIVE_AFTER_DAYS).toBe(7);
+    expect(archiveCutoff(now).toISOString()).toBe('2026-11-17T18:00:00.000Z');
+  });
+  it('done in the last 7 days stays on the board; older goes to the Archive', () => {
+    expect(onBoard(done(daysAgo(0)), now)).toBe(true);
+    expect(onBoard(done(daysAgo(6)), now)).toBe(true);
+    expect(onBoard(done(daysAgo(7)), now)).toBe(true);
+    expect(onBoard(done(daysAgo(7, 1)), now)).toBe(false);
+    expect(onBoard(done(daysAgo(30)), now)).toBe(false);
+  });
+  it('anything not Done is always on the board', () => {
+    for (const status of ['todo', 'doing', 'waiting'] as const)
+      expect(onBoard({ status, finishedAt: null }, now)).toBe(true);
+  });
+  it('a task reopened from the Archive is back on the board', () => {
+    const archived = done(daysAgo(40));
+    expect(onBoard(archived, now)).toBe(false);
+    // Moving it out of Done clears finishedAt (the server only sets it for Done).
+    expect(onBoard({ status: 'todo', finishedAt: null }, now)).toBe(true);
+    // Finished again today: the move into Done is the new finish, so it stays.
+    expect(onBoard(done(now.toISOString()), now)).toBe(true);
   });
 });

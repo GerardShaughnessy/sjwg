@@ -607,8 +607,29 @@ export interface Task {
   updatedAt: string;
   /** Total minutes logged on the task. */
   minutes: number;
+  /** When a Done task was finished (ISO); null for anything not Done. */
+  finishedAt?: string | null;
 }
-export type TaskInput = Omit<Task, 'id' | 'createdBy' | 'updatedAt' | 'assigneeId' | 'minutes'>;
+export type TaskInput = Omit<
+  Task,
+  'id' | 'createdBy' | 'updatedAt' | 'assigneeId' | 'minutes' | 'finishedAt'
+>;
+export interface ArchiveFilters {
+  q?: string;
+  section?: string;
+  person?: string;
+  view?: string;
+  offset?: number;
+}
+export interface ArchivePage {
+  tasks: Task[];
+  assignees: Assignee[];
+  canManage: boolean;
+  /** Offset of the next page, or null on the last one. */
+  next: number | null;
+  /** Everyone on an archived task you can see. */
+  people: string[];
+}
 export type AccountGroup = 'officers' | 'board' | 'tradesmen' | 'vendors';
 export interface Assignee {
   id: string;
@@ -646,7 +667,17 @@ export interface TimeSummary {
 }
 
 export const tasks = {
-  list: () => call<{ tasks: Task[]; assignees: Assignee[]; canManage: boolean }>('/api/tasks'),
+  /** The board. `archived` counts Done tasks finished more than 7 days ago. */
+  list: () =>
+    call<{ tasks: Task[]; assignees: Assignee[]; canManage: boolean; archived: number }>(
+      '/api/tasks',
+    ),
+  /** Done tasks finished more than 7 days ago, newest first, 50 at a time. */
+  archive: (f: ArchiveFilters = {}) => {
+    const p = new URLSearchParams({ archive: '1' });
+    for (const [k, v] of Object.entries(f)) if (v) p.set(k, String(v));
+    return call<ArchivePage>(`/api/tasks?${p}`);
+  },
   create: (input: TaskInput) => mutate<TaskSaved>('/api/tasks', json('POST', input)),
   update: (id: string, patch: Partial<TaskInput> & { addNote?: string }) =>
     mutate<TaskSaved>(`/api/tasks/${id}`, json('PATCH', patch)),

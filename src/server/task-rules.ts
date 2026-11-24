@@ -9,6 +9,27 @@ export const STATUS_LABEL: Record<TaskStatus, string> = {
   done: 'Done',
 };
 
+/* ------------------------------------------------------------------ archive */
+/** Done tasks stay on the board this long after they are finished, then move to the Archive. */
+export const ARCHIVE_AFTER_DAYS = 7;
+const DAY_MS = 24 * 3600 * 1000;
+
+/** Tasks finished before this moment are archived. */
+export const archiveCutoff = (now = new Date()) =>
+  new Date(now.getTime() - ARCHIVE_AFTER_DAYS * DAY_MS);
+
+/**
+ * True when a task belongs on the board: anything not Done, or Done within
+ * the last 7 days. `finishedAt` is ISO, or null for a task that is not Done.
+ */
+export function onBoard(
+  t: { status: TaskStatus; finishedAt: string | null },
+  now = new Date(),
+): boolean {
+  if (t.status !== 'done' || !t.finishedAt) return true;
+  return Date.parse(t.finishedAt) >= archiveCutoff(now).getTime();
+}
+
 /* ------------------------------------------------------------ who may do what */
 type Who = { userId: string; role: 'admin' | 'member' };
 

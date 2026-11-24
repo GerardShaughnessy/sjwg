@@ -156,7 +156,10 @@ export function EventList({ events }: { events: EventRow[] }) {
   return (
     <ul className="divide-mortar flex flex-col divide-y font-sans">
       {events.map((e) => (
-        <li key={e.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 py-3 first:pt-0 last:pb-0">
+        <li
+          key={e.id}
+          className="flex flex-wrap items-center gap-x-4 gap-y-1 py-3 first:pt-0 last:pb-0"
+        >
           <div className="border-brass w-36 shrink-0 border-l-4 pl-3">
             <p className="font-semibold">{eventDay(e.start)}</p>
             <p className="text-ash text-[0.85rem]">{formatEventTime(e.start)}</p>
@@ -174,7 +177,8 @@ export function EventList({ events }: { events: EventRow[] }) {
 export interface SubTab {
   id: string;
   label: string;
-  content: ReactNode;
+  /** A function gets `go`, to switch to another sub-tab from inside this one. */
+  content: ReactNode | ((go: (id: string) => void) => ReactNode);
 }
 
 /**
@@ -238,7 +242,10 @@ export function SubTabs({
         ))}
       </div>
       <div role="tabpanel" id={`subpanel-${tabs[i].id}`} aria-labelledby={`sub-${tabs[i].id}`}>
-        {tabs[i].content}
+        {(() => {
+          const c = tabs[i].content;
+          return typeof c === 'function' ? c(setActive) : c;
+        })()}
       </div>
     </div>
   );

@@ -19,6 +19,52 @@ export const GROUPS: { id: AccountGroup; label: string }[] = [
   { id: 'vendors', label: 'Vendors' },
 ];
 
+export type View = 'all' | AccountGroup;
+export interface Filters {
+  view: View;
+  person: string;
+  mine: boolean;
+  overdue: boolean;
+  section: string;
+  /** Archive search (title and notes). */
+  q: string;
+}
+
+/**
+ * Filters live in the address bar, so a reload or a shared link keeps them.
+ * The board and the Archive share view, person, and section.
+ */
+export function readFilters(): Filters {
+  const p = new URLSearchParams(window.location.search);
+  const view = p.get('view') as View | null;
+  return {
+    view: view && (view === 'all' || GROUPS.some((g) => g.id === view)) ? view : 'all',
+    person: p.get('person') ?? '',
+    mine: p.get('mine') === '1',
+    overdue: p.get('overdue') === '1',
+    section: SECTIONS.includes(p.get('section') ?? '') ? p.get('section')! : '',
+    q: p.get('q') ?? '',
+  };
+}
+export function writeFilters(f: Partial<Filters>) {
+  const p = new URLSearchParams(window.location.search);
+  const set = (k: string, v: string | false) => (v ? p.set(k, v) : p.delete(k));
+  if (f.view !== undefined) set('view', f.view !== 'all' && f.view);
+  if (f.person !== undefined) set('person', f.person);
+  if (f.mine !== undefined) set('mine', f.mine && '1');
+  if (f.overdue !== undefined) set('overdue', f.overdue && '1');
+  if (f.section !== undefined) set('section', f.section);
+  if (f.q !== undefined) set('q', f.q.trim());
+  window.history.replaceState(window.history.state, '', `${window.location.pathname}?${p}`);
+}
+
+export const chip = (on: boolean) =>
+  `inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-sans text-[0.9rem] font-semibold whitespace-nowrap ${
+    on
+      ? 'bg-brick border-brick text-paper'
+      : 'border-mortar bg-paper text-charcoal hover:border-brass'
+  }`;
+
 /** Today on the Guild's clock, as YYYY-MM-DD. */
 export function today(): string {
   const parts = new Intl.DateTimeFormat('en-US', {
