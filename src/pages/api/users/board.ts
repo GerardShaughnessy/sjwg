@@ -6,6 +6,6 @@ export const prerender = false;
 
 /** The Board page: every enabled director. Officers and directors can read it. */
 export const GET: APIRoute = route(async (ctx) => {
-  requireBoardAccess(ctx);
-  return json({ board: await listBoard() });
+  const session = requireBoardAccess(ctx);
+  return json({ board: await listBoard(session.role === 'admin') });
 });

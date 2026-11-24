@@ -77,6 +77,11 @@ export function userPatchSet(patch: UserPatch) {
   if (patch.boardTitle !== undefined) set.boardTitle = patch.boardTitle;
   if (patch.role === 'member') set.siteAdmin = false;
   if (patch.director === false) set.boardTitle = '';
+  // A disabled account leaves the board, so the Board page never hides a seat.
+  if (patch.disabled === true) {
+    set.director = false;
+    set.boardTitle = '';
+  }
   return set;
 }
 

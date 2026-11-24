@@ -50,6 +50,7 @@ export default function BoardPage({ session }: { session: Session }) {
       >
         {notice.text}
       </p>
+      {admin && accounts.error && <ErrorStrip>{accounts.error}</ErrorStrip>}
       {admin && accounts.data && <AddDirector candidates={candidates} />}
       <Card
         title={
@@ -71,6 +72,7 @@ export default function BoardPage({ session }: { session: Session }) {
                 d={d}
                 me={d.id === session.userId}
                 admin={admin}
+                officerView={session.role === 'admin'}
                 onGone={announce}
               />
             ))}
@@ -90,11 +92,14 @@ function Director({
   d,
   me,
   admin,
+  officerView,
   onGone,
 }: {
   d: BoardMember;
   me: boolean;
   admin: boolean;
+  /** Officers see phone and last sign-in; other directors don't get them. */
+  officerView: boolean;
   /** Page-level message for a change that takes this card off the list. */
   onGone: (text: string) => void;
 }) {
@@ -143,11 +148,13 @@ function Director({
     setErr('');
     try {
       await api.update(d.id, { director: false });
+      // Stay busy: the refetch removes this card.
       onGone(`${d.name} is no longer on the board.`);
     } catch (e2) {
-      if (alive.current) setErr(msg(e2, 'Could not remove them from the board.'));
-    } finally {
-      if (alive.current) setBusy(false);
+      if (alive.current) {
+        setErr(msg(e2, 'Could not remove them from the board.'));
+        setBusy(false);
+      }
     }
   }
 
@@ -197,8 +204,12 @@ function Director({
             </dd>
           </>
         )}
-        <dt className="text-ash">Last signed in</dt>
-        <dd>{d.lastLoginAt ? formatShortDate(d.lastLoginAt) : 'Not yet'}</dd>
+        {officerView && (
+          <>
+            <dt className="text-ash">Last signed in</dt>
+            <dd>{d.lastLoginAt ? formatShortDate(d.lastLoginAt) : 'Not yet'}</dd>
+          </>
+        )}
       </dl>
 
       {admin && (
@@ -229,7 +240,7 @@ function Director({
             {confirm ? (
               <div
                 ref={promptRef}
-                role="alertdialog"
+                role="group"
                 aria-labelledby={`board-confirm-${d.id}`}
                 tabIndex={-1}
                 onKeyDown={(e) => {
@@ -319,9 +330,7 @@ function AddDirector({ candidates }: { candidates: UserView[] }) {
               onChange={(e) => setPick(e.target.value)}
               className={`${inputCls} h-11 min-w-0`}
             >
-              <option value="">
-                {candidates.length ? 'Pick someone' : 'Everyone with an account is on the board'}
-              </option>
+              <option value="">{candidates.length ? 'Pick someone' : 'No one left to add'}</option>
               {candidates.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}

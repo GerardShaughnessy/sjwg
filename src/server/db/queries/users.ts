@@ -73,7 +73,8 @@ export interface BoardMemberView {
   lastLoginAt: string | null;
 }
 
-export function toBoardMember(u: UserView): BoardMemberView {
+/** Phone and last sign-in are officer-only details; other directors see name, title and email. */
+export function toBoardMember(u: UserView, forOfficer = true): BoardMemberView {
   const officer = u.role === 'admin';
   return {
     id: u.id,
@@ -82,16 +83,16 @@ export function toBoardMember(u: UserView): BoardMemberView {
     boardTitle: u.boardTitle,
     officer,
     officerTitle: officer ? u.title : '',
-    phone: u.member?.privatePhone ?? '',
-    lastLoginAt: u.lastLoginAt,
+    phone: forOfficer ? (u.member?.privatePhone ?? '') : '',
+    lastLoginAt: forOfficer ? u.lastLoginAt : null,
   };
 }
 
 /** Every enabled director, for the Board page. */
-export async function listBoard(): Promise<BoardMemberView[]> {
+export async function listBoard(forOfficer = true): Promise<BoardMemberView[]> {
   return (await selectUsers(eq(appUsers.director, true)))
     .filter((u) => !u.disabled)
-    .map(toBoardMember);
+    .map((u) => toBoardMember(u, forOfficer));
 }
 
 export async function getUser(id: string) {
