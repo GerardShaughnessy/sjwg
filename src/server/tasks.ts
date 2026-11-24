@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { and, eq, inArray, isNull, lt, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { INBOX } from '@/config/contact-routing';
 import type { AppSession } from './auth/server';
@@ -13,6 +13,7 @@ import {
 } from './db/queries/tasks';
 import {
   confirmPlan,
+  MAX_DIGEST_ATTEMPTS,
   planTaskDigests,
   taskEmailPlan,
   type PendingNotification,
@@ -148,6 +149,9 @@ export async function afterTaskSave(o: {
  * whose oldest unsent row is 15 minutes old, listing every pending task.
  * Rows are claimed with UPDATE ... WHERE sent_at IS NULL RETURNING before
  * the email goes out, so two runs at once never send the same task twice.
+ * Each claim counts an attempt. When the email does not go out, the claimed
+ * rows go back to unsent for the next run, until the fifth attempt: then they
+ * stay marked sent and are logged. Tasks already Done are marked sent unmailed.
  */
 export async function sendTaskDigests(now = new Date()) {
   const adder = alias(appUsers, 'adder');
@@ -162,6 +166,7 @@ export async function sendTaskDigests(now = new Date()) {
       taskId: taskNotifications.taskId,
       title: tasks.title,
       dueDate: tasks.dueDate,
+      status: tasks.status,
       addedByName: adder.name,
       createdAt: taskNotifications.createdAt,
     })
@@ -173,7 +178,8 @@ export async function sendTaskDigests(now = new Date()) {
   const pending: PendingNotification[] = rows.map((r) => ({
     ...r,
     stillAssigned: Boolean(r.stillAssigned),
-    createdAt: r.createdAt ?? now,
+    done: r.status === 'done',
+    createdAt: r.createdAt,
   }));
   const { digests, discard } = planTaskDigests(pending, now);
 
@@ -181,16 +187,34 @@ export async function sendTaskDigests(now = new Date()) {
     ids.length
       ? db()
           .update(taskNotifications)
-          .set({ sentAt: now })
+          .set({ sentAt: now, attempts: sql`${taskNotifications.attempts} + 1` })
           .where(and(inArray(taskNotifications.id, ids), isNull(taskNotifications.sentAt)))
           .returning({ id: taskNotifications.id })
       : Promise.resolve([] as { id: string }[]);
 
-  // Disabled people and tasks they were taken off: marked handled, never emailed.
+  /** The email did not go out: put exactly these rows back, unless they are out of tries. */
+  const release = async (ids: string[]) => {
+    const back = await db()
+      .update(taskNotifications)
+      .set({ sentAt: null })
+      .where(
+        and(
+          inArray(taskNotifications.id, ids),
+          lt(taskNotifications.attempts, MAX_DIGEST_ATTEMPTS),
+        ),
+      )
+      .returning({ id: taskNotifications.id });
+    const kept = new Set(back.map((r) => r.id));
+    return ids.filter((id) => !kept.has(id));
+  };
+
+  // Disabled people, tasks they were taken off, and tasks already Done:
+  // marked handled, never emailed.
   await claim(discard);
 
   let sent = 0;
   let failed = 0;
+  let gaveUp = 0;
   for (const d of digests) {
     const won = new Set((await claim(d.ids)).map((r) => r.id));
     const items = d.items.filter((i) => won.has(i.notificationId));
@@ -212,8 +236,21 @@ export async function sendTaskDigests(now = new Date()) {
       console.error('[task-digest] send failed for', d.userId, err);
       return { status: 'failed' as const };
     });
+    if (res.status !== 'sent') {
+      const dropped = await release([...won]).catch((err) => {
+        console.error('[task-digest] could not put rows back for', d.userId, err);
+        return [] as string[];
+      });
+      if (dropped.length) {
+        gaveUp += dropped.length;
+        console.error(
+          `[task-digest] gave up after ${MAX_DIGEST_ATTEMPTS} tries for ${d.userId}; notification ids:`,
+          dropped,
+        );
+      }
+    }
     if (res.status === 'sent') sent++;
     else failed++;
   }
-  return { people: digests.length, sent, failed, discarded: discard.length };
+  return { people: digests.length, sent, failed, gaveUp, discarded: discard.length };
 }

@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { HttpError, clientIp, json, rateLimit, readJson, route } from '@/server/http';
 import { parseOrThrow } from '@/server/schemas';
 import { signSchema } from '@/server/esign-schemas';
+import { assertAgreementStillApplies } from '@/server/agreements';
 import { completeSignature, findByToken } from '@/server/esign';
 
 export const prerender = false;
@@ -17,6 +18,8 @@ export const POST: APIRoute = route(async (ctx) => {
   const row = await findByToken(ctx.params.token ?? '');
   if (!row)
     throw new HttpError(404, 'This signing link is not right. Ask the Guild to send a new one.');
+  // An officer or board agreement for someone no longer in that role: 410.
+  await assertAgreementStillApplies(row);
   const input = parseOrThrow(signSchema, await readJson(ctx));
   const out = await completeSignature(row, input, {
     ip,

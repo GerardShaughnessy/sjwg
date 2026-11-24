@@ -541,7 +541,9 @@ export const taskTime = pgTable(
       .references(() => tasks.id, { onDelete: 'cascade' }),
     userId: uuid('user_id').references(() => appUsers.id, { onDelete: 'set null' }),
     minutes: integer('minutes').notNull(),
-    workedOn: date('worked_on').notNull().default(sql`current_date`),
+    workedOn: date('worked_on')
+      .notNull()
+      .default(sql`current_date`),
     note: text('note').default(''),
     createdAt: createdAt(),
   },
@@ -568,8 +570,10 @@ export const taskNotifications = pgTable(
       .notNull()
       .references(() => tasks.id, { onDelete: 'cascade' }),
     addedBy: uuid('added_by'),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+    createdAt: createdAt(),
     sentAt: timestamp('sent_at', { withTimezone: true }),
+    /** Times this row was claimed for an email. Failed sends retry up to 5 tries. */
+    attempts: integer('attempts').notNull().default(0),
   },
   (t) => [
     uniqueIndex('task_notifications_pending_once')
@@ -753,6 +757,10 @@ export const signRequests = pgTable(
     uniqueIndex('sign_requests_token_idx').on(t.tokenHash),
     index('sign_requests_member_idx').on(t.memberId),
     index('sign_requests_user_idx').on(t.userId),
+    /** One open request per account and agreement, so a double click cannot send two. */
+    uniqueIndex('sign_requests_open_per_account')
+      .on(t.userId, t.docKind)
+      .where(sql`${t.signedAt} is null and ${t.voidedAt} is null and ${t.userId} is not null`),
   ],
 );
 

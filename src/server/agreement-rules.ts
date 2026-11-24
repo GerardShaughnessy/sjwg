@@ -2,7 +2,14 @@
  * Pure rules for officer and board agreements: who needs which one, where a
  * person stands, and who may sign a request from the portal. No database.
  */
-import type { AccountDocKind } from '@/config/documents';
+import {
+  composeForSigning,
+  dutiesFromText,
+  isAccountDocKind,
+  type AccountDocKind,
+  type MergeVars,
+} from '@/config/documents';
+import { docSha256 } from './esign-core';
 import { HttpError } from './http';
 
 export interface AccountLike {
@@ -111,3 +118,63 @@ export const AGREEMENT_NOUN: Record<AccountDocKind, string> = {
   'officer-agreement': 'officer agreement',
   'board-agreement': 'board agreement',
 };
+
+/** The account fields merged into an agreement. */
+export interface AgreementPerson {
+  name: string | null;
+  email: string;
+  title: string | null;
+  boardTitle: string | null;
+  duties: string;
+}
+
+export function agreementVars(u: AgreementPerson, kind: AccountDocKind): MergeVars {
+  const title =
+    kind === 'officer-agreement' ? u.title || 'an officer' : u.boardTitle || 'a director';
+  return { name: u.name || u.email, title, duties: dutiesFromText(u.duties) };
+}
+
+/**
+ * True when the person's name, title, or duties (or the agreement's text) no
+ * longer match what was frozen into an open request, so a resend must void it
+ * and send the current text instead.
+ */
+export function agreementIsStale(
+  row: { docKind: AccountDocKind; docSha256: string },
+  u: AgreementPerson,
+): boolean {
+  const now = composeForSigning(row.docKind, agreementVars(u, row.docKind));
+  return docSha256(now.html) !== row.docSha256;
+}
+
+/**
+ * Whether an open agreement can still be signed: the person must still hold
+ * the role it is for (officer or director) and not be disabled. Null when
+ * it may be signed; otherwise the reason, for a 410.
+ */
+export function agreementNoLongerApplies(
+  kind: AccountDocKind,
+  u: (AccountLike & { disabled: boolean }) | null,
+): string | null {
+  if (!u || u.disabled)
+    return 'This agreement is no longer open: the account it was sent to is not active. If you think this is a mistake, contact the Guild.';
+  if (!requiredAgreements(u).includes(kind))
+    return kind === 'officer-agreement'
+      ? 'This agreement is no longer open, since you are no longer listed as an officer. If you think this is a mistake, contact the Guild.'
+      : 'This agreement is no longer open, since you are no longer listed on the board. If you think this is a mistake, contact the Guild.';
+  return null;
+}
+
+/**
+ * Who may see a signature request (its row and signed PDF). Officer and board
+ * agreements: the Admin and the person it was sent to, nobody else, even if
+ * the account was since deleted. Tradesman paperwork: every officer, and the
+ * tradesman it was addressed to.
+ */
+export function canSeeSignRequest(
+  s: { userId: string; role: 'admin' | 'member'; siteAdmin: boolean; memberId: string | null },
+  row: { docKind: string; userId: string | null; memberId: string | null },
+): boolean {
+  if (isAccountDocKind(row.docKind)) return s.siteAdmin || row.userId === s.userId;
+  return s.role === 'admin' || Boolean(s.memberId && row.memberId === s.memberId);
+}

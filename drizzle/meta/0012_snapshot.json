@@ -1,5 +1,5 @@
 {
-  "id": "e46b0039-eeab-4a0a-a619-5cb7a16c07d8",
+  "id": "ea585406-a9d0-4ea7-adf7-4ca72c1b8f12",
   "prevId": "7b532c04-ea13-407d-a37f-6d6f3c99272e",
   "version": "7",
   "dialect": "postgresql",
@@ -3033,6 +3033,28 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "sign_requests_open_per_account": {
+          "name": "sign_requests_open_per_account",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "doc_kind",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"sign_requests\".\"signed_at\" is null and \"sign_requests\".\"voided_at\" is null and \"sign_requests\".\"user_id\" is not null",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -3613,7 +3635,7 @@
           "name": "created_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "default": "now()"
         },
         "sent_at": {
@@ -3621,6 +3643,13 @@
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
+        },
+        "attempts": {
+          "name": "attempts",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
         }
       },
       "indexes": {

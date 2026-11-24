@@ -359,18 +359,57 @@ export const taskPatchSchema = z
   .object({ ...taskFields, addNote: trimmed(2000).min(1, 'Write a note first.') })
   .partial();
 
-/** POST /api/tasks/[id]/time */
-export const taskTimeSchema = z
-  .object({
-    hours: z.coerce.number().int('Whole hours.').min(0).max(24, 'Up to 24 hours at a time.'),
-    minutes: z.coerce.number().int('Whole minutes.').min(0).max(59, 'Minutes from 0 to 59.'),
-    workedOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date as YYYY-MM-DD.'),
-    note: trimmed(500).default(''),
-  })
-  .refine((t) => t.hours * 60 + t.minutes > 0, {
-    message: 'Log at least one minute.',
-    path: ['minutes'],
-  });
+/** The first day time can be logged on, and the most one entry can hold. */
+export const TASK_TIME_FIRST_DAY = '2026-01-01';
+export const TASK_TIME_MAX_MINUTES = 24 * 60;
+
+/** Today on the Guild's clock (America/Chicago), as YYYY-MM-DD. */
+export function guildToday(now = new Date()): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Chicago',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(now);
+}
+
+/** True for a real calendar date written YYYY-MM-DD (so 2026-02-31 is false). */
+export function isCalendarDate(ymd: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(ymd)) return false;
+  const d = new Date(`${ymd}T00:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === ymd;
+}
+
+/**
+ * POST /api/tasks/[id]/time. One entry is 1 minute to 24 hours, on a real
+ * date from 2026-01-01 through today in Chicago. Pass `now` to test.
+ */
+export const taskTimeSchemaAt = (now?: () => Date) =>
+  z
+    .object({
+      hours: z.coerce.number().int('Whole hours.').min(0).max(24, 'Up to 24 hours at a time.'),
+      minutes: z.coerce.number().int('Whole minutes.').min(0).max(59, 'Minutes from 0 to 59.'),
+      workedOn: z
+        .string()
+        .trim()
+        .refine(isCalendarDate, 'That is not a real date. Use YYYY-MM-DD.')
+        .refine((d) => d >= TASK_TIME_FIRST_DAY, 'Time can be logged from January 1, 2026 on.')
+        .refine((d) => d <= guildToday(now?.()), 'That day has not happened yet.'),
+      note: trimmed(500).default(''),
+    })
+    .superRefine((t, ctx) => {
+      const total = t.hours * 60 + t.minutes;
+      if (total < 1)
+        ctx.addIssue({ code: 'custom', path: ['minutes'], message: 'Log at least one minute.' });
+      else if (total > TASK_TIME_MAX_MINUTES)
+        ctx.addIssue({
+          code: 'custom',
+          path: ['hours'],
+          message: 'One entry can be up to 24 hours. Log more days separately.',
+        });
+    });
+
+export const taskTimeSchema = taskTimeSchemaAt();
 
 /**
  * Who a task is for after this save: assigneeIds wins, the old single

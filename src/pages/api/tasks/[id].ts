@@ -11,7 +11,12 @@ import {
 } from '@/server/db/queries/tasks';
 import { parseOrThrow, resolveAssigneeIds, taskPatchSchema } from '@/server/schemas';
 import { afterTaskSave } from '@/server/tasks';
-import { appendNote, assertTaskManager, assertTaskPatchAllowed } from '@/server/task-rules';
+import {
+  appendNote,
+  assertTaskManager,
+  assertTaskPatchAllowed,
+  noteLine,
+} from '@/server/task-rules';
 
 export const prerender = false;
 
@@ -39,11 +44,16 @@ export const PATCH: APIRoute = route(async (ctx) => {
   const ids = resolveAssigneeIds(patch, beforeIds);
   if (ids) await checkAssignees(ids, beforeIds);
   const save = { ...patch };
+  let appendLine: string | undefined;
   if (patch.addNote) {
     const by = session.name.split(' ')[0] || session.name;
-    save.notes = appendNote(patch.notes ?? before.notes, by, patch.addNote, noteDay());
+    // Replacing the notes too: append to the new text. Otherwise the
+    // database appends to whatever is there now, so no note is lost.
+    if (patch.notes !== undefined)
+      save.notes = appendNote(patch.notes, by, patch.addNote, noteDay());
+    else appendLine = noteLine(by, patch.addNote, noteDay());
   }
-  const { row, inserted } = await updateTask(before.id, save, ids, session.userId);
+  const { row, inserted } = await updateTask(before.id, save, ids, session.userId, { appendLine });
   const result = await afterTaskSave({
     row,
     before: { status: before.status, assigneeIds: beforeIds },
@@ -54,11 +64,16 @@ export const PATCH: APIRoute = route(async (ctx) => {
   return json({ task: taskView(row, ids ?? beforeIds), ...result });
 });
 
-/** Officers only. The feed keeps the title: the deleted event has no task id, since the task is gone. */
+/**
+ * Officers only. A task with logged time needs `{ force: true }` in the body,
+ * or it is refused with a 409. The feed keeps the title: the deleted event has
+ * no task id, since the task is gone.
+ */
 export const DELETE: APIRoute = route(async (ctx) => {
   const session = requireSession(ctx);
   assertTaskManager(session);
-  const row = await deleteTask(ctx.params.id!);
+  const body = (await ctx.request.json().catch(() => null)) as { force?: unknown } | null;
+  const row = await deleteTask(ctx.params.id!, { force: body?.force === true });
   await addTaskEvents([
     {
       taskId: null,

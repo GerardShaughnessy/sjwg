@@ -8,12 +8,19 @@ import {
   assertTaskManager,
   assertTaskPatchAllowed,
   formatMinutes,
+  MAX_DIGEST_ATTEMPTS,
   planTaskDigests,
   taskEventText,
   type PendingNotification,
 } from './task-rules';
 import { HttpError } from './http';
-import { taskPatchSchema, taskTimeSchema } from './schemas';
+import {
+  guildToday,
+  isCalendarDate,
+  taskPatchSchema,
+  taskTimeSchema,
+  taskTimeSchemaAt,
+} from './schemas';
 
 const OFFICER = { userId: 'o', role: 'admin' as const };
 const SAM = { userId: 'sam', role: 'member' as const };
@@ -77,6 +84,31 @@ describe('time and notes', () => {
     expect(
       taskTimeSchema.safeParse({ hours: 1, minutes: 60, workedOn: '2026-11-24' }).success,
     ).toBe(false);
+  });
+  it('only takes a real date from 2026-01-01 through today in Chicago', () => {
+    // 11:30 pm in Chicago on Nov 24 is already Nov 25 in UTC.
+    const at = taskTimeSchemaAt(() => new Date('2026-11-25T05:30:00Z'));
+    const ok = (workedOn: string) => at.safeParse({ hours: 1, minutes: 0, workedOn }).success;
+    expect(guildToday(new Date('2026-11-25T05:30:00Z'))).toBe('2026-11-24');
+    expect(ok('2026-11-24')).toBe(true);
+    expect(ok('2026-11-25')).toBe(false);
+    expect(ok('2026-01-01')).toBe(true);
+    expect(ok('2025-12-31')).toBe(false);
+    expect(ok('2026-02-31')).toBe(false);
+    expect(ok('2026-13-01')).toBe(false);
+    expect(ok('2026-2-3')).toBe(false);
+    expect(isCalendarDate('2028-02-29')).toBe(true);
+    expect(isCalendarDate('2026-02-29')).toBe(false);
+  });
+  it('one entry is 1 minute to 24 hours', () => {
+    const at = taskTimeSchemaAt(() => new Date('2026-11-24T18:00:00Z'));
+    const ok = (hours: number, minutes: number) =>
+      at.safeParse({ hours, minutes, workedOn: '2026-11-20' }).success;
+    expect(ok(0, 1)).toBe(true);
+    expect(ok(24, 0)).toBe(true);
+    expect(ok(24, 1)).toBe(false);
+    expect(ok(25, 0)).toBe(false);
+    expect(ok(0, 0)).toBe(false);
   });
   it('stamps an added note and accepts it in a patch', () => {
     expect(appendNote('', 'Sam', ' Called the IRS. ', 'Nov 24')).toBe(
@@ -172,6 +204,14 @@ describe('batched assignment emails', () => {
     const { digests, discard } = planTaskDigests([off, disabled, keep], now);
     expect(discard.sort()).toEqual([off.id, disabled.id].sort());
     expect(digests[0].ids).toEqual([keep.id]);
+  });
+  it('drops tasks already Done without emailing', () => {
+    const done = row({ done: true });
+    const keep = row({});
+    const { digests, discard } = planTaskDigests([done, keep], now);
+    expect(discard).toEqual([done.id]);
+    expect(digests[0].ids).toEqual([keep.id]);
+    expect(MAX_DIGEST_ATTEMPTS).toBe(5);
   });
   it('an unassigned row does not make the rest wait or go early', () => {
     const { digests } = planTaskDigests(

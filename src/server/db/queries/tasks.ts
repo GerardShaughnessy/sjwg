@@ -218,6 +218,8 @@ export async function updateTask(
   patch: TaskPatch,
   assigneeIds: string[] | undefined,
   actorId: string,
+  /** A stamped note line to append to the current notes (when `notes` is not also set). */
+  o: { appendLine?: string } = {},
 ) {
   const { assigneeIds: _ids, assigneeId: _id, addNote: _note, ...rest } = patch;
   const set: Partial<typeof tasks.$inferInsert> = { updatedAt: new Date() };
@@ -226,6 +228,10 @@ export async function updateTask(
     (set as Record<string, unknown>)[k] = k === 'dueDate' ? v || null : v;
   }
   if (assigneeIds) set.assigneeId = assigneeIds[0] ?? null;
+  // Appended in SQL, so two notes added at once both land (appendNote's rules).
+  if (o.appendLine !== undefined && rest.notes === undefined)
+    (set as Record<string, unknown>).notes =
+      sql`case when ${tasks.notes} ~ '^\\s*$' then ${o.appendLine}::text else regexp_replace(${tasks.notes}, '\\s+$', '') || E'\\n\\n' || ${o.appendLine}::text end`;
   const [row] = await db().update(tasks).set(set).where(eq(tasks.id, id)).returning();
   if (!row) throw new HttpError(404, 'That task was not found.');
   let inserted: string[] = [];
@@ -253,10 +259,23 @@ export async function updateTask(
   return { row, inserted };
 }
 
-export async function deleteTask(id: string) {
-  const [row] = await db().delete(tasks).where(eq(tasks.id, id)).returning();
-  if (!row) throw new HttpError(404, 'That task was not found.');
-  return row;
+export const TASK_HAS_TIME =
+  'This task has logged time. Move it to Done instead, or remove the time entries first.';
+
+/**
+ * Delete a task. Unless `force`, a task with logged time is refused (409) in
+ * the same statement, so time logged a moment ago is never lost by accident.
+ */
+export async function deleteTask(id: string, o: { force?: boolean } = {}) {
+  const noTime = sql`not exists (select 1 from ${taskTime} where ${taskTime.taskId} = ${tasks.id})`;
+  const [row] = await db()
+    .delete(tasks)
+    .where(o.force ? eq(tasks.id, id) : and(eq(tasks.id, id), noTime))
+    .returning();
+  if (row) return row;
+  const [still] = await db().select({ id: tasks.id }).from(tasks).where(eq(tasks.id, id)).limit(1);
+  if (still) throw new HttpError(409, TASK_HAS_TIME);
+  throw new HttpError(404, 'That task was not found.');
 }
 
 /* ---------------------------------------------------------------- events */

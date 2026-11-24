@@ -132,8 +132,14 @@ export function AgreementControls({
     setErr('');
     setNote('');
     try {
-      const r = (await fn()) as { emailed?: boolean } | undefined;
-      setNote(r && r.emailed === false ? `${done} The email did not go out.` : done);
+      const r = (await fn()) as
+        { emailed?: boolean; message?: string | null; existing?: boolean } | undefined;
+      const said = r?.existing
+        ? 'It was already sent. Use Resend to email a new link.'
+        : r?.message
+          ? `${done} ${r.message}`
+          : done;
+      setNote(r && r.emailed === false && !r.existing ? `${said} The email did not go out.` : said);
     } catch (e) {
       setErr(msg(e, 'Could not do that.'));
     } finally {
@@ -224,6 +230,9 @@ export function SendAllAgreements({
       const parts = [
         r.sent.length ? `Sent to ${r.sent.length}.` : '',
         r.resent.length ? `New link to ${r.resent.length}.` : '',
+        r.replaced.length
+          ? `Voided and sent fresh with their current title and duties: ${r.replaced.join(', ')}.`
+          : '',
         r.failed.length ? `Did not go out for ${r.failed.join(', ')}.` : '',
       ].filter(Boolean);
       setNote(parts.join(' ') || 'Everyone has signed.');

@@ -10,11 +10,16 @@ import {
   renderDocHtml,
 } from '@/config/documents';
 import {
+  agreementIsStale,
+  agreementNoLongerApplies,
   agreementStatus,
+  agreementVars,
   assertCanSignInPortal,
+  canSeeSignRequest,
   canSignInPortal,
   requiredAgreements,
 } from './agreement-rules';
+import { docSha256 } from './esign-core';
 import { HttpError } from './http';
 import { htmlToParagraphs } from './esign-core';
 import { buildSignedPdf } from './esign-pdf';
@@ -165,5 +170,92 @@ describe('who needs which agreement', () => {
     expect(st).toMatchObject({ state: 'signed', requestId: 'old', hasPdf: true });
     expect(agreementStatus([r({})], 'someone-else', 'officer-agreement').state).toBe('not_sent');
     expect(agreementStatus([r({})], 'u', 'board-agreement').state).toBe('not_sent');
+  });
+});
+
+describe('resending an agreement after the person changed', () => {
+  const pat = {
+    name: 'Pat Example',
+    email: 'pat@example.com',
+    title: 'Secretary',
+    boardTitle: '',
+    duties: 'Keep the minutes\nSend the agenda',
+  };
+  const frozen = (u: typeof pat, kind: 'officer-agreement' | 'board-agreement') => ({
+    docKind: kind,
+    docSha256: docSha256(composeForSigning(kind, agreementVars(u, kind)).html),
+  });
+  const row = frozen(pat, 'officer-agreement');
+
+  it('resends as before when nothing changed', () => {
+    expect(agreementIsStale(row, pat)).toBe(false);
+    // Whitespace and bullets in the duties box do not count as a change.
+    expect(
+      agreementIsStale(row, { ...pat, duties: '- Keep the minutes\n\n Send the agenda ' }),
+    ).toBe(false);
+  });
+  it('sends fresh when the name, title, or duties changed', () => {
+    expect(agreementIsStale(row, { ...pat, name: 'Patricia Example' })).toBe(true);
+    expect(agreementIsStale(row, { ...pat, title: 'Treasurer' })).toBe(true);
+    expect(agreementIsStale(row, { ...pat, duties: 'Keep the minutes' })).toBe(true);
+  });
+  it('a board title change matters only to the board agreement', () => {
+    const board = frozen({ ...pat, boardTitle: 'Chair' }, 'board-agreement');
+    expect(agreementIsStale(board, { ...pat, boardTitle: 'Chair' })).toBe(false);
+    expect(agreementIsStale(board, { ...pat, boardTitle: 'Vice Chair' })).toBe(true);
+    expect(agreementIsStale(row, { ...pat, boardTitle: 'Vice Chair' })).toBe(false);
+  });
+});
+
+describe('who sees an officer or board agreement', () => {
+  const admin = { userId: 'a', role: 'admin' as const, siteAdmin: true, memberId: null };
+  const officer = { userId: 'o', role: 'admin' as const, siteAdmin: false, memberId: null };
+  const signer = { userId: 's', role: 'admin' as const, siteAdmin: false, memberId: null };
+  const agreement = { docKind: 'officer-agreement', userId: 's', memberId: null };
+  it('the Admin and the signer only', () => {
+    expect(canSeeSignRequest(admin, agreement)).toBe(true);
+    expect(canSeeSignRequest(signer, agreement)).toBe(true);
+    expect(canSeeSignRequest(officer, agreement)).toBe(false);
+  });
+  it('an orphaned agreement (account deleted) stays Admin-only', () => {
+    const orphan = { ...agreement, userId: null };
+    expect(canSeeSignRequest(admin, orphan)).toBe(true);
+    expect(canSeeSignRequest(officer, orphan)).toBe(false);
+  });
+  it('tradesman paperwork: every officer and the tradesman', () => {
+    const packet = { docKind: 'listing-packet', userId: null, memberId: 'm1' };
+    expect(canSeeSignRequest(officer, packet)).toBe(true);
+    expect(
+      canSeeSignRequest({ userId: 't', role: 'member', siteAdmin: false, memberId: 'm1' }, packet),
+    ).toBe(true);
+    expect(
+      canSeeSignRequest({ userId: 'x', role: 'member', siteAdmin: false, memberId: 'm2' }, packet),
+    ).toBe(false);
+  });
+});
+
+describe('signing an agreement after leaving the role', () => {
+  const base = {
+    id: 'u',
+    role: 'admin' as const,
+    siteAdmin: false,
+    director: false,
+    disabled: false,
+  };
+  it('an officer still in office may sign', () => {
+    expect(agreementNoLongerApplies('officer-agreement', base)).toBeNull();
+  });
+  it('refuses someone demoted, off the board, disabled, or deleted', () => {
+    expect(agreementNoLongerApplies('officer-agreement', { ...base, role: 'member' })).toMatch(
+      /no longer listed as an officer/,
+    );
+    expect(agreementNoLongerApplies('board-agreement', base)).toMatch(
+      /no longer listed on the board/,
+    );
+    expect(agreementNoLongerApplies('board-agreement', { ...base, director: true })).toBeNull();
+    expect(agreementNoLongerApplies('officer-agreement', { ...base, disabled: true })).toMatch(
+      /not active/,
+    );
+    expect(agreementNoLongerApplies('officer-agreement', null)).toMatch(/not active/);
   });
 });

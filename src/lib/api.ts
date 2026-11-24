@@ -488,17 +488,20 @@ export const agreements = {
   mine: () =>
     call<{ agreements: AgreementStatus[] }>('/api/agreements/mine').then((r) => r.agreements),
   send: (kind: AgreementKind, userId: string) =>
-    mutate<{ emailed: boolean; mailError: string | null }>(
+    mutate<{ emailed: boolean; mailError: string | null; existing: boolean }>(
       '/api/agreements',
       json('POST', { kind, userId }),
     ),
   sendAll: (kind: AgreementKind) =>
-    mutate<{ sent: string[]; resent: string[]; failed: string[] }>(
+    mutate<{ sent: string[]; resent: string[]; replaced: string[]; failed: string[] }>(
       '/api/agreements/send-all',
       json('POST', { kind }),
     ),
   resend: (requestId: string) =>
-    mutate<{ emailed: boolean }>(`/api/sign/requests/${requestId}/resend`, json('POST', {})),
+    mutate<{ emailed: boolean; replaced: boolean; message: string | null }>(
+      `/api/sign/requests/${requestId}/resend`,
+      json('POST', {}),
+    ),
   void: (requestId: string) =>
     mutate<{ ok?: true }>(`/api/sign/requests/${requestId}/void`, json('POST', {})),
   pdfUrl: (requestId: string) => `/api/sign/requests/${requestId}/pdf`,
@@ -647,7 +650,9 @@ export const tasks = {
   create: (input: TaskInput) => mutate<TaskSaved>('/api/tasks', json('POST', input)),
   update: (id: string, patch: Partial<TaskInput> & { addNote?: string }) =>
     mutate<TaskSaved>(`/api/tasks/${id}`, json('PATCH', patch)),
-  remove: (id: string) => mutate<{ ok: true }>(`/api/tasks/${id}`, { method: 'DELETE' }),
+  /** `force` deletes a task that has logged time (and its time entries). */
+  remove: (id: string, o: { force?: boolean } = {}) =>
+    mutate<{ ok: true }>(`/api/tasks/${id}`, json('DELETE', { force: Boolean(o.force) })),
   time: (id: string) =>
     call<{ entries: TimeEntry[] }>(`/api/tasks/${id}/time`).then((r) => r.entries),
   logTime: (

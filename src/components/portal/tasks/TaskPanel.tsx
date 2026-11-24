@@ -1,5 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { tasks as api, type Assignee, type Task, type TaskInput, type TaskStatus } from '@/lib/api';
+import {
+  ApiError,
+  tasks as api,
+  type Assignee,
+  type Task,
+  type TaskInput,
+  type TaskStatus,
+} from '@/lib/api';
 import { useResource } from '@/lib/hooks';
 import type { Session } from '@/lib/types';
 import { ErrorStrip, inputCls, msg, Status } from '../ui';
@@ -170,6 +177,8 @@ function EditForm({
   const [error, setError] = useState('');
   const [pending, setPending] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  /** Time is logged on it (or the server says so): deleting needs a clear yes. */
+  const [timeLogged, setTimeLogged] = useState((task?.minutes ?? 0) > 0);
   const set = <K extends keyof TaskInput>(k: K, v: TaskInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
@@ -199,11 +208,15 @@ function EditForm({
       return;
     }
     setPending(true);
+    setError('');
     try {
-      await api.remove(task.id);
+      await api.remove(task.id, { force: timeLogged });
       onClose(`Deleted "${task.title}".`);
     } catch (err) {
-      setError(msg(err, 'Could not delete.'));
+      if (err instanceof ApiError && err.status === 409 && !timeLogged) {
+        // Someone logged time since this opened: show the warning and ask again.
+        setTimeLogged(true);
+      } else setError(msg(err, 'Could not delete.'));
       setPending(false);
     }
   }
@@ -296,6 +309,13 @@ function EditForm({
         />
       </label>
       {error && <ErrorStrip>{error}</ErrorStrip>}
+      {task && confirmDelete && timeLogged && (
+        <p role="alert" className="text-[0.95rem] font-semibold text-[#7c2d1f]">
+          This task has
+          {task.minutes > 0 ? ` ${formatMinutes(task.minutes)} of` : ''} logged time. Deleting it
+          also deletes every time entry on it, for good. To keep the hours, move it to Done instead.
+        </p>
+      )}
       <div className="border-mortar bg-paper sticky bottom-0 -mx-5 flex flex-wrap items-center gap-3 border-t px-5 py-3">
         <button type="submit" disabled={pending || !form.title.trim()} className={pBtn}>
           {pending ? 'Saving…' : task ? 'Save' : 'Add task'}
@@ -310,7 +330,11 @@ function EditForm({
             disabled={pending}
             className="text-ash ml-auto px-1 text-[0.9rem] font-semibold underline underline-offset-4 hover:text-[#7c2d1f]"
           >
-            {confirmDelete ? 'Yes, delete it' : 'Delete'}
+            {confirmDelete
+              ? timeLogged
+                ? 'Yes, delete it and its time'
+                : 'Yes, delete it'
+              : 'Delete'}
           </button>
         )}
       </div>

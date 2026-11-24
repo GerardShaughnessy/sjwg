@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNotNull, isNull, gt, ne } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNotNull, isNull, gt, ne, sql } from 'drizzle-orm';
 import { db } from './db/client';
 import { members, signEvents, signRequests } from './db/schema';
 import {
@@ -204,13 +204,48 @@ export async function sendForSignature(input: {
       sentBy: input.sentBy.userId,
       sentByName: input.sentBy.name,
     })
+    // An account has one open request per agreement (partial unique index):
+    // a double click returns the one already sent instead of making two.
+    .onConflictDoNothing({
+      target: [signRequests.userId, signRequests.docKind],
+      where: sql`${signRequests.signedAt} is null and ${signRequests.voidedAt} is null and ${signRequests.userId} is not null`,
+    })
     .returning();
+  if (!row) {
+    const open = await openAccountRequest(input.userId!, input.docKind);
+    if (!open) throw new HttpError(409, 'That request changed. Reload and try again.');
+    return {
+      row: open,
+      token: null,
+      link: null,
+      emailed: false,
+      mailError: null,
+      existing: true as const,
+    };
+  }
   await addEvent(row.id, 'sent', {
     actor: input.sentBy.name,
     meta: { docKind: input.docKind, docSha256: row.docSha256, draft: frozen.draft },
   });
   const mail = await emailLink(row, token, input.sentBy.name);
-  return { row, token, ...mail };
+  return { row, token, ...mail, existing: false as const };
+}
+
+/** The open (unsigned, not voided) request for this account and agreement, if any. */
+export async function openAccountRequest(userId: string, docKind: string) {
+  const [row] = await db()
+    .select()
+    .from(signRequests)
+    .where(
+      and(
+        eq(signRequests.userId, userId),
+        eq(signRequests.docKind, docKind),
+        isNull(signRequests.signedAt),
+        isNull(signRequests.voidedAt),
+      ),
+    )
+    .limit(1);
+  return row ?? null;
 }
 
 async function getRow(id: string): Promise<SignRow> {

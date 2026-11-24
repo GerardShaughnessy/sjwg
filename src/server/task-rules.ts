@@ -60,8 +60,12 @@ export function formatMinutes(m: number): string {
 }
 
 /** A note added to a task, stamped with who wrote it and when. */
+export function noteLine(by: string, text: string, day: string): string {
+  return `${by}, ${day}: ${text.trim()}`;
+}
+
 export function appendNote(notes: string, by: string, text: string, day: string): string {
-  const line = `${by}, ${day}: ${text.trim()}`;
+  const line = noteLine(by, text, day);
   return notes.trim() ? `${notes.trimEnd()}\n\n${line}` : line;
 }
 
@@ -110,7 +114,12 @@ export interface PendingNotification {
   dueDate: string | null;
   addedByName: string | null;
   createdAt: Date;
+  /** True when the task is already Done at send time: nothing to tell them. */
+  done?: boolean;
 }
+
+/** A digest row is claimed (and its email tried) at most this many times. */
+export const MAX_DIGEST_ATTEMPTS = 5;
 
 export interface TaskDigest {
   userId: string;
@@ -128,8 +137,8 @@ export interface TaskDigest {
 }
 
 /**
- * Who gets an email now. Rows for disabled people or tasks they were taken
- * off are dropped (and marked handled). The rest are grouped by person; a
+ * Who gets an email now. Rows for disabled people, tasks they were taken
+ * off, and tasks already Done are dropped (and marked handled). The rest are grouped by person; a
  * person is ready once their OLDEST unsent row is 15 minutes old, and then
  * every pending task of theirs goes in one email.
  */
@@ -140,7 +149,7 @@ export function planTaskDigests(
   const discard: string[] = [];
   const byUser = new Map<string, PendingNotification[]>();
   for (const r of rows) {
-    if (r.disabled || !r.stillAssigned || !r.email) {
+    if (r.disabled || !r.stillAssigned || !r.email || r.done) {
       discard.push(r.id);
       continue;
     }

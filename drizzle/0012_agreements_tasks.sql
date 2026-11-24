@@ -3,8 +3,9 @@ CREATE TABLE "task_notifications" (
 	"user_id" uuid NOT NULL,
 	"task_id" uuid NOT NULL,
 	"added_by" uuid,
-	"created_at" timestamp with time zone DEFAULT now(),
-	"sent_at" timestamp with time zone
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"sent_at" timestamp with time zone,
+	"attempts" integer DEFAULT 0 NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "task_time" (
@@ -29,4 +30,5 @@ CREATE INDEX "task_notifications_unsent_idx" ON "task_notifications" USING btree
 CREATE INDEX "task_time_task_idx" ON "task_time" USING btree ("task_id");--> statement-breakpoint
 CREATE INDEX "task_time_user_idx" ON "task_time" USING btree ("user_id","worked_on");--> statement-breakpoint
 ALTER TABLE "sign_requests" ADD CONSTRAINT "sign_requests_user_id_app_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."app_users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "sign_requests_user_idx" ON "sign_requests" USING btree ("user_id");
+CREATE INDEX "sign_requests_user_idx" ON "sign_requests" USING btree ("user_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "sign_requests_open_per_account" ON "sign_requests" USING btree ("user_id","doc_kind") WHERE "sign_requests"."signed_at" is null and "sign_requests"."voided_at" is null and "sign_requests"."user_id" is not null;
