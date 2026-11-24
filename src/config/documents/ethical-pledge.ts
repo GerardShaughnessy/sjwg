@@ -1,86 +1,130 @@
-import { ol, p, ul, type GuildDocument } from './types';
+import { ol, p, type GuildDocument } from './types';
 
 /**
  * The pledge a tradesman takes to be listed in the Guild's directory.
- * Adapted from the Ethical Standards and the Membership Pledge received
- * 2026-10-08 (sjwg-docs/governance). Membership, dues, meeting, recruiting,
- * and "refer Guild members first" items were removed; required charity
- * service became considering charity work.
+ * Adopted 2026-11-24: Greg's "SJWG ETHICAL PLEDGE" (Nov 21) as the base,
+ * with inclusive wording, fair and lawful wages, safety, sobriety and
+ * mentoring from Milton's original, the customer-facing "not a guarantee"
+ * line, and a section on what the Guild commits to in return.
  */
 export const ethicalPledge: GuildDocument = {
   slug: 'ethical-pledge',
   title: 'Ethical Pledge',
-  version: '2026-11-22',
+  version: '2026-11-24',
   draft: false,
   summary:
-    'The pledge a Catholic tradesman signs to be listed in the Guild directory: faith, honest work, fair dealing, and care for those in need.',
+    'The pledge a Catholic tradesman or tradeswoman signs to be listed in the Guild directory: faith, honest work, moral responsibility, and what the Guild commits to in return.',
   sections: [
     {
+      heading: 'Purpose',
       blocks: [
         p(
-          'St. Joseph the Worker Guild keeps a directory of practicing Catholic tradesmen and tradeswomen in the St. Louis area. Everyone listed in it signs this pledge. It describes how each of us means to live the faith in our work and in our dealings with customers, workers, and the people we serve.',
+          'The St. Joseph the Worker Guild seeks to cultivate a community of faithful Catholic tradesmen and tradeswomen who understand their work not merely as a living, but as a vocation through which they honor God, serve their neighbors, support their families, and contribute to the common good.',
         ),
         p(
-          'I ask to be listed in the Guild directory. By signing below, I affirm each statement in this pledge and promise to practice these standards in my work with all clients and customers. If I work for someone else, I will keep these standards in that work and in any independent jobs or side work I take on.',
+          "Being listed in the Guild's Tradesmen Directory is a commitment to uphold the moral, spiritual, and professional standards in this pledge. Each listed tradesman is expected to act in keeping with Catholic teaching, professional integrity, and the example of St. Joseph the Worker.",
         ),
+        p('By signing this pledge, I affirm the following:'),
       ],
     },
     {
-      heading: 'Core values',
-      blocks: [
-        ul(
-          'Steadfast endurance. I work diligently, follow through on my commitments, and pursue excellence in everything entrusted to me.',
-          'Humble service. I contribute with humility and put my talents to work for the good of others.',
-          'Faithful integrity. I act honestly and openly, and keep my words, decisions, and conduct faithful to Catholic teaching.',
-          'Proactive ownership. I meet obstacles with resourcefulness and personal responsibility, and keep moving forward.',
-        ),
-      ],
-    },
-    {
-      heading: 'My faith and my trade',
-      blocks: [
-        ul(
-          'I work full-time, part-time, or am retired in or from the skilled trades (including construction, mechanical, and service trades).',
-          'I have received the three Sacraments of Initiation (Baptism, Confirmation, and the Eucharist), and I adhere to the Magisterium of the Catholic Church.',
-          'I strive to keep the Precepts of the Church: to attend Mass on Sundays and Holy Days of Obligation and rest from work that keeps me from keeping the day holy; to confess my sins to a priest at least once a year; to receive the Eucharist at least once a year during the Easter season; to observe the days of fasting and abstinence; and to help provide for the needs of the Church, including my own parish.',
-          'I believe in the mission of the Guild: to honor the dignity of work and to serve neighbors in need through the skilled trades.',
-        ),
-      ],
-    },
-    {
-      heading: 'My standards of work',
+      heading: 'I. Catholic Faith and Practice',
       blocks: [
         ol(
-          'Skill. I will do skilled work and keep improving at my trade through continued training and education.',
-          'Clear dealing. I will communicate clearly with clients and customers about the work to be done, and set high but manageable expectations for it.',
-          'Honesty. I will be honest and open with customers. I will not pad a bill, use pressure sales, or sell work a customer does not need.',
-          'Charity. I will be charitable toward those in need, without neglecting what I owe to my own family.',
-          'Fair prices for those in need. I will look for ways to reduce my prices for those in need while still giving them excellent service.',
-          'A family wage. If I employ anyone, I will strive to pay a family wage, whether by the hour, by the project, or by salary. I will keep up with local costs of living and reflect on what a family wage is and what the work is worth.',
-          "Good faith as an employee. If I work for someone else, I will keep in mind the limits of the project, the value of my own labor, and my employer's family needs, and I will negotiate my wage in good faith.",
-          'Follow through. When I work for another tradesman or a customer, I will keep every commitment I make, take responsibility where it is mine, communicate well, be honest and open, and be a good steward of the project, the customer, and any property, materials, and tools placed in my care.',
-          'Moral work. I will not take part in any project that is plainly against the moral life of the community, such as building or renovating an abortion facility, a Masonic hall, a business built on sexual immorality, or any organization that directly contradicts the mission of the Church.',
-          'Sober work. I will never work under the influence of alcohol, drugs, or any substance that impairs my work or threatens my family life.',
-          'Example. I will strive to be active in my community and a good example to those around me. Where I can, I will teach my children the trade so that skilled work carries on to the next generation. If the Guild raises a concern about my conduct, I will work to amend it.',
-          'Mentoring. I will encourage and help those who are learning the trade, as my time and means reasonably allow.',
-          'Charity among tradesmen. I will support other Catholic tradesmen and deal with them in a spirit of charity.',
-          'Speaking up. I will speak up about usurious, extortionate, or bad-faith practices I meet in the trades, so that others are not harmed by them.',
-          'Safety. I will follow the safety standards set by law and by the trade, and I will never penalize anyone who works for me for working safely.',
-          'Licenses and insurance. I will keep any license and insurance my trade requires current, and show them to a customer who asks.',
-          'Truth about the Guild. I will not say or suggest that the Guild employs, endorses, certifies, guarantees, or recommends me. I may say that I am listed in the St. Joseph the Worker Guild directory.',
-          'Charity work. I will consider taking part in the charitable work of the Guild, such as repairs for neighbors in need, as my time and means allow.',
+          'I am a baptized and confirmed Catholic who professes the Catholic faith and accepts the authority and teaching of the Catholic Church.',
+          'I ordinarily keep the obligations of a practicing Catholic, including attending Mass every Sunday and Holy Day of Obligation unless legitimately excused; going to confession at least once a year, and whenever needed to return to a state of grace; and keeping the precepts of the Church expected of a Catholic in good standing.',
+          'I strive to live in a state of grace and to receive the sacraments regularly.',
+          'I do not belong to the Freemasons, or to any religious organization or group whose beliefs and practices are incompatible with the Catholic faith, and I do not take part in occult practices such as divination or spiritism.',
+          'I am registered with, or intend to register with, a Catholic parish, and I take part in its life.',
+          'I take St. Joseph the Worker as the patron of my work and seek his intercession and example in my duties.',
         ),
       ],
     },
     {
-      heading: 'My affirmation',
+      heading: 'II. Professional Integrity and Competence',
       blocks: [
-        p(
-          'I make this pledge sincerely. I understand that my directory listing depends on keeping it, and that the Guild may pause or remove my listing if I do not.',
+        ol(
+          'I keep the insurance my trade calls for, including general liability insurance when I take on work for customers.',
+          'I hold, or will obtain before offering regulated work, every license, permit, and certification the law requires for the work I do, and I will show them to a customer who asks.',
+          'I will represent my goods and services accurately and never knowingly misstate their quality, condition, origin, scope, or nature.',
+          "I will never exploit a customer's lack of knowledge or experience for my own gain. I will charge fairly and deal honestly, especially with customers unfamiliar with the work.",
+          'I will honor the contracts and agreements I make, provided the customer likewise keeps theirs.',
+          'I will not abandon, neglect, or disregard an agreed project without good cause and clear communication with the customer.',
+          'I will not take a deposit without a genuine intention and reasonable ability to do the work. If I cannot go forward, I will tell the customer promptly and settle any money owed honestly.',
+          'I will keep all my dealings transparent and honest: estimates, invoices, contracts, change orders, warranties, schedules, and communication.',
+          'I will not say or suggest that the Guild employs, endorses, certifies, guarantees, or recommends me. I may say that I am listed in the St. Joseph the Worker Guild directory.',
+          'I will see my customers not merely as sources of revenue, but as brothers and sisters in Christ, owed dignity, fairness, patience, and charity.',
         ),
-        p(
-          'This pledge is taken in good faith as a statement of the standards I strive to keep. It is not a legal or implied guarantee, warranty, or promise of any standard of workmanship, conduct, or result, by me or by the Guild, to any customer or other person.',
+      ],
+    },
+    {
+      heading: 'III. Fair Work and Safety',
+      blocks: [
+        ol(
+          'If I employ anyone, I will pay a fair wage and follow every wage, tax, and labor law that applies. How I price my work and pay my workers is my own business, done honestly and lawfully.',
+          'If I work for someone else, I will negotiate my pay in good faith and give honest work for it.',
+          'I will follow the safety standards set by law and by my trade, and I will never penalize anyone who works for me for working safely.',
+          'I will never work under the influence of alcohol, drugs, or any substance that impairs my work or threatens my family life.',
         ),
+      ],
+    },
+    {
+      heading: 'IV. Moral Responsibility in Business',
+      blocks: [
+        ol(
+          'I will not knowingly use my business earnings to promote, finance, or materially support organizations whose main work directly opposes Catholic moral teaching, including abortion providers and organizations whose main purpose is promoting abortion.',
+          'I will not knowingly take paid or unpaid work at abortion clinics or facilities mainly engaged in providing or promoting abortion; Masonic temples or lodges; properties mainly dedicated to occult practice; businesses built on sexual immorality; or any organization that directly contradicts the mission of the Church.',
+          'I will use good judgment in my business relationships and avoid knowingly lending my labor, reputation, or money to work that directly contradicts Catholic teaching.',
+        ),
+      ],
+    },
+    {
+      heading: 'V. Formation and Guild Participation',
+      blocks: [
+        ol(
+          'I will keep growing spiritually and morally in my vocation as a Catholic tradesman or tradeswoman.',
+          "I will attend at least five (5) Guild events each year, such as the monthly Guild meeting, the monthly Holy Hour, retreats, conferences, and workshops. These gatherings build fraternity, accountability, and a shared commitment to the Guild's mission.",
+          "I will consider giving at least four (4) hours a year to the Guild's charitable work or to helping at Guild events, as my time and means allow.",
+          'This time is freely given. It requires no payment from me, and it does not entitle me to pay.',
+        ),
+      ],
+    },
+    {
+      heading: 'VI. Vocation and Christian Stewardship',
+      blocks: [
+        ol(
+          'I will strive to become a holier worker, a more faithful spouse and parent where that applies, and a more responsible steward of my community.',
+          "I see my trade as a share in God's creative work: a way to provide honestly for my household, serve my neighbors, and practice diligence, prudence, justice, fortitude, and charity.",
+          'I will conduct myself in a way that reflects well on the Catholic faith and the Guild, knowing my work shapes how others see both.',
+          'I will treat other tradesmen as brothers and sisters rather than mere competitors, and encourage their professional, spiritual, and personal growth.',
+          'As my time and means allow, I will help those learning the trade, and where I can, teach the next generation, including my own children.',
+        ),
+      ],
+    },
+    {
+      heading: 'VII. What the Guild Commits To',
+      blocks: [
+        p('In return, the Guild will:'),
+        ol(
+          'Keep my documents and personal information private, seen only by Guild officers, and never sold.',
+          'Tell me privately about any concern with my conduct and give me a fair chance to respond before any decision.',
+          'Make any decision to pause or remove a listing by the Board under its written policies, and tell me the reason.',
+          'List me without fees, commissions, ranking, or paid placement, in the same random order as everyone else.',
+          'Support my growth in faith and trade through formation, fellowship, and prayer.',
+        ),
+      ],
+    },
+    {
+      heading: 'VIII. Declaration',
+      blocks: [
+        ol(
+          'I have read and understand this pledge, and the statements in it are true to the best of my knowledge.',
+          "I take on these commitments freely, as a condition of being listed in the Guild's Tradesmen Directory.",
+          'My listing is a privilege that depends on keeping this pledge. The Guild may review a concern, ask for information, and pause or remove my listing under Section VII and its policies.',
+          'This pledge is not an employment agreement, partnership, or promise of referrals or business from the Guild.',
+          'This pledge is made in good faith as a statement of the standards I strive to keep. It is not a legal or implied guarantee, warranty, or promise of any standard of work, conduct, or result, by me or by the Guild, to any customer or other person.',
+        ),
+        p('St. Joseph the Worker, pray for us.'),
       ],
     },
   ],
