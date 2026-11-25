@@ -10,7 +10,7 @@ import { ol, p, type GuildDocument } from './types';
 export const ethicalPledge: GuildDocument = {
   slug: 'ethical-pledge',
   title: 'Ethical Pledge',
-  version: '2026-11-24',
+  version: '2026-11-25',
   draft: false,
   summary:
     'The pledge a Catholic tradesman or tradeswoman signs to be listed in the Guild directory: faith, honest work, moral responsibility, and what the Guild commits to in return.',
@@ -83,7 +83,7 @@ export const ethicalPledge: GuildDocument = {
       blocks: [
         ol(
           'I will keep growing spiritually and morally in my vocation as a Catholic tradesman or tradeswoman.',
-          "I will attend at least five (5) Guild events each year, such as the monthly Guild meeting, the monthly Holy Hour, retreats, conferences, and workshops. These gatherings build fraternity, accountability, and a shared commitment to the Guild's mission.",
+          "I am willing to attend at least five (5) Guild meetings or Holy Hours each year, in any combination, to grow in my formation as a Catholic tradesman or tradeswoman under the patronage of St. Joseph. I understand this is voluntary, and that work, family, or emergencies excuse me from it.",
           "I will consider giving at least four (4) hours a year to the Guild's charitable work or to helping at Guild events, as my time and means allow.",
           'This time is freely given. It requires no payment from me, and it does not entitle me to pay.',
         ),
