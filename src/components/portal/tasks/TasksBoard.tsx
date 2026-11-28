@@ -46,7 +46,7 @@ export default function TasksBoard({
   /** Opens the Archive sub-tab. */
   onArchive?: () => void;
 }) {
-  const { data, loading, error } = useResource(() => api.list(), []);
+  const { data, loading, error, refetch } = useResource(() => api.list(), []);
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   const [ready, setReady] = useState(false);
   const [editing, setEditing] = useState<string | 'new' | null>(null);
@@ -110,7 +110,7 @@ export default function TasksBoard({
   }
 
   if (loading && !data) return <Loading what="the task board" />;
-  if (error && !data) return <ErrorStrip>{error}</ErrorStrip>;
+  if (error && !data) return <ErrorStrip onRetry={refetch}>{error}</ErrorStrip>;
 
   const current = all.map((t) => (moved[t.id] ? { ...t, status: moved[t.id] } : t));
   const inView = (t: Task, view: View) =>

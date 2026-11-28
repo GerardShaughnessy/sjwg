@@ -75,7 +75,7 @@ export default function TasksArchive({ session }: { session: Session }) {
   };
   const queryRef = useRef(query);
   queryRef.current = query;
-  const { data, loading, error } = useResource(
+  const { data, loading, error, refetch } = useResource(
     () => (ready ? api.archive(query) : new Promise<never>(() => {})),
     [ready, query.q, query.section, query.person, query.view],
   );
@@ -94,7 +94,7 @@ export default function TasksArchive({ session }: { session: Session }) {
   const byId = useMemo(() => new Map(assignees.map((a) => [a.id, a])), [assignees]);
 
   if (!data && (loading || !ready)) return <Loading what="the archive" />;
-  if (error && !data) return <ErrorStrip>{error}</ErrorStrip>;
+  if (error && !data) return <ErrorStrip onRetry={refetch}>{error}</ErrorStrip>;
   if (!data) return null;
 
   const seen = new Set<string>();

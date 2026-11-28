@@ -44,14 +44,33 @@ export function Status({ children }: { children: ReactNode }) {
   );
 }
 
-export function ErrorStrip({ children }: { children: ReactNode }) {
+export function ErrorStrip({
+  children,
+  onRetry,
+}: {
+  children: ReactNode;
+  /** Shows a "Try again" button, e.g. a useResource refetch. */
+  onRetry?: () => void;
+}) {
+  if (!onRetry)
+    return (
+      <p
+        role="alert"
+        className="border-brick bg-paper text-brick border-l-4 px-4 py-3 font-sans font-semibold"
+      >
+        {children}
+      </p>
+    );
   return (
-    <p
+    <div
       role="alert"
-      className="border-brick bg-paper text-brick border-l-4 px-4 py-3 font-sans font-semibold"
+      className="border-brick bg-paper text-brick flex flex-wrap items-center gap-x-4 gap-y-2 border-l-4 px-4 py-3 font-sans font-semibold"
     >
-      {children}
-    </p>
+      <p>{children}</p>
+      <button type="button" className={`${btnQuiet} text-charcoal`} onClick={onRetry}>
+        Try again
+      </button>
+    </div>
   );
 }
 

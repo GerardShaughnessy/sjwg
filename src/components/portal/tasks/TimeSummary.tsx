@@ -29,12 +29,12 @@ export default function TimeSummary({ session }: { session: Session }) {
     window.history.replaceState(window.history.state, '', `${window.location.pathname}?${p}`);
   }
   const all = useResource(() => (manager ? api.timeSummary() : Promise.resolve(null)), [manager]);
-  const { data, loading, error } = useResource(
+  const { data, loading, error, refetch } = useResource(
     () => api.timeSummary(manager ? person || undefined : undefined),
     [person, manager],
   );
   if (loading && !data) return <Loading what="the time summary" />;
-  if (error && !data) return <ErrorStrip>{error}</ErrorStrip>;
+  if (error && !data) return <ErrorStrip onRetry={refetch}>{error}</ErrorStrip>;
   if (!data) return null;
   const options = (all.data?.people ?? data.people)
     .filter((p) => p.userId)

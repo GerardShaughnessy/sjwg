@@ -15,6 +15,12 @@ export interface AppSession {
   title: string;
   /** On the board of directors. Independent of officer access. */
   director: boolean;
+  /** Board title, e.g. "Chair". Empty when not set. */
+  boardTitle?: string;
+  /** An outside person or business providing services. */
+  vendor?: boolean;
+  /** What a vendor provides. Empty when not set. */
+  vendorService?: string;
 }
 
 export interface AppUserRow {
@@ -28,6 +34,9 @@ export interface AppUserRow {
   siteAdmin: boolean;
   title: string;
   director: boolean;
+  boardTitle?: string;
+  vendor?: boolean;
+  vendorService?: string;
 }
 
 /** An app_users row as a session. A missing or disabled row gets no session. */
@@ -46,18 +55,37 @@ export function toAppSession(
     siteAdmin: row.role === 'admin' && row.siteAdmin,
     title: row.role === 'admin' ? row.title : '',
     director: row.director,
+    boardTitle: row.boardTitle ?? '',
+    vendor: row.vendor ?? false,
+    vendorService: row.vendorService ?? '',
   };
 }
 
+type HeaderFields = Pick<AppSession, 'role' | 'siteAdmin' | 'title'> &
+  Partial<Pick<AppSession, 'director' | 'boardTitle' | 'vendor' | 'vendorService'>>;
+
 /**
  * The line under the name in the portal header. The Admin runs the site and
- * is not presented as an officer, so their label is always "Admin".
+ * is not presented as an officer, so their label is always "Admin". A
+ * director or vendor who is not an officer sees their board title or service.
  */
-export function roleLabelFor(
-  s: Pick<AppSession, 'role' | 'siteAdmin' | 'title'>,
-  trade = '',
-): string {
-  if (s.role !== 'admin') return trade || 'Guild member';
+export function roleLabelFor(s: HeaderFields, trade = ''): string {
+  if (s.role !== 'admin') {
+    if (s.director) return s.boardTitle || 'Director';
+    if (s.vendor) return s.vendorService || 'Vendor';
+    return trade || 'Guild member';
+  }
   if (s.siteAdmin) return 'Admin';
   return s.title || 'Guild officer';
+}
+
+/** The word before "portal" in the header: Admin, Officer, Director, Vendor, or Tradesman. */
+export function portalNameFor(
+  s: Pick<AppSession, 'role' | 'siteAdmin'> & Partial<Pick<AppSession, 'director' | 'vendor'>>,
+): string {
+  if (s.siteAdmin) return 'Admin';
+  if (s.role === 'admin') return 'Officer';
+  if (s.director) return 'Director';
+  if (s.vendor) return 'Vendor';
+  return 'Tradesman';
 }

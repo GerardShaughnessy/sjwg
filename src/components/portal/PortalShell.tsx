@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Session } from '@/lib/types';
 import { PageHead, pBtnQuiet } from './layout';
+import PageErrorBoundary from './PageErrorBoundary';
+import { portalNameFor } from '@/server/auth/session';
 
 export type NavItem = {
   id: string;
@@ -45,9 +47,8 @@ export default function PortalShell({
   const current = items.find((i) => i.id === active) ?? items[0];
   const headingRef = useRef<HTMLHeadingElement>(null);
   const first = useRef(true);
-  const isAdmin = session.role === 'admin';
   /** The Admin runs the site and is not presented as an officer. */
-  const portalName = session.siteAdmin ? 'Admin' : isAdmin ? 'Officer' : 'Tradesman';
+  const portalName = portalNameFor(session);
   const menuBtnRef = useRef<HTMLButtonElement>(null);
   const navListRef = useRef<HTMLUListElement>(null);
 
@@ -103,7 +104,9 @@ export default function PortalShell({
           <a href="/" className="flex min-w-0 items-center gap-3 no-underline">
             <img src="/brand/seal.svg" alt="" className="h-9 w-9 shrink-0 sm:h-11 sm:w-11" />
             <span className="min-w-0 leading-tight">
-              <span className="block font-serif text-[1rem] sm:text-[1.15rem]">St. Joseph the Worker Guild</span>
+              <span className="block font-serif text-[1rem] sm:text-[1.15rem]">
+                St. Joseph the Worker Guild
+              </span>
               <span className="text-brass-ink block font-sans text-[0.8rem] font-semibold tracking-[0.12em] uppercase">
                 {portalName} portal
               </span>
@@ -187,7 +190,9 @@ export default function PortalShell({
         <main id="main" className="min-w-0 flex-1" ref={headingRef}>
           {banner}
           <PageHead title={current.title} lede={current.lede} />
-          <div key={current.id}>{current.content}</div>
+          <PageErrorBoundary key={current.id} onHome={() => go(items[0].id)}>
+            <div>{current.content}</div>
+          </PageErrorBoundary>
         </main>
       </div>
     </div>

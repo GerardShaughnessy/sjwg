@@ -34,11 +34,7 @@ function TodoList({ todos, go }: { todos: Todo[]; go: Go }) {
               {t.action}
             </a>
           ) : t.action && t.tab ? (
-            <button
-              type="button"
-              className={i === 0 ? pBtn : pBtnQuiet}
-              onClick={() => go(t.tab!)}
-            >
+            <button type="button" className={i === 0 ? pBtn : pBtnQuiet} onClick={() => go(t.tab!)}>
               {t.action}
             </button>
           ) : null}
@@ -52,12 +48,14 @@ export function TradesmanHome({
   summary,
   error,
   go,
+  onRetry,
 }: {
   summary: PortalSummary | null;
   error: string | null;
   go: Go;
+  onRetry?: () => void;
 }) {
-  if (error && !summary) return <ErrorStrip>{error}</ErrorStrip>;
+  if (error && !summary) return <ErrorStrip onRetry={onRetry}>{error}</ErrorStrip>;
   if (!summary) return <Loading what="your home page" />;
   const m = summary.mine;
   return (
@@ -67,13 +65,7 @@ export function TradesmanHome({
           <AgreementTodo agreements={summary.agreements} />
         </div>
       )}
-      <Card title="To do">
-        {m ? (
-          <TodoList todos={m.todos} go={go} />
-        ) : (
-          <NotLinked />
-        )}
-      </Card>
+      <Card title="To do">{m ? <TodoList todos={m.todos} go={go} /> : <NotLinked />}</Card>
       <Card title="Your listing">
         {m ? (
           <>
@@ -105,8 +97,7 @@ export function TradesmanHome({
 function NotLinked() {
   return (
     <p className="font-sans leading-relaxed">
-      Your login is not linked to a directory entry yet. Ask a Guild officer to link it, or write
-      to{' '}
+      Your login is not linked to a directory entry yet. Ask a Guild officer to link it, or write to{' '}
       <a href="mailto:hello@sjwg.org" className="underline">
         hello@sjwg.org
       </a>
@@ -124,11 +115,13 @@ export function MyListing({
   summary,
   error,
   areas,
+  onRetry,
 }: {
   session: Session;
   summary: PortalSummary | null;
   error: string | null;
   areas: string[];
+  onRetry?: () => void;
 }) {
   if (!session.memberId)
     return (
@@ -161,7 +154,7 @@ export function MyListing({
         {m ? (
           <Checklist items={m.checklist} />
         ) : error ? (
-          <ErrorStrip>{error}</ErrorStrip>
+          <ErrorStrip onRetry={onRetry}>{error}</ErrorStrip>
         ) : summary ? (
           <p className="text-ash font-sans">No checklist to show.</p>
         ) : (

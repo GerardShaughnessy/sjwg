@@ -67,6 +67,12 @@ export interface Session {
   title: string;
   /** On the board of directors. A director who is not an officer still sees the Board page. */
   director: boolean;
+  /** Board title, e.g. "Chair". */
+  boardTitle?: string;
+  /** An outside person or business providing services. */
+  vendor?: boolean;
+  /** What a vendor provides. */
+  vendorService?: string;
 }
 
 export type FormKind = 'contact' | 'partner' | 'membership' | 'interest' | 'rsvp';

@@ -23,6 +23,7 @@ import BoardPage from './pages/Board';
 import VendorsPage from './pages/Vendors';
 import { SessionContext } from './session-context';
 import { AgreementBanner } from './agreements';
+import { roleLabelFor } from '@/server/auth/session';
 
 interface Props {
   session: Session;
@@ -138,14 +139,22 @@ export default function PortalApp({ session, events, areas }: Props) {
       countLabel: n('home', 'thing to do', 'things to do'),
       title: `Welcome, ${session.name.split(' ')[0]}`,
       lede: 'What needs your attention, and what is coming up.',
-      content: <TradesmanHome summary={s} error={err} go={go} />,
+      content: <TradesmanHome summary={s} error={err} go={go} onRetry={summary.refetch} />,
     },
     {
       id: 'listing',
       label: 'My listing',
       title: 'My listing',
       lede: 'Your directory entry, your documents, and your paperwork, in one place.',
-      content: <MyListing session={session} summary={s} error={err} areas={areas} />,
+      content: (
+        <MyListing
+          session={session}
+          summary={s}
+          error={err}
+          areas={areas}
+          onRetry={summary.refetch}
+        />
+      ),
     },
     {
       id: 'calendar',
@@ -183,7 +192,7 @@ export default function PortalApp({ session, events, areas }: Props) {
       countLabel: n('dashboard', 'agreement to sign', 'agreements to sign'),
       title: 'Dashboard',
       lede: 'Everything waiting on an officer, at a glance.',
-      content: <Dashboard summary={s} error={err} go={go} />,
+      content: <Dashboard summary={s} error={err} go={go} onRetry={summary.refetch} />,
     },
     {
       id: 'tradesmen',
@@ -293,7 +302,15 @@ export default function PortalApp({ session, events, areas }: Props) {
       group: 'You',
       title: 'My own listing',
       lede: 'Your directory entry and paperwork, like every tradesman.',
-      content: <MyListing session={session} summary={s} error={err} areas={areas} />,
+      content: (
+        <MyListing
+          session={session}
+          summary={s}
+          error={err}
+          areas={areas}
+          onRetry={summary.refetch}
+        />
+      ),
     },
   ];
 
@@ -319,11 +336,7 @@ export default function PortalApp({ session, events, areas }: Props) {
       </p>
     );
 
-  const fallbackLabel = isAdmin
-    ? session.siteAdmin
-      ? 'Admin'
-      : session.title || 'Guild officer'
-    : '';
+  const fallbackLabel = isAdmin || session.director || session.vendor ? roleLabelFor(session) : '';
   return (
     <SessionContext.Provider value={session}>
       <PortalShell

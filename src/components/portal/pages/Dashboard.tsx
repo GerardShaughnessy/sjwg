@@ -11,50 +11,53 @@ export default function Dashboard({
   summary,
   error,
   go,
+  onRetry,
 }: {
   summary: PortalSummary | null;
   error: string | null;
   go: Go;
+  onRetry?: () => void;
 }) {
-  if (error && !summary) return <ErrorStrip>{error}</ErrorStrip>;
+  if (error && !summary) return <ErrorStrip onRetry={onRetry}>{error}</ErrorStrip>;
   if (!summary?.officer) return <Loading what="the dashboard" />;
   const c = summary.officer.counts;
-  const tiles: { n: number; label: string; sub: string; tone: Tone; to: string; query?: string }[] = [
-    {
-      n: c.aidNew,
-      label: 'New help requests',
-      sub: c.aidEmergency ? `${c.aidEmergency} marked emergency` : 'None marked emergency',
-      tone: c.aidEmergency ? 'attention' : c.aidNew ? 'waiting' : 'neutral',
-      to: 'aid',
-    },
-    {
-      n: c.docsPending,
-      label: 'Member documents pending',
-      sub: c.docsExpiring
-        ? `${plural(c.docsExpiring, 'document')} expired or expiring in 30 days`
-        : 'Nothing expiring in 30 days',
-      tone: c.docsExpiring ? 'attention' : c.docsPending ? 'waiting' : 'neutral',
-      to: 'tradesmen',
-      query: 'show=action',
-    },
-    {
-      n: c.paperworkOpen,
-      label: 'Paperwork not signed',
-      sub: c.paperworkStale
-        ? `${c.paperworkStale} sent more than a week ago`
-        : 'None sent more than a week ago',
-      tone: c.paperworkStale ? 'attention' : c.paperworkOpen ? 'waiting' : 'neutral',
-      to: 'tradesmen',
-      query: 'sub=paperwork',
-    },
-    {
-      n: c.tasksOpen,
-      label: 'Open tasks',
-      sub: c.tasksDueSoon ? `${c.tasksDueSoon} due this week` : 'None due this week',
-      tone: c.tasksDueSoon ? 'waiting' : 'neutral',
-      to: 'tasks',
-    },
-  ];
+  const tiles: { n: number; label: string; sub: string; tone: Tone; to: string; query?: string }[] =
+    [
+      {
+        n: c.aidNew,
+        label: 'New help requests',
+        sub: c.aidEmergency ? `${c.aidEmergency} marked emergency` : 'None marked emergency',
+        tone: c.aidEmergency ? 'attention' : c.aidNew ? 'waiting' : 'neutral',
+        to: 'aid',
+      },
+      {
+        n: c.docsPending,
+        label: 'Member documents pending',
+        sub: c.docsExpiring
+          ? `${plural(c.docsExpiring, 'document')} expired or expiring in 30 days`
+          : 'Nothing expiring in 30 days',
+        tone: c.docsExpiring ? 'attention' : c.docsPending ? 'waiting' : 'neutral',
+        to: 'tradesmen',
+        query: 'show=action',
+      },
+      {
+        n: c.paperworkOpen,
+        label: 'Paperwork not signed',
+        sub: c.paperworkStale
+          ? `${c.paperworkStale} sent more than a week ago`
+          : 'None sent more than a week ago',
+        tone: c.paperworkStale ? 'attention' : c.paperworkOpen ? 'waiting' : 'neutral',
+        to: 'tradesmen',
+        query: 'sub=paperwork',
+      },
+      {
+        n: c.tasksOpen,
+        label: 'Open tasks',
+        sub: c.tasksDueSoon ? `${c.tasksDueSoon} due this week` : 'None due this week',
+        tone: c.tasksDueSoon ? 'waiting' : 'neutral',
+        to: 'tasks',
+      },
+    ];
   return (
     <div className="flex flex-col gap-6">
       <AgreementTodo agreements={summary.agreements} />
@@ -68,7 +71,10 @@ export default function Dashboard({
             >
               <span className="flex items-start justify-between">
                 <span className="font-serif text-[2.4rem] leading-none">{t.n}</span>
-                <span className={`mt-1 h-2.5 w-2.5 rounded-full ${DOT[t.tone]}`} aria-hidden="true" />
+                <span
+                  className={`mt-1 h-2.5 w-2.5 rounded-full ${DOT[t.tone]}`}
+                  aria-hidden="true"
+                />
               </span>
               <span className="mt-2 block font-sans font-semibold">{t.label}</span>
               <span className="text-ash block font-sans text-[0.85rem]">{t.sub}</span>

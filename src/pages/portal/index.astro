@@ -9,6 +9,7 @@ import SeoHead from '@/components/site/SeoHead.astro';
 import SkipLink from '@/components/site/SkipLink.astro';
 import PortalApp from '@/components/portal/PortalApp';
 import { getAreas } from '@/lib/trades';
+import { portalNameFor } from '@/server/auth/session';
 
 export const prerender = false;
 
@@ -33,7 +34,7 @@ const areas = getAreas(members);
     <meta name="theme-color" content="#43402a" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <SeoHead
-      title={session.role === 'admin' ? 'Officer portal' : 'Tradesman portal'}
+      title={`${portalNameFor(session)} portal`}
       description="Directory entry, paperwork, calendar, and Guild work for listed tradesmen and Guild officers."
       noindex
     />

@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest';
 import type { APIContext } from 'astro';
 import { HttpError, requireRole, requireSiteAdmin } from './http';
 import { assertCanInvite, assertUserPatchAllowed } from './permissions';
-import { roleLabelFor, toAppSession, type AppSession, type AppUserRow } from './auth/session';
+import {
+  portalNameFor,
+  roleLabelFor,
+  toAppSession,
+  type AppSession,
+  type AppUserRow,
+} from './auth/session';
 import { userPatchSchema } from './schemas';
 
 const base: AppSession = {
@@ -106,9 +112,7 @@ describe('sessions', () => {
     });
   });
   it('the header shows Admin for the Admin, then the title, then Guild officer', () => {
-    expect(roleLabelFor({ role: 'admin', siteAdmin: true, title: 'Vice President' })).toBe(
-      'Admin',
-    );
+    expect(roleLabelFor({ role: 'admin', siteAdmin: true, title: 'Vice President' })).toBe('Admin');
     expect(roleLabelFor({ role: 'admin', siteAdmin: false, title: 'Vice President' })).toBe(
       'Vice President',
     );
@@ -117,5 +121,22 @@ describe('sessions', () => {
     expect(roleLabelFor({ role: 'member', siteAdmin: false, title: '' }, 'Plumber')).toBe(
       'Plumber',
     );
+  });
+  it('directors and vendors who are not officers get their own portal name and label', () => {
+    const m = { role: 'member' as const, siteAdmin: false, title: '' };
+    expect(roleLabelFor({ ...m, director: true, boardTitle: 'Chair' }, 'Plumber')).toBe('Chair');
+    expect(roleLabelFor({ ...m, director: true, boardTitle: '' })).toBe('Director');
+    expect(roleLabelFor({ ...m, vendor: true, vendorService: 'Web design' })).toBe('Web design');
+    expect(roleLabelFor({ ...m, vendor: true })).toBe('Vendor');
+    expect(roleLabelFor(m)).toBe('Guild member');
+    expect(portalNameFor({ ...m, director: true })).toBe('Director');
+    expect(portalNameFor({ ...m, vendor: true })).toBe('Vendor');
+    expect(portalNameFor(m)).toBe('Tradesman');
+    // Officers and the Admin are unchanged, director or not.
+    expect(portalNameFor({ role: 'admin', siteAdmin: false, director: true })).toBe('Officer');
+    expect(portalNameFor({ role: 'admin', siteAdmin: true, vendor: true })).toBe('Admin');
+    expect(
+      roleLabelFor({ role: 'admin', siteAdmin: false, title: 'Treasurer', director: true }),
+    ).toBe('Treasurer');
   });
 });
