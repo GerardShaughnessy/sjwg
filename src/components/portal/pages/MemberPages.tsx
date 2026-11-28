@@ -133,15 +133,14 @@ export function MyListing({
   if (!session.memberId)
     return (
       <Card>
-        <p className="font-sans leading-relaxed">
-          {session.role === 'admin'
-            ? 'Your login is not linked to a directory entry, so there is no listing to show. If you work a trade and want to be listed, ask another officer to link your login to your entry.'
-            : 'Your login is not linked to a directory entry yet.'}
-        </p>
-        {session.role !== 'admin' && (
-          <div className="mt-3">
-            <NotLinked />
-          </div>
+        {session.role === 'admin' ? (
+          <p className="font-sans leading-relaxed">
+            Your login is not linked to a directory entry, so there is no listing to show. If you
+            work a trade and want to be listed, ask another officer to link your login to your
+            entry.
+          </p>
+        ) : (
+          <NotLinked />
         )}
       </Card>
     );
