@@ -1,3 +1,5 @@
+import { safeNextPath } from '@/lib/safe-next';
+
 /** Turn Better Auth error codes into plain sentences that say what to fix. */
 export function authMessage(
   err: { code?: string; message?: string } | null | undefined,
@@ -22,6 +24,18 @@ export function authMessage(
   return err?.message && err.message.length < 140 ? err.message : fallback;
 }
 
+/** A same-site /portal or /sign path from `?next=`, or /portal. */
 export function safeNext(raw: string | null): string {
-  return raw && raw.startsWith('/') && !raw.startsWith('//') ? raw : '/portal';
+  return safeNextPath(raw) ?? '/portal';
 }
+
+/** Why the login page was shown, from `?reason=`. */
+export function loginReasonMessage(reason: string | null): string {
+  if (reason === 'disabled')
+    return "This account is turned off or not set up. Ask the Guild's Admin for help (hello@sjwg.org).";
+  return '';
+}
+
+/** A thrown signIn/reset call means the request never got an answer. */
+export const NETWORK_MESSAGE =
+  'Could not reach the login service. Check your connection and try again.';

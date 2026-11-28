@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { authClient } from '@/lib/auth-client';
 import { FormStatus, PrimaryButton, TextInput } from '@/components/forms/fields';
-import { authMessage, safeNext } from './authErrors';
+import { authMessage, loginReasonMessage, NETWORK_MESSAGE, safeNext } from './authErrors';
 
 /** Member log in. No sign-up link on purpose: membership is by invitation. */
 export default function LoginForm() {
@@ -9,6 +9,12 @@ export default function LoginForm() {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<{ email?: string; password?: string; form?: string }>({});
   const [pending, setPending] = useState(false);
+  const [notice, setNotice] = useState('');
+
+  // ?reason=disabled: signed in, but the Guild account is turned off or missing.
+  useEffect(() => {
+    setNotice(loginReasonMessage(new URLSearchParams(window.location.search).get('reason')));
+  }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -18,7 +24,14 @@ export default function LoginForm() {
     setErrors(next);
     if (next.email || next.password) return;
     setPending(true);
-    const { error } = await authClient().signIn.email({ email: email.trim(), password });
+    let error: Parameters<typeof authMessage>[0];
+    try {
+      ({ error } = await authClient().signIn.email({ email: email.trim(), password }));
+    } catch {
+      setErrors({ form: NETWORK_MESSAGE });
+      setPending(false);
+      return;
+    }
     if (error) {
       setErrors({ form: authMessage(error, 'Could not log in. Try again in a minute.') });
       setPending(false);
@@ -30,6 +43,14 @@ export default function LoginForm() {
 
   return (
     <div className="max-w-[32rem]">
+      {notice && (
+        <p
+          role="alert"
+          className="border-brick bg-paper text-brick mb-6 border-l-4 px-4 py-3 font-sans font-semibold"
+        >
+          {notice}
+        </p>
+      )}
       <form noValidate onSubmit={onSubmit} className="flex flex-col gap-6">
         <TextInput
           id="email"

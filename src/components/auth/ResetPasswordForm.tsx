@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { authClient } from '@/lib/auth-client';
 import { PrimaryButton, TextInput } from '@/components/forms/fields';
-import { authMessage } from './authErrors';
+import { authMessage, NETWORK_MESSAGE } from './authErrors';
 
 export const MIN_PASSWORD = 10;
 
@@ -32,7 +32,14 @@ export default function ResetPasswordForm() {
       return;
     }
     setPending(true);
-    const { error } = await authClient().resetPassword({ newPassword: password, token });
+    let error: Parameters<typeof authMessage>[0];
+    try {
+      ({ error } = await authClient().resetPassword({ newPassword: password, token }));
+    } catch {
+      setErrors({ form: NETWORK_MESSAGE });
+      setPending(false);
+      return;
+    }
     if (error) {
       setErrors({ form: authMessage(error, 'Could not save the new password.') });
       setPending(false);

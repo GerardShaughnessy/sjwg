@@ -32,6 +32,8 @@ export async function call<T>(path: string, init: RequestInit = {}): Promise<T> 
     body = {};
   }
   if (!res.ok) {
+    // Only a confirmed logout (401) goes to /login. A 503 (sign-in service
+    // unreachable) or 403 (account turned off) is shown where it happened.
     if (res.status === 401 && typeof window !== 'undefined') {
       const next = encodeURIComponent(window.location.pathname + window.location.search);
       window.location.assign(`/login?next=${next}`);

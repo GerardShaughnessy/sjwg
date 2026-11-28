@@ -4,7 +4,8 @@ import {
   DEFAULT_AUTH_SKIP_ROUTES,
   NEON_AUTH_COOKIE_PREFIX,
 } from '@neondatabase/auth/server';
-import { authConfig, getAuthSession, resolveAppSession } from '@/server/auth/server';
+import { authConfig, getAuthSessionState, resolveAppSession } from '@/server/auth/server';
+import { AUTH_PAGES, decideGate, unavailableHtml, type UpstreamStatus } from '@/server/auth/gate';
 
 /** Pages and API prefixes that need a logged-in Guild member (or officer). */
 const PROTECTED = [
@@ -19,8 +20,6 @@ function isPublicException(method: string, pathname: string): boolean {
   if (method === 'GET' && /^\/api\/(events|sponsors)\/?$/.test(pathname)) return true; // public listings
   return false;
 }
-
-const AUTH_PAGES = /^\/(login|forgot-password|reset-password)\/?$/;
 
 export const onRequest = defineMiddleware(async (context, next) => {
   // Prerendered pages run this at build time. Nothing to do.
@@ -61,30 +60,48 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return withCookies(context.redirect(result.redirectUrl.toString(), 302), result.cookies);
   }
 
-  // Resolve the Guild-side session (role, member link) whenever an upstream session exists.
-  if (result.action === 'allow') {
-    const upstream = await getAuthSession(context).catch(() => null);
-    context.locals.session = await resolveAppSession(upstream);
+  // Ask Neon Auth who this is whenever there is a login cookie. A failure to
+  // reach it is not a logout: it gets a retry, not the login page.
+  let upstream: UpstreamStatus = 'none';
+  if (hasAuthCookie) {
+    const state = await getAuthSessionState(context);
+    upstream = state.status;
+    // An enabled app_users row turns the sign-in into a Guild session.
+    if (state.session) context.locals.session = await resolveAppSession(state.session);
   }
 
-  if (AUTH_PAGES.test(pathname)) {
-    if (context.locals.session) return context.redirect('/portal', 302);
-    return withCookies(await next(), result.cookies);
-  }
+  const decision = decideGate({
+    pathname,
+    search: context.url.search,
+    needsAuth,
+    upstream,
+    hasAppSession: Boolean(context.locals.session),
+  });
 
-  if (needsAuth && !context.locals.session) {
-    if (isApi) {
+  switch (decision.kind) {
+    case 'redirect':
+      return withCookies(context.redirect(decision.to, 302), result.cookies);
+    case 'json':
       return withCookies(
-        new Response(JSON.stringify({ error: 'Log in to do that.' }), {
-          status: 401,
+        new Response(JSON.stringify({ error: decision.error }), {
+          status: decision.status,
           headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
         }),
         result.cookies,
       );
-    }
-    const nextUrl = encodeURIComponent(pathname + context.url.search);
-    return withCookies(context.redirect(`/login?next=${nextUrl}`, 302), result.cookies);
+    case 'unavailable':
+      return withCookies(
+        new Response(unavailableHtml(), {
+          status: 503,
+          headers: {
+            'content-type': 'text/html; charset=utf-8',
+            'cache-control': 'no-store',
+            'retry-after': '10',
+          },
+        }),
+        result.cookies,
+      );
+    default:
+      return withCookies(await next(), result.cookies);
   }
-
-  return withCookies(await next(), result.cookies);
 });

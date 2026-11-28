@@ -10,6 +10,7 @@ import { db } from '../db/client';
 import { appUsers } from '../db/schema';
 import { env, requireEnv } from '../env';
 import { toAppSession, type AppSession } from './session';
+import { classifySessionResult, type UpstreamStatus } from './gate';
 
 export type { AppSession, Role } from './session';
 export { roleLabelFor } from './session';
@@ -42,6 +43,24 @@ export function authFor(ctx: APIContext) {
     sameSite: c.sameSite,
     log: c.log,
   });
+}
+
+/**
+ * Upstream session plus whether Neon Auth actually answered. `error` means
+ * it could not be reached or failed, which is not the same as signed out.
+ */
+export async function getAuthSessionState(
+  ctx: APIContext,
+): Promise<{ status: UpstreamStatus; session: SessionData | null }> {
+  try {
+    const r = await authFor(ctx).getSession();
+    const status = classifySessionResult(r);
+    if (status === 'error') console.error('[auth] Neon Auth getSession failed', r.error);
+    return { status, session: status === 'ok' ? (r.data as SessionData) : null };
+  } catch (err) {
+    console.error('[auth] Neon Auth getSession threw', err);
+    return { status: 'error', session: null };
+  }
 }
 
 /** Upstream session (Better Auth) for this request, or null. */

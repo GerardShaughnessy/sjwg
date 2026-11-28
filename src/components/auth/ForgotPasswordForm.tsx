@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { authClient } from '@/lib/auth-client';
 import { PrimaryButton, TextInput } from '@/components/forms/fields';
 import { isEmail } from '@/lib/validate';
-import { authMessage } from './authErrors';
+import { authMessage, NETWORK_MESSAGE } from './authErrors';
 
 export default function ForgotPasswordForm() {
   const [email, setEmail] = useState('');
@@ -18,10 +18,17 @@ export default function ForgotPasswordForm() {
     }
     setError('');
     setPending(true);
-    const { error: err } = await authClient().requestPasswordReset({
-      email: email.trim(),
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
+    let err: Parameters<typeof authMessage>[0];
+    try {
+      ({ error: err } = await authClient().requestPasswordReset({
+        email: email.trim(),
+        redirectTo: `${window.location.origin}/reset-password`,
+      }));
+    } catch {
+      setPending(false);
+      setError(NETWORK_MESSAGE);
+      return;
+    }
     setPending(false);
     // Never confirm whether an address exists.
     if (err && !/not found/i.test(err.message ?? '')) {
