@@ -158,7 +158,7 @@ export default function RsvpListPanel() {
             No RSVPs yet. They appear here as people answer at sjwg.org/christmas.
           </p>
         ) : (
-          <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Christmas RSVPs">
+          <div className="relative overflow-x-auto" tabIndex={0} role="region" aria-label="Christmas RSVPs">
             <table className="w-full min-w-[640px] text-left text-[0.95rem]">
               <caption className="sr-only">Christmas party RSVPs, latest answer per email</caption>
               <thead>

@@ -160,7 +160,7 @@ export default function EventsEditor() {
 
   return (
     <div className="grid gap-12 lg:grid-cols-[1fr_1fr] lg:gap-16">
-      <form onSubmit={save} className="flex flex-col gap-5 font-sans">
+      <form onSubmit={save} className="flex min-w-0 flex-col gap-5 font-sans">
         <h2 className="text-h2 font-serif">{id ? 'Edit event' : 'New event'}</h2>
         <p className="text-ash text-[0.95rem]">
           Times are Central time. Published events appear on the events page, the home page, and the

@@ -314,7 +314,7 @@ export default function DonorRecords() {
             </div>
           </div>
 
-          <div className="mt-8 overflow-x-auto">
+          <div className="relative mt-8 overflow-x-auto">
             <table className="w-full min-w-[46rem] border-collapse font-sans text-[0.95rem]">
               <caption className="sr-only">All recorded gifts</caption>
               <thead>
