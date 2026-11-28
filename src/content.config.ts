@@ -3,6 +3,7 @@ import { z } from 'astro/zod';
 import type { Loader } from 'astro/loaders';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { sponsorLogoUrl } from './lib/sponsor-logo';
 
 /**
  * Public pages are prerendered, so these loaders run at build time. They read
@@ -249,7 +250,7 @@ const sponsors = defineCollection({
           name: s.name,
           url: s.url,
           tier: s.tier,
-          logo: s.logoKey ? `/api/files/sponsors/${s.logoKey}` : null,
+          logo: sponsorLogoUrl(s.logoKey),
           logoAlt: s.logoAlt || s.name,
         }));
       },

@@ -2,6 +2,7 @@ import { asc, eq } from 'drizzle-orm';
 import { db } from '../client';
 import { sponsors } from '../schema';
 import { HttpError } from '../../http';
+import { sponsorLogoUrl } from '../../../lib/sponsor-logo';
 
 export function sponsorView(s: typeof sponsors.$inferSelect) {
   return {
@@ -9,7 +10,7 @@ export function sponsorView(s: typeof sponsors.$inferSelect) {
     name: s.name,
     url: s.url,
     tier: s.tier,
-    logo: s.logoKey ? `/api/files/sponsors/${s.logoKey.replace(/^sponsors\//, '')}` : null,
+    logo: sponsorLogoUrl(s.logoKey),
     logoAlt: s.logoAlt || s.name,
     active: s.active,
     sortOrder: s.sortOrder,
