@@ -264,10 +264,15 @@ function EditForm({
             onChange={(e) => set('section', e.target.value)}
             className={inputCls}
           >
+            {/* A section no longer on the list stays selectable, so the task still saves. */}
+            {task && !SECTIONS.includes(task.section) && (
+              <option value={task.section}>{task.section} (old section)</option>
+            )}
             {SECTIONS.map((s) => (
               <option key={s}>{s}</option>
             ))}
           </select>
+          {err('section')}
         </label>
         <label className="flex flex-col gap-1">
           <span className={fieldLabel}>Due date</span>

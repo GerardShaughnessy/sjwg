@@ -364,8 +364,24 @@ export const taskSchema = z.object({
  * untouched. `addNote` appends a stamped line to the notes.
  */
 export const taskPatchSchema = z
-  .object({ ...taskFields, addNote: trimmed(2000).min(1, 'Write a note first.') })
+  .object({
+    ...taskFields,
+    // Any text here; assertTaskSection checks it against the task's current section.
+    section: trimmed(80).min(1, 'Pick a section.'),
+    addNote: trimmed(2000).min(1, 'Write a note first.'),
+  })
   .partial();
+
+/**
+ * A task edit may keep a section that is no longer on the list (renamed or
+ * retired), so the task can still be saved. Moving it to any other section
+ * needs one from the list.
+ */
+export function assertTaskSection(next: string | undefined, current: string): void {
+  if (next === undefined || next === current) return;
+  if ((TASK_SECTIONS as readonly string[]).includes(next)) return;
+  throw new HttpError(400, 'Pick a section.', { section: 'Pick a section.' });
+}
 
 /** The first day time can be logged on, and the most one entry can hold. */
 export const TASK_TIME_FIRST_DAY = '2026-01-01';

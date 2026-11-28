@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveAssigneeIds, taskPatchSchema, taskSchema } from './schemas';
+import { assertTaskSection, resolveAssigneeIds, taskPatchSchema, taskSchema } from './schemas';
 import { taskAssigned, taskFinished, tasksAssignedBatch } from './email/templates/task';
 import { confirmPlan, taskEmailPlan, taskEventText, joinNames } from './task-rules';
 
@@ -187,6 +187,13 @@ describe('task validation', () => {
   });
   it('a drag sends only the status, and nothing else is defaulted', () => {
     expect(taskPatchSchema.parse({ status: 'done' })).toEqual({ status: 'done' });
+  });
+  it('an edit may keep an old section, but a change needs one from the list', () => {
+    expect(taskPatchSchema.parse({ section: 'Old stuff' })).toEqual({ section: 'Old stuff' });
+    expect(() => assertTaskSection('Old stuff', 'Old stuff')).not.toThrow();
+    expect(() => assertTaskSection(undefined, 'Old stuff')).not.toThrow();
+    expect(() => assertTaskSection('Money', 'Old stuff')).not.toThrow();
+    expect(() => assertTaskSection('Misc', 'General')).toThrow('Pick a section.');
   });
 });
 

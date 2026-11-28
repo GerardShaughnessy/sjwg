@@ -9,7 +9,12 @@ import {
   taskView,
   updateTask,
 } from '@/server/db/queries/tasks';
-import { parseOrThrow, resolveAssigneeIds, taskPatchSchema } from '@/server/schemas';
+import {
+  assertTaskSection,
+  parseOrThrow,
+  resolveAssigneeIds,
+  taskPatchSchema,
+} from '@/server/schemas';
 import { afterTaskSave } from '@/server/tasks';
 import {
   appendNote,
@@ -41,6 +46,7 @@ export const PATCH: APIRoute = route(async (ctx) => {
   const beforeIds = await getAssigneeIds(before.id);
   const fields = Object.keys(patch).filter((k) => patch[k as keyof typeof patch] !== undefined);
   assertTaskPatchAllowed(session, beforeIds.includes(session.userId), fields);
+  assertTaskSection(patch.section, before.section);
   const ids = resolveAssigneeIds(patch, beforeIds);
   if (ids) await checkAssignees(ids, beforeIds);
   const save = { ...patch };
